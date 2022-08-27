@@ -61,6 +61,7 @@ def errFunct(U, array, e, percent_to_modify):
         array[bins_first+i] = array[bins_first+i] - e_per_bin_last # subtracts same amount to second half of bins you wish to change
     
     #print(array) # for testing
+
     return array 
 
 def genValArr(U):
@@ -113,7 +114,8 @@ if __name__ == '__main__':
 
     new_samples = sampleSpecificProbDist(val_arr, updated_prob_arr, m)
 
-    plot(new_samples, U, 'probability space', 'probability of event occuring', 'Modified Probability Plotting')
+    plot_title = "Modified Probability Plotting:  U = " + str(U) + " m = " + str(m) + " e = " + str(e) +  " b = " + str(b)
+    plot(new_samples, U, 'probability space', 'probability of event occuring', plot_title)
 
 #TODO: Double check what convention is on the naming of python functions
 #TODO: Only works for half and half. In current setup, does not ignore other 'half' if 
