@@ -50,6 +50,7 @@ if __name__ == '__main__':
     plot(uniform, 16)
     #print(normal)
     plot(normal, 16)
+    #practice with random gen on contin. funct
 
     
     
