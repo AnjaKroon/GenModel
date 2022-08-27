@@ -62,21 +62,42 @@ def err_funct(U, array, e, percent_to_modify):
     print(array) # for testing
     return array 
 
+def generate_val_array(U):
+    # Given: U the size of the probability space
+    # Returns: Array with one of each element in the probability space
+    values = []
+    for i in range(U):
+        values.append(i+1)
+    return values
+
+# Given: Values which is an array with one of each element in the probability space and the updated_prob_array from the error function
+# Returns: M amount of samples generated from the newly defined probability distribution
+def sample_from_updated_prob_dist(value, probability, m):
+    distrib = rv_discrete(values=(value, probability))
+    new_samples = distrib.rvs(size=m)
+    return new_samples
 
 if __name__ == '__main__':
     U = int(9) # defining |U|, the probability space
-    m = 20 # how many times uni_dist is sampled
+    m = 100000 # how many times uni_dist is sampled -- nice to see it go from 10k, 100k to 1M, illustrates the effectiveness working
     e = 0.1 # the total amount of error that is introduced in the probability distribution array
 
     uni_dist = uniform_die(U) # creates a uniform 'die' with |U| sides
-    #plot(uni_dist, U, 'probability space', 'probability of event occuring', 'Uniform Probability Example') # visual confirmation of uniform dist
+    plot(uni_dist, U, 'probability space', 'probability of event occuring', 'Uniform Probability Example') # visual confirmation of uniform dist
 
     uni_prob_arr = uniform_probability_arr(U)
 
-    # sample the array m times
-    orig_samples = sample(uni_dist, m)
+    # orig_samples = sample(uni_dist, m) # optional, used for testing
 
-    err_funct(U, uni_prob_arr, e, 100)
+    updated_prob_arr = err_funct(U, uni_prob_arr, e, 100)
+
+    val_arr = generate_val_array(U)
+
+    new_samples = sample_from_updated_prob_dist(val_arr, updated_prob_arr, m)
+
+    plot(new_samples, U, 'probability space', 'probability of event occuring', 'Modified Probability Plotting')
+
+
 
 
 
