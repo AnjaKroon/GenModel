@@ -3,9 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import randint, rv_discrete
 
-# Creates a uniform distribution of probability space |U|
-# Creates one number of each value starting at 1 ... U
-# Returns a np array
+# Given: U, probability space
+# Returns: a np array with one number of each value starting at 1 ... U -- i.e. a uniform distribution of probability space |U|
 def makeUniformDie(U):
     sides_of_die = [None]*U # I think this part may take a lot of time, perhaps think of a faster way
     for i in range(U):
@@ -97,8 +96,3 @@ if __name__ == '__main__':
     new_samples = sampleSpecificProbDist(val_arr, updated_prob_arr, m)
 
     plot(new_samples, U, 'probability space', 'probability of event occuring', 'Modified Probability Plotting')
-
-
-
-
-
