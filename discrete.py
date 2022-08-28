@@ -118,6 +118,7 @@ if __name__ == '__main__':
     # want to write new_samples out into a file
     np.save("Gen_Samples", new_samples)
 
+
     plot_title = "Modified Probability Plotting:  U = " + str(U) + " m = " + str(m) + " e = " + str(e) +  " b = " + str(b)
     plot(U, new_samples, 'probability space', 'probability of event occuring', plot_title)
 
