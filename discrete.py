@@ -20,9 +20,9 @@ def sampleAnArray(ArrayToSample, m):
 
 # Given: array is a np array to plot, bins is number of categories to plot, xAxis label, yAxis label, and title label
 # Returns: a bar graph displayed
-def plot(array, bins, xAxis, yAxis, title):
-    count, bins, ignored = plt.hist(array, bins, density=True)
-    #plt.plot(bins, np.ones_like(bins), linewidth=2, color='r')
+def plot(U, array, xAxis, yAxis, title):
+    count, bins, ignored = plt.hist(array, U, density=True)
+    plt.axhline(y = float(1/U), color = 'r', linestyle = '-')
     plt.xlabel(xAxis)
     plt.ylabel(yAxis)
     plt.title(title)
@@ -49,7 +49,7 @@ def errFunct(U, array, e, percent_to_modify):
     # That means for this case, the bins_last will need to 'redistribute' how much is subtracted per bin
 
     bins_first = int(half_point)
-    bins_last = int(U - half_point)
+    bins_last = int(amt_to_modify - half_point)
     e_per_section = e/2
     e_per_bin_first = e_per_section/bins_first #amount to add to the first section
     e_per_bin_last = e_per_section/bins_last #amount to subtract from the second section
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     #b = 50 # how much of the array you would like to 'impact' or 'skew' with the error
 
     uni_dist = makeUniformDie(U)
-    plot(uni_dist, U, 'probability space', 'probability of event occuring', 'Uniform Probability Example')
+    plot(U, uni_dist, 'probability space', 'probability of event occuring', 'Uniform Probability Example')
 
     uni_prob_arr = makeUniProbArr(U)
 
@@ -115,8 +115,6 @@ if __name__ == '__main__':
     new_samples = sampleSpecificProbDist(val_arr, updated_prob_arr, m)
 
     plot_title = "Modified Probability Plotting:  U = " + str(U) + " m = " + str(m) + " e = " + str(e) +  " b = " + str(b)
-    plot(new_samples, U, 'probability space', 'probability of event occuring', plot_title)
+    plot(U, new_samples, 'probability space', 'probability of event occuring', plot_title)
 
 #TODO: Double check what convention is on the naming of python functions
-#TODO: Only works for half and half. In current setup, does not ignore other 'half' if 
-# doing 1/4, 1/4 mod and 1/2 ignore for example
