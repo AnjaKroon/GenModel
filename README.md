@@ -24,9 +24,9 @@ Currently, this code has some limitations to robustness that I will describe her
 * A .png file is currently created representing the modified probability distribution. Creation of this png increases the processing time. If no such images are needed, it would be advantageous to remove this capability for running the program over large combinations of input parameters. 
 
 ## What are the other files for?
-Evaluation_ground_truth_FloRegol.pdf -- The origional description of the research problem. Describes how this code fits into a larger research problem.
-ExampleofModProbPlot.png -- The output .png file with input parameters of U = 1000, m = 1000, e = 0.1, and b = 100. 
-continuous.py -- Practice with continuous probability distributions, sampling them, and beginning to mix them together. Not relevant here anymore. Should probably remove!
-rand_continuous.py -- Same as continuous.py but with random gen seed
-stat_test.py -- The origional starter code linked to the origional pdf document
-stat_test_AK.py -- Some modifications to the origional stat_test.py code that helped me understand what that origional code did.
+* Evaluation_ground_truth_FloRegol.pdf -- The origional description of the research problem. Describes how this code fits into a larger research problem. 
+* ExampleofModProbPlot.png -- The output .png file with input parameters of U = 1000, m = 1000, e = 0.1, and b = 100. 
+* continuous.py -- Practice with continuous probability distributions, sampling them, and beginning to mix them together. Not relevant here anymore. Should probably remove!
+* rand_continuous.py -- Same as continuous.py but with random gen seed
+* stat_test.py -- The origional starter code linked to the origional pdf document
+* stat_test_AK.py -- Some modifications to the origional stat_test.py code that helped me understand what that origional code did.
