@@ -11,11 +11,14 @@ do
 for b in 50 100 
 do
 # echo ${U} ${m} ${e} ${b} >> time.txt
-/usr/local/bin/python3 /Users/anja/Documents/Flo_Research/GenModel/discrete.py ${U} ${m} ${e} ${b} >> time.txt 
+/usr/local/bin/python3 /Users/anja/Documents/Flo_Research/GenModel/discrete.py ${U} ${m} ${e} ${b} > time_${U}_${m}_${e}_${b}.txt
 mv ModProbDist.png ModProbDist_${U}_${m}_${e}_${b}.png # uncomment this for the big run
+mv Gen_Samples.npy Gen_Samples_${U}_${m}_${e}_${b}.npy
 done # for b
 done # for m
 done # for U
+
+cat time_*.txt | time.txt
 
 # I want to make U: 100, 1000, 10000, 100000, 1000000 (5 options)
 # I want to vary m:  10000000, 1000000, 10000, 1000, 100, 10 (6 options)

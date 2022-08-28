@@ -115,6 +115,8 @@ if __name__ == '__main__':
     val_arr = genValArr(U)
 
     new_samples = sampleSpecificProbDist(val_arr, updated_prob_arr, m)
+    # want to write new_samples out into a file
+    np.save("Gen_Samples", new_samples)
 
     plot_title = "Modified Probability Plotting:  U = " + str(U) + " m = " + str(m) + " e = " + str(e) +  " b = " + str(b)
     plot(U, new_samples, 'probability space', 'probability of event occuring', plot_title)
@@ -122,4 +124,5 @@ if __name__ == '__main__':
     end = time()
     run_time = end-start
     print(U, " ",  m, " ", e," ", b ," ", round(run_time, 5))
+
 #TODO: Double check what convention is on the naming of python functions
