@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import randint, rv_discrete
 import sys
+from time import time
 
 # Given: U, probability space
 # Returns: np array with a uniform distribution of probability space |U|
@@ -26,7 +27,8 @@ def plot(U, array, xAxis, yAxis, title):
     plt.xlabel(xAxis)
     plt.ylabel(yAxis)
     plt.title(title)
-    plt.show()
+    # plt.show() #testing
+    plt.savefig("ModProbDist.png")
 
 # Given: U the size of probability space
 # Returns: the uniform discrete probability distribution
@@ -80,7 +82,7 @@ def sampleSpecificProbDist(value, probability, m):
     return new_samples
 
 if __name__ == '__main__':
-
+    start = time()
     # This makes it so you can input U m e and b parameters when you run it in terminal. 
     # This will make it easier to compare 'trials'. Will need to make a shell script
     if len(sys.argv) != 5 :
@@ -102,7 +104,7 @@ if __name__ == '__main__':
     #b = 50 # how much of the array you would like to 'impact' or 'skew' with the error
 
     uni_dist = makeUniformDie(U)
-    plot(U, uni_dist, 'probability space', 'probability of event occuring', 'Uniform Probability Example')
+    #plot(U, uni_dist, 'probability space', 'probability of event occuring', 'Uniform Probability Example') # testing
 
     uni_prob_arr = makeUniProbArr(U)
 
@@ -117,4 +119,7 @@ if __name__ == '__main__':
     plot_title = "Modified Probability Plotting:  U = " + str(U) + " m = " + str(m) + " e = " + str(e) +  " b = " + str(b)
     plot(U, new_samples, 'probability space', 'probability of event occuring', plot_title)
 
+    end = time()
+    run_time = end-start
+    print(U, " ",  m, " ", e," ", b ," ", round(run_time, 5))
 #TODO: Double check what convention is on the naming of python functions
