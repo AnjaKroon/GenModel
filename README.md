@@ -33,7 +33,7 @@ We are not varying e and will keep it at 0.1 at least for this first round of te
 From these tests, I will note down the U, m, e, b, run time, and array of generated samples (with m samples in it).\
 I think we will be using the generated samples array for the next step of testing in the overall problem statement? Or is there a 'next part' I should be adding to this? @Flo? 
 
-np.load(outfile)
+np.load(Gen_Samples_U_m_e_b)
 
 ## What are the other files for?
 * Evaluation_ground_truth_FloRegol.pdf -- The origional description of the research problem. Describes how this code fits into a larger research problem. 
