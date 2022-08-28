@@ -27,10 +27,10 @@ Currently, this code has some limitations to robustness that I will describe her
 At this point, the problem statement has been defined and the foundational code base has been laid. The next step would be the first iteration of testing. I would like to run the discrete.py over the various combinations of the following parameters:
 * U: 100 1000 10000 100000 1000000
 * m: 10 100 1000 10000 1000000 10000000
-* b: in 30 50 100 
-We are not varying e and will keep it at 0.1 at least for this first round of testing. 
-From these tests, I will note down the U, m, e, b, run time, and array of generated samples (with m samples in it).
-I think we will be using the generated samples array for the next step of testing in the overall problem statement? @Flo? 
+* b: in 30 50 100 \
+We are not varying e and will keep it at 0.1 at least for this first round of testing. \
+From these tests, I will note down the U, m, e, b, run time, and array of generated samples (with m samples in it).\
+I think we will be using the generated samples array for the next step of testing in the overall problem statement? @Flo?\ 
 
 ## What are the other files for?
 * Evaluation_ground_truth_FloRegol.pdf -- The origional description of the research problem. Describes how this code fits into a larger research problem. 
