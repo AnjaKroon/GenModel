@@ -13,12 +13,11 @@ def empirical_dist(incoming_U, incoming_m, incoming_arr_samples):
         val = histo.get(incoming_arr_samples[i])
         histo.update({incoming_arr_samples[i]:(val+1)})
     return histo
-
         
 if __name__ == '__main__':
-    incoming_arr_samples = [1,1,2,3,4,5,5,6,7,7,7,7,8,10]
+    incoming_arr_samples = np.load('Gen_Samples_100_10_100.npy')
     incoming_U = 10
-    incoming_m = 14
+    incoming_m = len(incoming_arr_samples)
 
     p_emp_dependent = empirical_dist(incoming_U, incoming_m, incoming_arr_samples)
 
