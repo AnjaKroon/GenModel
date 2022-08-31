@@ -2,22 +2,26 @@
 from math import log, sqrt
 import numpy as np
 
-def computeMinError(U, delta, m):
-    e_star = sqrt(sqrt(U*log(1/delta) + log(1/delta))/m)
-    return e_star
+def empirical_dist(incoming_U, incoming_m, incoming_arr_samples):
+    # Create a dictionary with size U. Note index will be shifted by 1 as i starts at 0 and numbers start at 1
+    key = []
+    for i in range(incoming_m):
+        key = np.append(key, incoming_arr_samples[i]) 
+    value = 0
+    histo = dict.fromkeys(key, int(value))  # Note that the keys are now floats and you may want to change them to integers later but just beware
+    for i in range(len(incoming_arr_samples)):  # for each value in the samples array, add +1 to the frequency that the value corresponds to in histo
+        val = histo.get(incoming_arr_samples[i])
+        histo.update({incoming_arr_samples[i]:(val+1)})
+    return histo
 
+        
 if __name__ == '__main__':
-    C = 1.0
-    delta = 0.05
+    incoming_arr_samples = [1,1,2,3,4,5,5,6,7,7,7,7,8,10]
+    incoming_U = 10
+    incoming_m = 14
 
-    # to be pulled from user later
-    U = 1000
-    m = 100
-    # p_hat = discrete.py(new_samples) or something of the sort
+    p_emp_dependent = empirical_dist(incoming_U, incoming_m, incoming_arr_samples)
 
-    e_star = computeMinError(U, delta, m) # with calculator and givens, should return 0.6 for e*
-    print(e_star) # returns 0.74 and needs to return 0.6 approx.
-
-    # for step 3 in algo 1, don't we have that already from discrete.py?
+    print (p_emp_dependent)
 
 
