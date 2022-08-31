@@ -1,7 +1,9 @@
+# The objective of this code is to create samples from a slightly skewed uniform probability distribution for discrete events. 
+
 from random import uniform
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import randint, rv_discrete
+from scipy.stats import rv_discrete
 import sys
 from time import time
 
