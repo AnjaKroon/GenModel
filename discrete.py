@@ -97,7 +97,7 @@ if __name__ == '__main__':
         
     U = int(path1)
     m = int(path2)
-    e = float(path3)
+    e = float(path3)/100 # recall this value has been multiplied by 100 in sh script
     b = int(path4)
 
     #U = int(9) # defining |U|, the probability space
