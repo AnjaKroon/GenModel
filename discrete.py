@@ -63,14 +63,12 @@ def errFunct(U, array, e, percent_to_modify):
     
     for i in range(bins_last):
         array[bins_first+i] = array[bins_first+i] - e_per_bin_last # subtracts same amount to second half of bins you wish to change
-    
     #print(array) # for testing
-
     return array 
 
+# Given: U the size of the probability space
+# Returns: Array with one of each element in the probability space
 def genValArr(U):
-    # Given: U the size of the probability space
-    # Returns: Array with one of each element in the probability space
     values = []
     for i in range(U):
         values.append(i+1)
@@ -120,12 +118,11 @@ if __name__ == '__main__':
     # want to write new_samples out into a file
     np.save("Gen_Samples", new_samples)
 
-
     plot_title = "Modified Probability Plotting:  U = " + str(U) + " m = " + str(m) + " e = " + str(e) +  " b = " + str(b)
     plot(U, new_samples, 'probability space', 'probability of event occuring', plot_title)
 
     end = time()
     run_time = end-start
-    print(U, " ",  m, " ", e," ", b ," ", round(run_time, 5))
+    print(U, " ",  m, " ", e," ", b ," ", round(run_time, 5)) # this printing goes into the txt file
 
 #TODO: Double check what convention is on the naming of python functions
