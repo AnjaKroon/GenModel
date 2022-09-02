@@ -21,16 +21,20 @@ def sampleAnArray(ArrayToSample, m):
     samples = np.random.choice(ArrayToSample, size=m)
     return samples
 
-# Given: array is a np array to plot, bins is number of categories to plot, xAxis label, yAxis label, and title label
-# Returns: a bar graph displayed
-def plot(U, array, xAxis, yAxis, title):
-    count, bins, ignored = plt.hist(array, U, density=True)
+# Given: U is size of prob space, array is a np array representing probability distribution for each item in probability space,
+# xAxis label, yAxis label, and title label
+# Returns: a bar graph with each bar representing the probability of that x value to be chosen
+def plotProbDist(U, array, xAxis, yAxis, title):
+    # a bar graph with U on x axis and array values matching the y axis
+    x_ax = np.arange(start=1, stop=U+1, step = 1)
+    plt.bar(x_ax, array, width = 1)
+    #count, bins, ignored = plt.hist(array, U, density=True)
     plt.axhline(y = float(1/U), color = 'r', linestyle = '-')
     plt.xlabel(xAxis)
     plt.ylabel(yAxis)
     plt.title(title)
-    # plt.show() #testing
     plt.savefig("ModProbDist.png")
+
 
 # Given: U the size of probability space
 # Returns: the uniform discrete probability distribution
@@ -85,6 +89,7 @@ if __name__ == '__main__':
     start = time()
     # This makes it so you can input U m e and b parameters when you run it in terminal. 
     # This will make it easier to compare 'trials'. Will need to make a shell script
+    
     if len(sys.argv) != 5 :
         print("Usage:", sys.argv[0], "U m e b")
         sys.exit()
@@ -92,34 +97,30 @@ if __name__ == '__main__':
     path2 = sys.argv[2]
     path3 = sys.argv[3]
     path4 = sys.argv[4]
-        
     U = int(path1)
     m = int(path2)
     e = float(path3)/100 # recall this value has been multiplied by 100 in sh script
     b = int(path4)
 
-    #U = int(9) # defining |U|, the probability space
-    #m = 100000 # how many times uni_dist is sampled -- nice to see it go from 10k, 100k to 1M, illustrates the effectiveness working
+    # FOR TESTING
+    #U = int(1000) # defining |U|, the probability space
+    #m = 300 # how many times uni_dist is sampled -- nice to see it go from 10k, 100k to 1M, illustrates the effectiveness working
     #e = 0.1 # the total amount of error that is introduced in the probability distribution array
-    #b = 50 # how much of the array you would like to 'impact' or 'skew' with the error
+    #b = 60 # how much of the array you would like to 'impact' or 'skew' with the error
 
     uni_dist = makeUniformDie(U)
-    #plot(U, uni_dist, 'probability space', 'probability of event occuring', 'Uniform Probability Example') # testing
 
     uni_prob_arr = makeUniProbArr(U)
-
-    # orig_samples = sampleAnArray(uni_dist, m) # optional, used for testing
+    # plotProbDist(U, uni_prob_arr, 'elements in prob space', 'probability of occuring', 'Uniform Probability Dist') # confirmed that this works
 
     updated_prob_arr = errFunct(U, uni_prob_arr, e, b)
+    plot_title = "Modified Probability Plotting:  U = " + str(U) + " m = " + str(m) + " e = " + str(e) +  " b = " + str(b)
+    plotProbDist(U, updated_prob_arr, 'elements in prob space', 'probability of occuring', plot_title)
 
     val_arr = genValArr(U)
 
     new_samples = sampleSpecificProbDist(val_arr, updated_prob_arr, m)
-    # want to write new_samples out into a file
     np.save("Gen_Samples", new_samples)
-
-    plot_title = "Modified Probability Plotting:  U = " + str(U) + " m = " + str(m) + " e = " + str(e) +  " b = " + str(b)
-    plot(U, new_samples, 'probability space', 'probability of event occuring', plot_title)
 
     end = time()
     run_time = end-start

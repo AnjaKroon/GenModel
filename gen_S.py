@@ -3,6 +3,7 @@ from math import log, sqrt
 import numpy as np
 import sys
 from numpy import savetxt
+import pandas as pd
 
 def empirical_dist(incoming_U, incoming_m, incoming_arr_samples):
     # Create a dictionary with size U. Note index will be shifted by 1 as i starts at 0 and numbers start at 1
@@ -51,7 +52,21 @@ if __name__ == '__main__':
 
     new_lis = list(p_emp_dependent.items())
     two_dim_arr = np.array(new_lis)
-    print(two_dim_arr)
+    #print(two_dim_arr)
+    # convert array into dataframe
+    DF = pd.DataFrame(two_dim_arr) 
+    # save the dataframe as a csv file
+    e= int(e*100)
+    name = f'histo_{U}_{m}_{e}_{b}.csv'
+    DF.to_csv(name)
+
+    df = pd.read_csv(f'histo_{U}_{m}_{e}_{b}.csv')
+    # If you know the name of the column skip this
+    first_column = df.columns[0]
+    # Delete first
+    df = df.drop([first_column], axis=1)
+    df = df.iloc[1: , :]
+    df.to_csv(f'histo_{U}_{m}_{e}_{b}.csv', index=False)
     # e=e*100
     # print(savetxt(f'histo_{U}_{m}_{e}_{b}.csv', two_dim_arr, delimiter=',', fmt='%d', header='item in prob space, frequency in samples generated')) # something with this is nto working
 
