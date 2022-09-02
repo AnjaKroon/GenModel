@@ -11,11 +11,11 @@ def empirical_dist(incoming_U, incoming_m, incoming_arr_samples):
     for i in range(incoming_m):
         key = np.append(key, incoming_arr_samples[i]) 
     value = 0
-    histo = dict.fromkeys(key, int(value))  # Note that the keys are now floats and you may want to change them to integers later but just beware
+    histo = dict.fromkeys(key, int(value)) 
     for i in range(len(incoming_arr_samples)):  # for each value in the samples array, add +1 to the frequency that the value corresponds to in histo
         val = histo.get(incoming_arr_samples[i])
         histo.update({incoming_arr_samples[i]:(val+1)})
-    
+    # Adding the zeros into the histogram
     histo_with_zeros = {}
     for i in range(incoming_U):
         i = i+1 # offset by 1 because histo starts at 1 not 0
@@ -24,6 +24,17 @@ def empirical_dist(incoming_U, incoming_m, incoming_arr_samples):
         else: # else you would add the histo type and value to the dictionary
             histo_with_zeros.update({i: histo.get(i)})
     return histo_with_zeros
+
+def intoCSV(arr, U, m, e, b):
+    two_dim_arr = np.array(list(arr.items()))
+    DF = pd.DataFrame(two_dim_arr) 
+    e= int(e*100)
+    DF.to_csv(f'histo_{U}_{m}_{e}_{b}.csv')
+    df = pd.read_csv(f'histo_{U}_{m}_{e}_{b}.csv')
+    df = df.drop([df.columns[0]], axis=1)
+    df = df.iloc[1: , :]
+    df.to_csv(f'histo_{U}_{m}_{e}_{b}.csv', index=False)
+    return
         
 if __name__ == '__main__':
     # FOR TESTING EITHER COMMENT THIS SECTION OUT OR THE NEXT TESTING SECTION
@@ -49,27 +60,8 @@ if __name__ == '__main__':
     #b = 100
 
     p_emp_dependent = empirical_dist(U, m, incoming_arr_samples)
-
-    new_lis = list(p_emp_dependent.items())
-    two_dim_arr = np.array(new_lis)
-    #print(two_dim_arr)
-    # convert array into dataframe
-    DF = pd.DataFrame(two_dim_arr) 
-    # save the dataframe as a csv file
-    e= int(e*100)
-    name = f'histo_{U}_{m}_{e}_{b}.csv'
-    DF.to_csv(name)
-
-    df = pd.read_csv(f'histo_{U}_{m}_{e}_{b}.csv')
-    # If you know the name of the column skip this
-    first_column = df.columns[0]
-    # Delete first
-    df = df.drop([first_column], axis=1)
-    df = df.iloc[1: , :]
-    df.to_csv(f'histo_{U}_{m}_{e}_{b}.csv', index=False)
-    # e=e*100
-    # print(savetxt(f'histo_{U}_{m}_{e}_{b}.csv', two_dim_arr, delimiter=',', fmt='%d', header='item in prob space, frequency in samples generated')) # something with this is nto working
-
+    intoCSV(p_emp_dependent, U, m, e, b) # Turning into .csv file
+    
     #TODO: would also maybe be useful to plot your histogram to check
     #TODO: also need to remove dependencies to make the histogram independent? "sample the samples"? need to follow up on the procedure for that
 

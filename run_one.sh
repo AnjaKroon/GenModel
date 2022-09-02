@@ -1,5 +1,5 @@
 U=1000
-m=700
+m=600
 e=10 # decimals cause issues in the file name. Actual value is this divided by 100 and is compensated for in discrete.py and gen_S.py
 b=100
 
@@ -8,3 +8,5 @@ b=100
 
 mv ModProbDist.png ModProbDist_${U}_${m}_${e}_${b}.png 
 mv Gen_Samples.npy Gen_Samples_${U}_${m}_${e}_${b}.npy 
+mkdir Out_${U}_${m}_${e}_${b}
+mv Gen_Samples_${U}_${m}_${e}_${b}.npy ModProbDist_${U}_${m}_${e}_${b}.png time_${U}_${m}_${e}_${b}.txt histo_${U}_${m}_${e}_${b}.csv Out_${U}_${m}_${e}_${b}
