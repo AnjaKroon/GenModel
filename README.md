@@ -25,7 +25,9 @@ In run_one.sh, the following output files are made:
 * histo_U_m_(e*100)_b.csv
 * time_U_m_(e*100)_b.txt
 
-Run_few.sh and run_many.sh must still be updated. Ideally, each "run through" of the entire code will make its own folder with U, m, e, and b params in the title. Working on that capability next. 
+All .sh files move these four files into a folder called Out_U_m_e_b for easy tracking of files. 
+
+This repo has an example of this structure in a folder called "Ran_Few_Output_Files" which include the results after ran_few.sh was run. 
 
 ## Limitations
 Currently, this code has some limitations to robustness that I will describe here. 
