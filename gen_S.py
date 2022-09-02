@@ -35,6 +35,14 @@ def intoCSV(arr, U, m, e, b):
     df = df.iloc[1: , :]
     df.to_csv(f'histo_{U}_{m}_{e}_{b}.csv', index=False)
     return
+
+def genSstat(dictionary, U):
+    sum = 0
+    inv_U = 1/U
+    for i in range(U):
+        sum = sum+(abs(dictionary.get(i+1)-inv_U))
+    sum = sum/2
+    return sum
         
 if __name__ == '__main__':
     # FOR TESTING EITHER COMMENT THIS SECTION OUT OR THE NEXT TESTING SECTION
@@ -61,6 +69,8 @@ if __name__ == '__main__':
 
     p_emp_dependent = empirical_dist(U, m, incoming_arr_samples)
     intoCSV(p_emp_dependent, U, m, e, b) # Turning into .csv file
+    s_statistic = genSstat(p_emp_dependent, U)
+    print(s_statistic)
     
     #TODO: would also maybe be useful to plot your histogram to check
     #TODO: also need to remove dependencies to make the histogram independent? "sample the samples"? need to follow up on the procedure for that
