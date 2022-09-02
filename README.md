@@ -12,18 +12,26 @@ It takes in the following parameters:
 discrete.py outputs the input parameters, the program run time, and a discrete probability distribution in a corresponding png. 
 The objective of the shell scripts (any code ending in .sh) is to run discrete.py over many combinations of U, m and b. 
 
-gen_S.py takes as input the generated samples from discrete.py as a numpy file. It then creates a histogram with a dictionary datastructure representing each value in the probability space and the frequency in which it appears in the generated samples. The output of this code is a csv file in the format of [[ item in prob space, frequency in samples array], ... ]
+gen_S.py takes as input the generated samples from discrete.py as a numpy file. It then creates a histogram with a dictionary datastructure representing each value in the probability space and the frequency in which it appears in the generated samples. The histogram output of this code is a csv file in the format of [[ item in prob space, frequency in samples array], ... ]. 
 
 run_one.sh runs discrete.py with desired parameters
 run_few.sh runs discrete.py with 8 combinations of input parameters
 run_many.sh runs discrete.py with 90 combinations of input parameters
 
-In run_few.sh, I was able to successfully pipe all input paramters and run time into time.txt. I was also able to successfully make corresponding .png files called 'ModProbDist_U_m_e_b.png' in which the input parameters in the file name are replaced by the numeric values of its test case. 
+## Code Output
+In run_one.sh, the following output files are made:
+* Gen_Samples_U_m_(e*100)_b.npy
+* ModProbDist__U_m_(e*100)_b.png
+* histo_U_m_(e*100)_b.csv
+* time_U_m_(e*100)_b.txt
+
+Run_few.sh and run_many.sh must still be updated. Ideally, each "run through" of the entire code will make its own folder with U, m, e, and b params in the title. Working on that capability next. 
 
 ## Limitations
 Currently, this code has some limitations to robustness that I will describe here. 
 * As input, discrete.py can only work with a uniform probability distribution. 
 * A .png file is currently created representing the modified probability distribution. Creation of this png increases the processing time. If no such images are needed, it would be advantageous to remove this capability for running the program over large combinations of input parameters. 
+* More robust testing of code could be useful to address potential unseen edge cases
 
 ## Next Steps
 At this point, the problem statement has been defined and the foundational code base has been laid. The next step would be the first iteration of testing. I would like to run the discrete.py over the 90 combinations of the following parameters:
