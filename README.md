@@ -12,6 +12,8 @@ It takes in the following parameters:
 discrete.py outputs the input parameters, the program run time, and a discrete probability distribution in a corresponding png. 
 The objective of the shell scripts (any code ending in .sh) is to run discrete.py over many combinations of U, m and b. 
 
+gen_S.py takes as input the generated samples from discrete.py as a numpy file. It then creates a histogram with a dictionary datastructure representing each value in the probability space and the frequency in which it appears in the generated samples. The output of this code is a csv file in the format of [[ item in prob space, frequency in samples array], ... ]
+
 run_one.sh runs discrete.py with desired parameters
 run_few.sh runs discrete.py with 8 combinations of input parameters
 run_many.sh runs discrete.py with 90 combinations of input parameters
@@ -30,11 +32,9 @@ At this point, the problem statement has been defined and the foundational code 
 * b: in 30 50 100
 
 We are not varying e and will keep it at 0.1 at least for this first round of testing. \
-From these tests, I will note down the U, m, e, b, run time, and array of generated samples (with m samples in it).\
-I think we will be using the generated samples array for the next step of testing in the overall problem statement? Or is there a 'next part' I should be adding to this? @Flo? 
+From these tests, I will note down the U, m, e, b, run time, and array of generated samples (with m samples in it) as generated from discrete.py \
+Then, gen_S.py will run taking the generated samples and returning a histogram in the form of a dictionary with every element in the probability space and respresenting the frequency in which it appears in the generated samples.
 
-np.load('Gen_Samples_U_m_b')
-Note I had to get rid of e in the title because e is a decimal which causes issues in the np.load command
 
 ## What are the other files for?
 * Evaluation_ground_truth_FloRegol.pdf -- The origional description of the research problem. Describes how this code fits into a larger research problem. 
