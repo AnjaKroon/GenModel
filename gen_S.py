@@ -22,8 +22,9 @@ def empirical_dist(incoming_U, incoming_m, incoming_arr_samples):
         if not isinstance(histo.get(i), int): # basically, if it is not in the samples, you want to assign it to a value of zero with a key corresponding to i
             histo_with_zeros.update({i: 0})
         else: # else you would add the histo type and value to the dictionary
-            histo_with_zeros.update({i: histo.get(i)})
-    return histo_with_zeros
+            histo_with_zeros.update({i: histo.get(i)/incoming_m})
+    p_emp = histo_with_zeros
+    return p_emp
 
 def intoCSV(arr, U, m, e, b):
     two_dim_arr = np.array(list(arr.items()))
@@ -40,6 +41,7 @@ def genSstat(dictionary, U):
     sum = 0
     inv_U = 1/U
     for i in range(U):
+        # print(dictionary.get(i+1))
         sum = sum+(abs(dictionary.get(i+1)-inv_U))
     sum = sum/2
     return sum
