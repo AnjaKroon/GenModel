@@ -20,7 +20,7 @@ mv Gen_Samples.npy Gen_Samples_${U}_${m}_${e}_${b}.npy
 cat time_*.txt >> time.txt
 cat S_stat_*.txt >> S_stats.txt
 mkdir Out_${U}_${m}_${e}_${b}
-mv Gen_Samples_${U}_${m}_${e}_${b}.npy ModProbDist_${U}_${m}_${e}_${b}.png time_${U}_${m}_${e}_${b}.txt histo_${U}_${m}_${e}_${b}.csv Out_${U}_${m}_${e}_${b}/
+mv Gen_Samples_${U}_${m}_${e}_${b}.npy ModProbDist_${U}_${m}_${e}_${b}.png time_${U}_${m}_${e}_${b}.txt histo_${U}_${m}_${e}_${b}.csv S_stat_${U}_${m}_${e}_${b}.txt Out_${U}_${m}_${e}_${b}/
 
 done # for b
 done # for m

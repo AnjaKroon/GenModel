@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
     updated_prob_arr = errFunct(U, uni_prob_arr, e, b)
     plot_title = "Modified Probability Plotting:  U = " + str(U) + " m = " + str(m) + " e = " + str(e) +  " b = " + str(b)
-    plotProbDist(U, updated_prob_arr, 'elements in prob space', 'probability of occuring', plot_title)
+    # plotProbDist(U, updated_prob_arr, 'elements in prob space', 'probability of occuring', plot_title)
 
     val_arr = genValArr(U)
 

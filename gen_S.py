@@ -72,7 +72,7 @@ if __name__ == '__main__':
     p_emp_dependent = empirical_dist(U, m, incoming_arr_samples)
     intoCSV(p_emp_dependent, U, m, e, b) # Turning into .csv file
     s_statistic = genSstat(p_emp_dependent, U)
-    print(s_statistic)
+    print(U, " ",  m, " ", e," ", b ," ", s_statistic)
     
     #TODO: would also maybe be useful to plot your histogram to check
     #TODO: also need to remove dependencies to make the histogram independent? "sample the samples"? need to follow up on the procedure for that
