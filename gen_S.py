@@ -16,6 +16,7 @@ def empirical_dist(incoming_U, incoming_m, incoming_arr_samples):
         val = histo.get(incoming_arr_samples[i])
         histo.update({incoming_arr_samples[i]:(val+1)})
     # Adding the zeros into the histogram
+    # FLO: this is not necessary, the best is to have the non existing entries as begin 0 by default (to save memory)
     histo_with_zeros = {}
     for i in range(incoming_U):
         i = i+1 # offset by 1 because histo starts at 1 not 0
@@ -41,8 +42,10 @@ def genSstat(dictionary, U):
     sum = 0
     inv_U = 1/U
     for i in range(U):
-        # print(dictionary.get(i+1))
-        sum = sum+(abs(dictionary.get(i+1)-inv_U))
+        if i+1 in dictionary:
+            sum = sum+(abs(dictionary.get(i+1)-inv_U))
+        else:
+            sum = sum+inv_U
     sum = sum/2
     return sum
         
