@@ -86,7 +86,7 @@ def sampleSpecificProbDist(value, probability, m):
     return new_samples
 
 if __name__ == '__main__':
-    start = time()
+    # start = time()
     # This makes it so you can input U m e and b parameters when you run it in terminal. 
     # This will make it easier to compare 'trials'. Will need to make a shell script
     
@@ -122,8 +122,8 @@ if __name__ == '__main__':
     new_samples = sampleSpecificProbDist(val_arr, updated_prob_arr, m)
     np.save("Gen_Samples", new_samples)
 
-    end = time()
-    run_time = end-start
+    # end = time()
+    # run_time = end-start
     print(U, " ",  m, " ", e," ", b ," ", round(run_time, 5)) # this printing goes into the txt file
 
 #TODO: Double check what convention is on the naming of python functions
