@@ -1,5 +1,5 @@
 {
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
-    "python.pythonPath": "/Users/anja/Documents/Flo_Research/venv/bin/python"
+    "python.defaultInterpreterPath": "/Users/anja/Documents/Flo_Research/venv/bin/python"
 }
