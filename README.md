@@ -12,11 +12,15 @@ It takes in the following parameters:
 discrete.py outputs the input parameters, the program run time, and a discrete probability distribution in a corresponding png. 
 The objective of the shell scripts (any code ending in .sh) is to run discrete.py over many combinations of U, m and b. 
 
-gen_S.py takes as input the generated samples from discrete.py as a numpy file. It then creates a histogram with a dictionary datastructure representing each value in the probability space and the frequency in which it appears in the generated samples. The histogram output of this code is a csv file in the format of [[ item in prob space, frequency in samples array], ... ]. 
+gen_S.py takes as input the generated samples from discrete.py as a numpy file. It then calculates the corresponding s-statisitc and creates a histogram with a dictionary datastructure representing each value in the probability space and the frequency in which it appears in the generated samples. The histogram output of this code is a csv file in the format of [[ item in prob space, frequency in samples array], ... ]. The s-statisitc is fed into a .txt file with the input parameters and is recorded for comparison later.
+
+flo_poisson.py removes the dependency between generated samples via poissonization and returns
+the s-statistic when all samples are independent. The inputs are U, m, ε, and b as described above. The output
+is the s-statistic when 'poissonization' has occured.
 
 run_one.sh runs discrete.py with desired parameters
-run_few.sh runs discrete.py with 8 combinations of input parameters
-run_many.sh runs discrete.py with 90 combinations of input parameters
+run_few.sh runs discrete.py with a small number (~10) combinations of input parameters
+run_many.sh runs discrete.py with a large number (~100) combinations of input parameters
 
 ## Code Output
 In run_one.sh, the following output files are made:
@@ -36,18 +40,10 @@ This repo has an example of this structure in a folder called "Ran_Few_Output_Fi
 ## Limitations
 Currently, this code has some limitations to robustness that I will describe here. 
 * As input, discrete.py can only work with a uniform probability distribution. 
-* A .png file is currently created representing the modified probability distribution. Creation of this png increases the processing time. If no such images are needed, it would be advantageous to remove this capability for running the program over large combinations of input parameters. 
 * More robust testing of code could be useful to address potential unseen edge cases
 
 ## Next Steps
-At this point, the problem statement has been defined and the foundational code base has been laid. The next step would be the first iteration of testing. I would like to run the discrete.py over the 90 combinations of the following parameters:
-* U: 100 1000 10000 100000 1000000
-* m: 10 100 1000 10000 1000000 10000000
-* b: in 30 50 100
-
-We are not varying e and will keep it at 0.1 at least for this first round of testing. \
-From these tests, I will note down the U, m, e, b, run time, and array of generated samples (with m samples in it) as generated from discrete.py \
-Then, gen_S.py will run taking the generated samples and returning a histogram in the form of a dictionary with every element in the probability space and respresenting the frequency in which it appears in the generated samples.
+At this point, the problem statement has been defined and the foundational code base has been laid. The next step would be the first iteration of testing, calculating the s-statistic over numerous input parameters to see trends in the behavior.
 
 
 ## What are the other files for?
