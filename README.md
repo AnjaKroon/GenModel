@@ -27,13 +27,11 @@ In run_one.sh, the following output files are made:
 * Gen_Samples_U_m_(e*100)_b.npy
 * ModProbDist__U_m_(e*100)_b.png
 * histo_U_m_(e*100)_b.csv
-* time_U_m_(e*100)_b.txt
 
 All .sh files move these four files into a folder called Out_U_m_e_b for easy tracking of files. 
 
 In run_few and run_many, two summary files are made:
-* time.txt describes the test run with parameters U, m, e, and b and the run time
-# S_stats.txt descirbes the test run with the parameters U, m, e and b and the s statistic computed with the empirical probability
+S_stats.txt describes the test run with the parameters U, m, e and b and the s statistic computed with the empirical probability.
 
 This repo has an example of this structure in a folder called "Ran_Few_Output_Files" which include the results after run_few.sh was run. 
 
