@@ -48,8 +48,8 @@ def poisson_empirical_dist(U, m, incoming_arr_samples, sample_func_for_additiona
 
 if __name__ == '__main__':
 
-    U = 10
-    m = 1000
+    U = 1000
+    m = 10
     e = 0.1  # recall this value has been multiplied by 100 in sh script
     b = 100
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
     
     p_emp_dependent = poisson_empirical_dist(
-        U, m, new_samples, lambda m: sampleSpecificProbDist(genValArr(U), uni_prob_arr, m))
+    U, m, new_samples, lambda m: sampleSpecificProbDist(genValArr(U), uni_prob_arr, m))
     s_statistic = genSstat(p_emp_dependent, U)
     print("S of uniform with poisson", s_statistic)
 
@@ -70,5 +70,7 @@ if __name__ == '__main__':
     p_emp_dependent = empirical_dist(U, m, new_samples)
     s_statistic = genSstat(p_emp_dependent, U)
     print("S of tempered", s_statistic)
+
+    # U m e b "S of uniform": NUMBER "S of uniform with poisson":NUMBER "S of tempered":NUMBER
 
     

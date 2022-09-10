@@ -1,16 +1,17 @@
 # The objective of this code is to create samples from a slightly skewed uniform probability distribution for discrete events. 
 
 from random import uniform
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import rv_discrete
-import sys
+
 from time import time
 
 # Given: U, probability space
 # Returns: np array with a uniform distribution of probability space |U|
 def makeUniformDie(U): 
-    sides_of_die = [None]*U # I think this part may take a lot of time, perhaps think of a faster way
+    sides_of_die = [None]*U #I think this part may take a lot of time, perhaps think of a faster way
     for i in range(U):
         sides_of_die[i] = i+1 
     return sides_of_die
@@ -86,44 +87,55 @@ def sampleSpecificProbDist(value, probability, m):
     return new_samples
 
 if __name__ == '__main__':
-    # start = time()
     # This makes it so you can input U m e and b parameters when you run it in terminal. 
     # This will make it easier to compare 'trials'. Will need to make a shell script
     
-    if len(sys.argv) != 5 :
-        print("Usage:", sys.argv[0], "U m e b")
-        sys.exit()
-    path1 = sys.argv[1]
-    path2 = sys.argv[2]
-    path3 = sys.argv[3]
-    path4 = sys.argv[4]
-    U = int(path1)
-    m = int(path2)
-    e = float(path3)/100 # recall this value has been multiplied by 100 in sh script
-    b = int(path4)
+    testCase = 1
+    if testCase == 1:
+        if len(sys.argv) != 5 :
+            print("Usage:", sys.argv[0], "U m e b")
+            sys.exit()
+        
+        U = int(sys.argv[1])
+        m = int(sys.argv[2])
+        e = float(sys.argv[3])/100 # recall this value has been multiplied by 100 in sh script
+        b = int(sys.argv[4])
 
-    # FOR TESTING
-    #U = int(1000) # defining |U|, the probability space
-    #m = 300 # how many times uni_dist is sampled -- nice to see it go from 10k, 100k to 1M, illustrates the effectiveness working
-    #e = 0.1 # the total amount of error that is introduced in the probability distribution array
-    #b = 60 # how much of the array you would like to 'impact' or 'skew' with the error
+        if (U or m) <= 1: 
+            print("U or m need to be larger than 1.")
+            sys.exit()
+        
+        if (U<=m):
+            print("U must be greater than m.")
+            sys.exit()
+        
+        if (e or b) < 0: # 
+            print("e or b cannot be negative.")
+            sys.exit()
+        
+        if (b>100):
+            print("b must be a number in the range 0 to 100.")
+            sys.exist()
+        
 
+    if testCase == 2:
+        U = int(100) # defining |U|, the probability space
+        m = 10 # how many times uni_dist is sampled -- nice to see it go from 10k, 100k to 1M, illustrates the effectiveness working
+        e = 0.1 # the total amount of error that is introduced in the probability distribution array
+        b = 75 # how much of the array you would like to 'impact' or 'skew' with the error
+    
     uni_dist = makeUniformDie(U)
 
     uni_prob_arr = makeUniProbArr(U)
-    # plotProbDist(U, uni_prob_arr, 'elements in prob space', 'probability of occuring', 'Uniform Probability Dist') # confirmed that this works
+    #plotProbDist(U, uni_prob_arr, 'elements in prob space', 'probability of occuring', 'Uniform Probability Dist') # confirmed that this works
 
     updated_prob_arr = errFunct(U, uni_prob_arr, e, b)
     plot_title = "Modified Probability Plotting:  U = " + str(U) + " m = " + str(m) + " e = " + str(e) +  " b = " + str(b)
-    # plotProbDist(U, updated_prob_arr, 'elements in prob space', 'probability of occuring', plot_title)
+    #plotProbDist(U, updated_prob_arr, 'elements in prob space', 'probability of occuring', plot_title) #adds time so removed when running lots
 
     val_arr = genValArr(U)
 
     new_samples = sampleSpecificProbDist(val_arr, updated_prob_arr, m)
     np.save("Gen_Samples", new_samples)
 
-    # end = time()
-    # run_time = end-start
-    print(U, " ",  m, " ", e," ", b ," ", round(run_time, 5)) # this printing goes into the txt file
-
-#TODO: Double check what convention is on the naming of python functions
+# TODO: Double check what convention is on the naming of python functions
