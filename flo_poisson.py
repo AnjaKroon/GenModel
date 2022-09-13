@@ -3,6 +3,7 @@ from gen_S import empirical_dist, genSstat
 from plot_utils import plot_S_stat
 import numpy as np
 import random
+import sys
 
 
 def sampling_down_m(max_m, sampled_m, count_of_max_m):
@@ -49,23 +50,36 @@ def poisson_empirical_dist(U, m, incoming_arr_samples, sample_func_for_additiona
 
 
 if __name__ == '__main__':
+    testCase = 2 # should be 1 or 2 depending on whether you want to run the program standalone or with a .sh script
+    if testCase ==1:
+        if len(sys.argv) != 6 :
+            print("Usage:", sys.argv[0], "U m e b t")
+            sys.exit() 
+        #U = int(sys.argv[1])
+        m = int(sys.argv[2])
+        e = float(sys.argv[3])/100 # recall this value has been multiplied by 100 in sh script
+        b = int(sys.argv[4])
+        t = int(sys.argv[5])
+        trials = t
+    
+    if testCase == 2:
+        #U = 100
+        m = 1000
+        e = 0.1  # recall this value has been multiplied by 100 in sh script
+        b = 50
+        trials = 50
 
-    #U = 100
-    m = 1000
-    e = 0.1  # recall this value has been multiplied by 100 in sh script
-    b = 100
-    trials = 50
     S_uni = []
     S_uni_poisson = []
     S_tempered = []
     S_tempered_poisson = []
-    list_U = [int((i+3)*10) for i in range(10)]
+    list_U = [int((i+3)*10) for i in range(10)] # 30, 40, 50, 60, 70, 80, 90, 100, 110, 120
     for U in list_U:
         uni_prob_arr = makeUniProbArr(U)
         # uniform
         S_uni_trials = []
         S_uni_poisson_trials = []
-        for _ in range(trials):
+        for _ in range(trials): 
             new_samples = sampleSpecificProbDist(genValArr(U), uni_prob_arr, m)
 
             p_emp_dependent = empirical_dist(

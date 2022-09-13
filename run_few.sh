@@ -1,5 +1,4 @@
 e=10
-b=100
 
 for U in 100 1000 # iterates over the two listed values for U
 do
