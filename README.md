@@ -15,8 +15,7 @@ The objective of the shell scripts (any code ending in .sh) is to run discrete.p
 gen_S.py takes as input the generated samples from discrete.py as a numpy file. It then calculates the corresponding s-statisitc and creates a histogram with a dictionary datastructure representing each value in the probability space and the frequency in which it appears in the generated samples. The histogram output of this code is a csv file in the format of [[ item in prob space, frequency in samples array], ... ]. The s-statisitc is fed into a .txt file with the input parameters and is recorded for comparison later.
 
 flo_poisson.py removes the dependency between generated samples via poissonization and returns
-the s-statistic when all samples are independent. The inputs are U, m, ε, and b as described above. The output
-is the s-statistic when 'poissonization' has occured.
+the s-statistic when all samples are independent. The inputs are U, m, ε, and b as described above. The output was previously just the s-statistic when 'poissonization' has occured. Recent changes have taken place to now output graphs running the experiment for multiple trials and plotting the resultant s statistic against the probability space |U|. 
 
 run_one.sh runs discrete.py with desired parameters
 run_few.sh runs discrete.py with a small number (~10) combinations of input parameters
