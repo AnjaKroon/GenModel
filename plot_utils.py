@@ -7,10 +7,7 @@ import matplotlib.colors as mcolors
 import math
 import random
 from scipy.stats import bootstrap
-
-matplotlib.rcParams.update(matplotlib.rcParamsDefault)
-
-matplotlib.rcParams['text.usetex'] = False
+matplotlib.rcParams['text.usetex'] = True
 font = {'family' : 'normal',
         'weight' : 'bold',
         'size'   : 17}
@@ -44,5 +41,5 @@ def plot_S_stat(x, dict_y, title):
     plt.legend()
     plt.xlabel('$|U|$')
     plt.ylabel('$S$')
-    plt.tight_layout() 
+    plt.tight_layout()
     plt.savefig(title)
