@@ -29,8 +29,8 @@ def get_S(trials, U, m, tempered, with_poisson=True):
 
 if __name__ == '__main__':
     # Set the random seed
-    np.random.seed(32)
-    random.seed(321)
+    np.random.seed(2)
+    random.seed(32)
 
     testCase = 2  # should be 1 or 2 depending on whether you want to run the program standalone or with a .sh script
     if testCase == 1:
@@ -46,10 +46,10 @@ if __name__ == '__main__':
         trials = t
 
     if testCase == 2:
-        #U = 100
-        m = 1000
-        e = 0.1  # recall this value has been multiplied by 100 in sh script
-        b = 50
+        list_U = [10000]
+        m = 30000
+        e = 0.1  
+        b = 100
         trials = 50
 
     S_uni = []
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     S_tempered_poisson = []
     rank = []
     rank_poisson = []
-    list_U = [10, 50, 100, 150, 200, 250, 300]
+    # list_U = [2000]
     for U in list_U:
 
         # uniform
@@ -76,6 +76,12 @@ if __name__ == '__main__':
         fraction_poisson_rank = np.mean(
             [S_uni_poisson_U[i] < S_tempered_poisson_U[i] for i in range(trials)])
 
+        if (fraction_poisson_rank<=0.5): # how many times is the uniform better than the tempered
+            # 50 is saying we are not sure which one is better
+            print(fraction_poisson_rank)
+            print("For U:"+str(U)+" m:"+str(m)+" e:"+str(e)+" b:"+str(b)+" t:"+str(trials)+ " fraction_poisson_rank did not meet the threshold of 0.5.")
+        else:
+            print("For U:"+str(U)+" m:"+str(m)+" e:"+str(e)+" b:"+str(b)+" t:"+str(trials)+"fraction_poisson_rank: "+ str(fraction_poisson_rank))
         # uniform
         S_uni.append(S_uni_U)
         S_uni_poisson.append(S_uni_poisson_U)
@@ -93,6 +99,7 @@ if __name__ == '__main__':
         'g.t. vs tempered with poisson': rank_poisson}
     plot_S_stat(x=list_U, dict_y=lines_S, title='m_' +
                 str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_S.pdf', xlabel='|U|', ylabel='S')
+   
     plot_S_stat(x=list_U, dict_y=lines_rank, title='m_' +
                 str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_ranking.pdf', xlabel='|U|', ylabel='\% of accurate ranking')
     # U m e b "S of uniform": NUMBER "S of uniform with poisson":NUMBER "S of tempered":NUMBER
