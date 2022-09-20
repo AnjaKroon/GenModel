@@ -60,7 +60,9 @@ if __name__ == '__main__':
     rank_poisson = []
     # list_U = [2000]
     for U in list_U:
-
+        # copy two times
+        # primarily looking at rank
+        # rank_uniform_bin vs rank_tempered_bin
         # uniform
         S_uni_U = get_S(trials, U, m, tempered=False, with_poisson=False)
         S_uni_poisson_U = get_S(
