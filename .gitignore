@@ -5,3 +5,6 @@ Archive
 Out*
 .vscode
 /Run_few_Sept9_Output_Files
+/ExamplePDFs_SStat_Rank
+*.pdf
+*.DS_Store
