@@ -58,7 +58,7 @@ if __name__ == '__main__':
     S_tempered_poisson = []
     rank = []
     rank_poisson = []
-    list_U = [10, 50, 100, 150, 200, 250, 300]
+    list_U = [100, 1000, 10000, 100000]
     for U in list_U:
 
         # uniform
@@ -84,15 +84,22 @@ if __name__ == '__main__':
         S_tempered_poisson.append(S_tempered_poisson_U)
         rank.append(fraction_rank)
         rank_poisson.append(fraction_poisson_rank)
+    # lines_S = {'g.t.': S_uni,
+    #            'g.t. with poisson.': S_uni_poisson,
+    #            'e=0.1': S_tempered,
+    #            'e=0.1 with poisson.': S_tempered_poisson}
     lines_S = {'g.t.': S_uni,
-               'g.t. with poisson.': S_uni_poisson,
-               'e=0.1': S_tempered,
-               'e=0.1 with poisson.': S_tempered_poisson}
+               'e=0.1': S_tempered}
+    lines_S_poisson = {
+        'g.t. with poisson.': S_uni_poisson,
+        'e=0.1 with poisson.': S_tempered_poisson}
     lines_rank = {
         'g.t. vs tempered': rank,
         'g.t. vs tempered with poisson': rank_poisson}
+    plot_S_stat(x=list_U, dict_y=lines_S_poisson, title='m_' +
+                str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_Spoisson.pdf', xlabel='|U|', ylabel='S')
     plot_S_stat(x=list_U, dict_y=lines_S, title='m_' +
-                str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_S.pdf', xlabel='|U|', ylabel='S')
+                str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_Sdep.pdf', xlabel='|U|', ylabel='S')
     plot_S_stat(x=list_U, dict_y=lines_rank, title='m_' +
                 str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_ranking.pdf', xlabel='|U|', ylabel='\% of accurate ranking')
     # U m e b "S of uniform": NUMBER "S of uniform with poisson":NUMBER "S of tempered":NUMBER
