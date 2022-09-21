@@ -8,6 +8,22 @@ from scipy.stats import rv_discrete
 
 from time import time
 
+# transform a prob array into a dictionnary
+def prob_array_to_dict(prob_array):
+    prob_hist = {}
+    U = len(prob_array)
+    for i in range(U):
+        prob_hist[i+1] = prob_array[i]
+    return prob_hist
+# transform a prob dictionnary into an array
+def prob_dict_to_array(prob_hist):
+    prob_array = []
+    all_keys = list(prob_hist.keys())
+    all_keys.sort()
+    for key in all_keys:
+        prob_array.append(prob_hist[key])
+    return prob_array
+
 # Given: U, probability space
 # Returns: np array with a uniform distribution of probability space |U|
 def makeUniformDie(U): 
