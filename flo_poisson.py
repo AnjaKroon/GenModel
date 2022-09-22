@@ -36,7 +36,7 @@ def get_S(trials, U, m, tempered, with_poisson=True, binned=False, B=2):
 if __name__ == '__main__':
     # Set the random seed
     np.random.seed(2)
-    random.seed(32)
+    random.seed(31)
 
     testCase = 2  # should be 1 or 2 depending on whether you want to run the program standalone or with a .sh script
     if testCase == 1:
