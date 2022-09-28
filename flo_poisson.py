@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     if testCase == 2:
         # list_U = [10000]
-        m = 2000
+        # m = 2000
         e = 0.1
         b = 100
         trials = 50
@@ -72,10 +72,11 @@ if __name__ == '__main__':
     rank_poisson = []
     rank_binned = []
     rank_poisson_binned = []
-    list_U = [100, 1000, 2000, 2500]
-    list_M = [100, 200]
+    list_U = [100, 1000, 2000]
+    list_M = [100, 500]
     # for m in list_M: 
     for m in list_M:
+        print("for this round m is ", m)
         for U in list_U:
 
             S_binned_uni_U = get_S(trials, U, m, tempered=False,

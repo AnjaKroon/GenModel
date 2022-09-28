@@ -32,9 +32,9 @@ def get_ci(trials):
 def plot_S_stat(x, dict_y, title, xlabel, ylabel):
     # my hunch is to wrap this in another for loop -- need to make sure it still runs without it
     # if there is only one m you want to work with, you need to provide a dictionary with that singe m in it -- constraint
-    print("x", x)
-    print("dict_y", dict_y)
-    put_on_plot(x, dict_y)
+    # print("x", x)
+    # print("dict_y", dict_y)
+    # put_on_plot(x, dict_y)
 
     SMALL_SIZE = 5
     matplotlib.rcParams.update({'font.size': 5})
@@ -63,6 +63,7 @@ def plot_S_stat(x, dict_y, title, xlabel, ylabel):
 def put_on_plot(x, dict_y): 
     for i, (key, val) in enumerate(dict_y.items()):
         color = get_color(i)
+
         if type(val[0]) is list:
             all_trials = val
             y = [np.mean(trials) for trials in all_trials]
