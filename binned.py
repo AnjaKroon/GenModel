@@ -60,11 +60,8 @@ if __name__ == '__main__':
     sample_b = {1: 0.33, 2: 0.33, 3:0.33}
     p_samples = [1,2,3,3,4,5,6,7,8,9,10,1,2,4,5,6,7,8,9,10]
     
-    
     U = 10
     B = 3
-
-
 
     b_p = p_to_bp(sample_histo, U, B) # works
     print(b_p)
