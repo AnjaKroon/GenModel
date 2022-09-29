@@ -3,25 +3,29 @@ import numpy as np
 import matplotlib
 import matplotlib.colors as mcolors
 from scipy.stats import bootstrap
+import random as rd
 # sketchy way of figuring out if latex is installed, might fail.
 # If it does, comment out
 from distutils.spawn import find_executable
+from itertools import cycle
 if find_executable('latex'):
     matplotlib.rcParams['text.usetex'] = True
 
 font = {'family': 'normal',
         'weight': 'bold',
-        'size': 17}
+        'size': 10}
+
 
 matplotlib.rc('font', **font)
 cycle = list(mcolors.TABLEAU_COLORS.values())
+# cycle = list(mcolors.CSS4_COLORS.values())
 
 
 def get_color(i):
     if i >= len(cycle):
         return cycle[i % len(cycle)]
     else:
-        return cycle[i]
+        return cycle[rd.randint(0,9)]
 
 
 def get_ci(trials):
@@ -63,7 +67,6 @@ def plot_S_stat(x, dict_y, title, xlabel, ylabel):
 def put_on_plot(x, dict_y): 
     for i, (key, val) in enumerate(dict_y.items()):
         color = get_color(i)
-
         if type(val[0]) is list:
             all_trials = val
             y = [np.mean(trials) for trials in all_trials]

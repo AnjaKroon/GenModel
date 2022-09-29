@@ -72,8 +72,8 @@ if __name__ == '__main__':
     rank_poisson = []
     rank_binned = []
     rank_poisson_binned = []
-    list_U = [100, 1000, 2000]
-    list_M = [100, 500]
+    list_U = [100, 250, 500, 750, 1000]
+    list_M = [500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
     # for m in list_M: 
     for m in list_M:
         print("for this round m is ", m)
@@ -148,9 +148,8 @@ if __name__ == '__main__':
             lines_S_poisson = {
                 'g.t. with poisson.': S_uni_poisson,
                 'e=0.1 with poisson.': S_tempered_poisson}
-            lines_rank = {
-                'GT v. Tem m = '+str(m): rank,
-                'GT v. Tem Poi. m = ' +str(m): rank_poisson}
+            # lines_rank = {'GT v. Tem m = '+str(m): rank,'GT v. Tem Poi. m = ' +str(m): rank_poisson}
+            lines_rank = {'GT v. Tem m = '+str(m): rank}
             lines_S_binned = {'g.t.': S_uni_binned,
                             'e=0.1': S_tempered_binned}
             lines_S_poisson_binned = {
