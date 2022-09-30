@@ -50,6 +50,7 @@ if __name__ == '__main__':
         b = int(sys.argv[3])
         t = int(sys.argv[4])
         trials = t
+        # add bins var
 
     if testCase == 2:
         # list_U = [10000]
@@ -57,6 +58,7 @@ if __name__ == '__main__':
         e = 0.1
         b = 100
         trials = 50
+        bins = 3
 
     S_uni = []
     S_uni_poisson = []
@@ -72,40 +74,41 @@ if __name__ == '__main__':
     rank_poisson = []
     rank_binned = []
     rank_poisson_binned = []
-    list_U = [100, 250, 500, 750, 1000]
-    list_M = [500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+    list_U = [100, 10000000000] #1e10
+    list_M = [100]
     # for m in list_M: 
     for m in list_M:
         print("for this round m is ", m)
         for U in list_U:
 
+            # BINNED CASE
             S_binned_uni_U = get_S(trials, U, m, tempered=False,
-                                with_poisson=False, binned=True, B=int(U/2))
+                                with_poisson=False, binned=True, B=int(U/bins))
             S_binned_uni_poisson_U = get_S(
-                trials, U, m, tempered=False, with_poisson=True, binned=True, B=int(U/2))
+                trials, U, m, tempered=False, with_poisson=True, binned=True, B=int(U/bins))
             # tempered
             S_binned_tempered_U = get_S(
-                trials, U, m, tempered=True, with_poisson=False, binned=True, B=int(U/2))
+                trials, U, m, tempered=True, with_poisson=False, binned=True, B=int(U/bins))
             S_binned_tempered_poisson_U = get_S(
-                trials, U, m, tempered=True, with_poisson=True, binned=True, B=int(U/2))
+                trials, U, m, tempered=True, with_poisson=True, binned=True, B=int(U/bins))
 
             # rank_uniform_bin vs rank_tempered_bin
             # uniform
-            S_uni_U = get_S(trials, U, m, tempered=False, with_poisson=False)
-            S_uni_poisson_U = get_S(
-                trials, U, m, tempered=False, with_poisson=True)
+            # S_uni_U = get_S(trials, U, m, tempered=False, with_poisson=False)
+            # S_uni_poisson_U = get_S(
+            #     trials, U, m, tempered=False, with_poisson=True)
             # tempered
-            S_tempered_U = get_S(trials, U, m, tempered=True, with_poisson=False)
-            S_tempered_poisson_U = get_S(
-                trials, U, m, tempered=True, with_poisson=True)
+            # S_tempered_U = get_S(trials, U, m, tempered=True, with_poisson=False)
+            # S_tempered_poisson_U = get_S(
+            #     trials, U, m, tempered=True, with_poisson=True)
 
             # count the number of time s of ground truth is smaller than tempered version
-            fraction_rank = np.mean([S_uni_U[i] < S_tempered_U[i]
-                                    for i in range(trials)])
-            fraction_poisson_rank = np.mean(
-                [S_uni_poisson_U[i] < S_tempered_poisson_U[i] for i in range(trials)])
+            # fraction_rank = np.mean([S_uni_U[i] < S_tempered_U[i]
+            #                         for i in range(trials)])
+            # fraction_poisson_rank = np.mean(
+            #     [S_uni_poisson_U[i] < S_tempered_poisson_U[i] for i in range(trials)])
 
-            # count the number of time s of ground truth is smaller than tempered version
+            # BINNED
             fraction_binned_rank = np.mean([S_binned_uni_U[i] < S_binned_tempered_U[i]
                                             for i in range(trials)])
             fraction_poisson_binned_rank = np.mean(
@@ -124,11 +127,12 @@ if __name__ == '__main__':
             '''
             
             # uniform
-            S_uni.append(S_uni_U)
-            S_uni_poisson.append(S_uni_poisson_U)
+            # S_uni.append(S_uni_U)
+            # S_uni_poisson.append(S_uni_poisson_U)
+
             # tempered
-            S_tempered.append(S_tempered_U)
-            S_tempered_poisson.append(S_tempered_poisson_U)
+            # S_tempered.append(S_tempered_U)
+            # S_tempered_poisson.append(S_tempered_poisson_U)
 
             # uniform BINNED
             S_uni_binned.append(S_binned_uni_U)
@@ -138,29 +142,29 @@ if __name__ == '__main__':
             S_tempered_binned.append(S_binned_tempered_U)
             S_tempered_poisson_binned.append(S_binned_tempered_poisson_U)
 
-            rank.append(fraction_rank)
-            rank_poisson.append(fraction_poisson_rank)
+            # rank.append(fraction_rank)
+            # rank_poisson.append(fraction_poisson_rank)
             rank_binned.append(fraction_binned_rank)
             rank_poisson_binned.append(fraction_poisson_binned_rank)
 
-            lines_S = {'g.t.': S_uni,
-                    'e=0.1': S_tempered}
-            lines_S_poisson = {
-                'g.t. with poisson.': S_uni_poisson,
-                'e=0.1 with poisson.': S_tempered_poisson}
+            # lines_S = {'g.t.': S_uni,
+                    # 'e=0.1': S_tempered}
+            # lines_S_poisson = {
+                # 'g.t. with poisson.': S_uni_poisson,
+                # 'e=0.1 with poisson.': S_tempered_poisson}
             # lines_rank = {'GT v. Tem m = '+str(m): rank,'GT v. Tem Poi. m = ' +str(m): rank_poisson}
-            lines_rank = {'GT v. Tem m = '+str(m): rank}
-            lines_S_binned = {'g.t.': S_uni_binned,
-                            'e=0.1': S_tempered_binned}
-            lines_S_poisson_binned = {
-                'g.t. with poisson.': S_uni_poisson_binned,
-                'e=0.1 with poisson.': S_tempered_poisson_binned}
+            # lines_rank = {'GT v. Tem m = '+str(m): rank}
+            # lines_S_binned = {'g.t.': S_uni_binned,
+            #                 'e=0.1': S_tempered_binned}
+            # lines_S_poisson_binned = {
+            #     'g.t. with poisson.': S_uni_poisson_binned,
+                # 'e=0.1 with poisson.': S_tempered_poisson_binned}
             lines_rank_binned = {
-                'g.t. vs tempered': rank_binned,
-                'g.t. vs tempered with poisson': rank_poisson_binned}
-        put_on_plot(x=list_U, dict_y=lines_rank)
-        rank = [] # clearing the array
-        rank_poisson = [] # clearing the array
+                'GT v. Tem m = '+str(m): rank_binned,
+                'GT v. Tem Poi. m = ' +str(m): rank_poisson_binned}
+        put_on_plot(x=list_U, dict_y=lines_rank_binned)
+        rank_binned = [] # clearing the array
+        rank_poisson_binned = [] # clearing the array
         '''
         plot_S_stat(x=list_U, dict_y=lines_S_poisson, title='m_' +
                     str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_Spoisson.pdf', xlabel='|U|', ylabel='S')
@@ -175,12 +179,10 @@ if __name__ == '__main__':
                     str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_Spoisson.pdf', xlabel='|U|', ylabel='S')
         plot_S_stat(x=list_U, dict_y=lines_S_binned, title='binned_m_' +
                     str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_S.pdf', xlabel='|U|', ylabel='S')
+'''
+    # Ranking BINNED
+    plot_S_stat(x=list_U, dict_y=lines_rank_binned, title='BINS_'+str(bins)+'_Multiple_U_Multiple_M_e_'+str(e)+'_b_'+ str(b)+'_t_'+str(trials)+'_ranking.pdf', xlabel='|U|', ylabel='\% of accurate ranking')
 
-        # Ranking BINNED
-        plot_S_stat(x=list_U, dict_y=lines_rank_binned, title='binned_m_' +
-                    str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_ranking.pdf', xlabel='|U|', ylabel='\% of accurate ranking')
-        '''
-        
-    plot_S_stat(x=list_U, dict_y=lines_rank, title='Multiple_U_Multiple_M_e_'+str(e)+'_b_'+ str(b)+'_t_'+str(trials)+'_ranking.pdf', xlabel='|U|', ylabel='\% of accurate ranking')
+    # plot_S_stat(x=list_U, dict_y=lines_rank, title='UNBINNED_Multiple_U_Multiple_M_e_'+str(e)+'_b_'+ str(b)+'_t_'+str(trials)+'_ranking.pdf', xlabel='|U|', ylabel='\% of accurate ranking')
         # I think this will still overwrite as plot is being called. I think it does need to happen in plot_utils.py
     # U m e b "S of uniform": NUMBER "S of uniform with poisson":NUMBER "S of tempered":NUMBER
