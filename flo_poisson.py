@@ -9,7 +9,6 @@ import random
 
 
 def get_S(trials, U, m, tempered, with_poisson=True, binned=False, B=2):
-
     uni_prob_arr = makeUniProbArr(U)
     prob_array = uni_prob_arr
     if tempered:
@@ -17,6 +16,7 @@ def get_S(trials, U, m, tempered, with_poisson=True, binned=False, B=2):
     S_trials = []
     if binned:
         prob_hist = prob_array_to_dict(prob_array)
+        # I could make p to bp work on arrays rather than dictionaries?
         prob_hist = p_to_bp(prob_hist, U, B)
         prob_array = prob_dict_to_array(prob_hist)
         U = B
@@ -30,6 +30,8 @@ def get_S(trials, U, m, tempered, with_poisson=True, binned=False, B=2):
         else:
             p_emp = empirical_dist(
                 U, m, sampleSpecificProbDist(genValArr(U), prob_array, m))
+                # could we not replace the sampleSpecificProbDist(genValArr(U), prob_array, m) with new_samples
+                # so that we don't have to call again?
         s_statistic = genSstat(p_emp, U)
         S_trials.append(s_statistic)
     return S_trials
