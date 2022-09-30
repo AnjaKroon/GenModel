@@ -45,7 +45,7 @@ def test_to_reject_chi_square(uni_prob_array, p_emp_array):
     b =  np.sum(p_emp_array)
     chi_square_out = scipy.stats.chisquare(uni_prob_array, p_emp_array)
     p_value = chi_square_out[1]
-    if p_value < 0.95:
+    if p_value < 0.99:
         reject = True
     else:
         reject = False
