@@ -47,4 +47,9 @@ def poisson_empirical_dist(U, m, incoming_arr_samples, sample_func_for_additiona
         count_of_sampled_m = _sampling_down_m(max_m, sampled_m, count_of_max_m)
 
         pois_empirical_pmf[positive_support] = count_of_sampled_m/sampled_m
+    # normalize everything back to get a valid pmf
+    N = np.sum(list(pois_empirical_pmf.values()))
+    for key, val in pois_empirical_pmf.items():
+        pois_empirical_pmf[key] = val/N
+    N = np.sum(list(pois_empirical_pmf.values())) # this should be one
     return pois_empirical_pmf
