@@ -16,10 +16,10 @@ def get_chi_square(trials, U, m, tempered, e, b, B):
         prob_array = errFunct(U, uni_prob_arr, e, b)
     chi_result_trials = []
 
-    prob_hist = p_to_bp(prob_array_to_dict(prob_array), U, B)
+    prob_hist, _ = p_to_bp(prob_array_to_dict(prob_array), U, B)
     prob_array = prob_dict_to_array(prob_hist, B)
-
-    uni_prob_hist = p_to_bp(prob_array_to_dict(uni_prob_arr), U, B)
+    
+    uni_prob_hist, _ = p_to_bp(prob_array_to_dict(uni_prob_arr), U, B)
     uni_prob_array = prob_dict_to_array(uni_prob_hist, B)
     U = B
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     random.seed(4)
 
     init_e = 0.2
-    init_b = 40
+    init_b = 60
     trials = 100
 
     chi_uni_binned = []
