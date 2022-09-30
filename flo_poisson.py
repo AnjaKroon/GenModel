@@ -25,6 +25,8 @@ def get_S(trials, U, m, tempered, with_poisson=True, binned=False, B=2):
         if with_poisson:
             p_emp = poisson_empirical_dist(
                 U, m, new_samples, lambda m: sampleSpecificProbDist(genValArr(U), prob_array, m))
+                # could we not replace the sampleSpecificProbDist(genValArr(U), prob_array, m) with new_samples
+                # so that we don't have to call again?
         else:
             p_emp = empirical_dist(
                 U, m, sampleSpecificProbDist(genValArr(U), prob_array, m))
@@ -74,7 +76,7 @@ if __name__ == '__main__':
     rank_poisson = []
     rank_binned = []
     rank_poisson_binned = []
-    list_U = [100, 10000000000] #1e10
+    list_U = [100, 100] #1e10
     list_M = [100]
     # for m in list_M: 
     for m in list_M:
