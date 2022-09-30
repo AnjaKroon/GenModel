@@ -17,13 +17,13 @@ def p_to_bp(histo_p, U, B):
         if i != B-1: # not last bin
             new_probability_for_bin = 0
             for j in range( amount_per_bin): 
-                index_bin = i*amount_per_bin + j + 1
+                index_bin = i*amount_per_bin + j 
                 new_probability_for_bin = new_probability_for_bin + histo_p.get(index_bin) # returns the probability at j
             new_histo[i] =new_probability_for_bin
         if i == B-1: # last bin
             final_bin_probability = 0
             for j in range(amount_final_bin):
-                index_bin = i*amount_per_bin + j + 1
+                index_bin = i*amount_per_bin + j 
                 final_bin_probability = final_bin_probability + histo_p.get(index_bin)
             new_histo[i] = final_bin_probability
     return new_histo

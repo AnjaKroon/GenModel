@@ -27,8 +27,10 @@ def poisson_empirical_dist(U, m, incoming_arr_samples, sample_func_for_additiona
     max_m = int(max(all_random_m))
 
     # sample the missing additional samples
-    additional_samples = sample_func_for_additional(max_m-m)
-    arr_samples = np.concatenate((incoming_arr_samples, additional_samples))
+    arr_samples = incoming_arr_samples
+    if max_m > m:
+        additional_samples = sample_func_for_additional(max_m-m)
+        arr_samples = np.concatenate((incoming_arr_samples, additional_samples))
 
     # getting the histogram of the list of samples
     histogram_samples = {}
