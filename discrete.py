@@ -12,6 +12,8 @@ from time import time
 
 
 def prob_array_to_dict(prob_array):
+    if callable(prob_array): # the array is actually a function, we return it as is
+        return prob_array
     prob_hist = {}
     U = len(prob_array)
     for i in range(U):
@@ -71,6 +73,10 @@ def plotProbDist(U, array, xAxis, yAxis, title):
 # Returns: the uniform discrete probability distribution
 def makeUniProbArr(U):
     prob = 1/U
+    if U>10e5: # at this scale, we dont return am array but a function
+        def get_prob(x):
+            return 1/U
+        return get_prob
     prob_arr = []
     for i in range(U):
         prob_arr.append(prob)
@@ -133,7 +139,30 @@ def sampleSpecificProbDist(value, probability, m):
     new_samples = distrib.rvs(size=m)
     return new_samples
 
+def scalabale_sample_distribution(U, function_prob, m, flatten_dist=None):
+    size_subsampling_space = 10000
+    probability = [1/size_subsampling_space for _ in range(size_subsampling_space)]
+    values = list(range(size_subsampling_space))
+    if flatten_dist is None: # we can assume that the distribution is uniform, so we can split the space however we like
+        first_split_space = int(U / size_subsampling_space)
+        assert first_split_space * size_subsampling_space ==U # we need this for now
+        second_split_space = int(first_split_space / size_subsampling_space)
+        assert second_split_space * size_subsampling_space ==first_split_space # we need this for now
 
+        distrib = rv_discrete(values=(values, probability))
+        sample_first_space = distrib.rvs(size=m)
+        sample_second_space = distrib.rvs(size=m)
+        
+        probability = [1/second_split_space for _ in range(second_split_space)]
+        values = list(range(second_split_space))
+        distrib_reminder = rv_discrete(values=(values, probability))
+        sample_reminder = distrib_reminder.rvs(size=m)
+        
+        # build the samples from the tree sampling scheme
+        samples = [m*size_subsampling_space*second_split_space for m in sample_first_space]
+        samples = [m+(sample_second_space[i]*second_split_space) for i, m in enumerate(samples)]
+        samples = [m+(sample_reminder[i]) for i, m in enumerate(samples)]
+    return samples
 if __name__ == '__main__':
     # This makes it so you can input U m e and b parameters when you run it in terminal.
     # This will make it easier to compare 'trials'. Will need to make a shell script

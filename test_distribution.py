@@ -1,6 +1,6 @@
 from binned import p_to_bp_random
 from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist
-from statistic.generate_statistics import chi_square_stat, compute_stats, genSstat, generate_samples, get_S, get_chi_square
+from statistic.generate_statistics import chi_square_stat, compute_stats, genSstat, generate_samples_scalable, get_S, get_chi_square
 import matplotlib.pyplot as plt
 from plot_utils import plot_stat, put_on_plot
 from sampling.poisson import poisson_empirical_dist
@@ -15,15 +15,16 @@ if __name__ == '__main__':
     random.seed(3)
 
     init_e = 0.2
-    init_b = 40
+    init_b = 60
     trials = 100
 
-    list_U = [200]
+    list_U = [10**10]
     list_M = [1000]
     # for m in list_M:
     for m in list_M:
         print("for this round m is ", m)
         for U in list_U:
+            print("and U is ",U)
             B_uni = []
             B_temper = []
             B_mid_temper = []
@@ -36,13 +37,13 @@ if __name__ == '__main__':
 
             ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
 
-            ground_truth_samples_list = generate_samples(
+            ground_truth_samples_list = generate_samples_scalable(
                 trials, U, m, tempered=False, e=0, b=100)
-            tempered_samples_list = generate_samples(
+            tempered_samples_list = generate_samples_scalable(
                 trials, U, m, tempered=True, e=init_e, b=init_b)
-            mid_tempered_samples_list = generate_samples(
+            mid_tempered_samples_list = generate_samples_scalable(
                 trials, U, m, tempered=True, e=init_e*1.5, b=init_b)
-            easy_tempered_samples_list = generate_samples(
+            easy_tempered_samples_list = generate_samples_scalable(
                 trials, U, m, tempered=True, e=init_e*2, b=init_b)
 
             for B in Bs:

@@ -5,22 +5,22 @@ import pandas as pd
 import scipy
 from sampling.poisson import poisson_empirical_dist
 from binned import p_to_bp_random, p_to_bp_with_index
-from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist
+from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist, scalabale_sample_distribution
 
-# default is with poissonization, we remove the option.
+# default is without poissonization, we remove the option because it is not scalable
 # this return a list of empirical distribution dict, one for each trial
 
 
-def generate_samples(trials, U, m, tempered, e, b):
+def generate_samples_scalable(trials, U, m, tempered, e, b):
     all_trials_p_emp = []
     uni_prob_arr = makeUniProbArr(U)
     prob_array = uni_prob_arr
     if tempered:
         prob_array = errFunct(U, uni_prob_arr, e, b)
     for _ in range(trials):
-        new_samples = sampleSpecificProbDist(genValArr(U), prob_array, m)
-        p_emp_dict = poisson_empirical_dist(
-            U, m, new_samples, lambda m: sampleSpecificProbDist(genValArr(U), prob_array, m))
+        new_samples = scalabale_sample_distribution(
+            U, prob_array, m, flatten_dist=None)
+        p_emp_dict = empirical_dist_no_zero(m, new_samples)
         all_trials_p_emp.append(p_emp_dict)
     return all_trials_p_emp
 
@@ -103,13 +103,24 @@ def empirical_dist(incoming_U, incoming_m, incoming_arr_samples):
     # FLO: this is not necessary, the best is to have the non existing entries as begin 0 by default (to save memory)
     histo_with_zeros = {}
     for i in range(incoming_U):
-        i = i+1  # offset by 1 because histo starts at 1 not 0
+
         # basically, if it is not in the samples, you want to assign it to a value of zero with a key corresponding to i
         if not isinstance(histo.get(i), int):
             histo_with_zeros.update({i: 0})
         else:  # else you would add the histo type and value to the dictionary
             histo_with_zeros.update({i: histo.get(i)/incoming_m})
     p_emp = histo_with_zeros
+    return p_emp
+
+
+def empirical_dist_no_zero(incoming_m, incoming_array_samples):
+    p_emp = {}
+    for sample in incoming_array_samples:
+        if sample in p_emp:
+            p_emp[sample] += 1/incoming_m
+        else:
+            p_emp[sample] = 1/incoming_m
+
     return p_emp
 
 
