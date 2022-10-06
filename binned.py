@@ -9,13 +9,22 @@ import numpy as np
 import random
 import math
 
-
+# return the dict of a binned pmf, with predined binning mapping_from_index_to_bin
+def p_to_bp_with_index(histo_p, U, B, mapping_from_index_to_bin):
+    new_histo = {}
+    for index, val in histo_p.items():
+        bin = mapping_from_index_to_bin[index]
+        if bin not in new_histo:
+            new_histo[bin] = val
+        else:
+            new_histo[bin] += val
+    return new_histo
 def p_to_bp_random(histo_p, U, B):
     amount_per_bin = math.floor(U/B)  # 3
     amount_final_bin = int(amount_per_bin + (U % B))  # 4
     
     # shuffle the binning
-    mapping_to_index_to_bin = {}
+    mapping_from_index_to_bin = {}
     mapping_bin_to_index = {}
     shuffled_U = list(range(U))
     random.shuffle(shuffled_U)
@@ -27,7 +36,7 @@ def p_to_bp_random(histo_p, U, B):
         for j in range(size_bin):
             index = i * amount_per_bin + j
             shuffled_index = shuffled_U[index]
-            mapping_to_index_to_bin[shuffled_index] = i
+            mapping_from_index_to_bin[shuffled_index] = i
             mapping_bin_to_index[i].append(shuffled_index)
     new_histo = {}
     for bin_index, all_index in mapping_bin_to_index.items():
@@ -35,7 +44,7 @@ def p_to_bp_random(histo_p, U, B):
         for j in all_index:
             new_probability_for_bin = new_probability_for_bin + histo_p[j]
         new_histo[bin_index] = new_probability_for_bin
-    return new_histo, mapping_to_index_to_bin
+    return new_histo, mapping_from_index_to_bin
 
 
 def transform_samples(b_p, histo_p, p_samples, U, B):

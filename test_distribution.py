@@ -11,8 +11,8 @@ import random
 
 if __name__ == '__main__':
     # Set the random seed
-    np.random.seed(2)
-    random.seed(4)
+    np.random.seed(3)
+    random.seed(3)
 
     init_e = 0.3
     init_b = 10
@@ -32,7 +32,9 @@ if __name__ == '__main__':
             S_temper = []
             S_mid_temper = []
             S_easy_temper = []
-            Bs = [2, 3, 4, 5]
+            Bs = [2, 3, 4, 5, 6, 7,8]
+
+            
             for B in Bs:
                 def do_everything_here(all_b_list, all_s_list,  trials, U, m, tempered, e, b, B):
                     chi_trials_for_this_B_list = get_chi_square(trials, U, m, tempered, e, b, B)

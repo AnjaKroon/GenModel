@@ -4,8 +4,29 @@ import sys
 import pandas as pd
 import scipy
 from sampling.poisson import poisson_empirical_dist
-from binned import p_to_bp_random
+from binned import p_to_bp_random, p_to_bp_with_index
 from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist
+
+# default is with poissonization, we remove the option.
+
+
+def generate_samples(trials, U, m, tempered, e, b, B):
+    uni_prob_arr = makeUniProbArr(U)
+    prob_array = uni_prob_arr
+    if tempered:
+        prob_array = errFunct(U, uni_prob_arr, e, b)
+    new_samples = sampleSpecificProbDist(genValArr(U), prob_array, m)
+    p_emp_dict = poisson_empirical_dist(
+        U, m, new_samples, lambda m: sampleSpecificProbDist(genValArr(U), prob_array, m))
+    return p_emp_dict
+
+
+# for this, we already have the samples, but they are not binned
+def compute_stats(p_emp_dict, ground_truth_dict, U, B, stat_func):
+    binnned_prob_hist, mapping_from_index_to_bin = p_to_bp_random(
+        ground_truth_dict, U, B)
+    binnned_prob_hist = p_to_bp_with_index(
+        p_emp_dict, U, B, mapping_from_index_to_bin)
 
 
 def generate_samples_and_compute_stat(trials, U, m, tempered, e, b, B, stat_func, with_poisson=True):
@@ -13,13 +34,17 @@ def generate_samples_and_compute_stat(trials, U, m, tempered, e, b, B, stat_func
     prob_array = uni_prob_arr
     if tempered:
         prob_array = errFunct(U, uni_prob_arr, e, b)
+
     result_trials = []
 
-    prob_hist, _ = p_to_bp_random(prob_array_to_dict(prob_array), U, B)
+    uni_prob_hist, mapping_from_index_to_bin = p_to_bp_random(
+        prob_array_to_dict(uni_prob_arr), U, B)
+    uni_prob_array = prob_dict_to_array(uni_prob_hist, B)
+
+    prob_hist = p_to_bp_with_index(prob_array_to_dict(
+        prob_array), U, B, mapping_from_index_to_bin)
     prob_array = prob_dict_to_array(prob_hist, B)
 
-    uni_prob_hist, _ = p_to_bp_random(prob_array_to_dict(uni_prob_arr), U, B)
-    uni_prob_array = prob_dict_to_array(uni_prob_hist, B)
     U = B
 
     for _ in range(trials):
@@ -47,7 +72,7 @@ def get_chi_square(trials, U, m, tempered, e, b, B):
 def get_S(trials, U, m, tempered, e, b, B, with_poisson):
 
     result_trials = generate_samples_and_compute_stat(
-        trials, U, m, tempered, e, b, B, genSstat,with_poisson)
+        trials, U, m, tempered, e, b, B, genSstat, with_poisson)
 
     return result_trials
 
