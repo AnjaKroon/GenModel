@@ -8,25 +8,36 @@ from binned import p_to_bp_random, p_to_bp_with_index
 from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist
 
 # default is with poissonization, we remove the option.
+# this return a list of empirical distribution dict, one for each trial
 
 
-def generate_samples(trials, U, m, tempered, e, b, B):
+def generate_samples(trials, U, m, tempered, e, b):
+    all_trials_p_emp = []
     uni_prob_arr = makeUniProbArr(U)
     prob_array = uni_prob_arr
     if tempered:
         prob_array = errFunct(U, uni_prob_arr, e, b)
-    new_samples = sampleSpecificProbDist(genValArr(U), prob_array, m)
-    p_emp_dict = poisson_empirical_dist(
-        U, m, new_samples, lambda m: sampleSpecificProbDist(genValArr(U), prob_array, m))
-    return p_emp_dict
+    for _ in range(trials):
+        new_samples = sampleSpecificProbDist(genValArr(U), prob_array, m)
+        p_emp_dict = poisson_empirical_dist(
+            U, m, new_samples, lambda m: sampleSpecificProbDist(genValArr(U), prob_array, m))
+        all_trials_p_emp.append(p_emp_dict)
+    return all_trials_p_emp
 
 
 # for this, we already have the samples, but they are not binned
-def compute_stats(p_emp_dict, ground_truth_dict, U, B, stat_func):
-    binnned_prob_hist, mapping_from_index_to_bin = p_to_bp_random(
-        ground_truth_dict, U, B)
-    binnned_prob_hist = p_to_bp_with_index(
-        p_emp_dict, U, B, mapping_from_index_to_bin)
+def compute_stats(all_trials_p_emp, ground_truth_dict, U, B, stat_func):
+    list_stat = []
+    for p_emp_dict in all_trials_p_emp:
+        binnned_p_hist, mapping_from_index_to_bin = p_to_bp_random(
+            ground_truth_dict, U, B)
+        binnned_q_hist = p_to_bp_with_index(
+            p_emp_dict, U, B, mapping_from_index_to_bin)
+        binnned_p_array = prob_dict_to_array(binnned_p_hist, B)
+        binnned_q_array = prob_dict_to_array(binnned_q_hist, B)
+
+        list_stat.append(stat_func(binnned_p_array, binnned_q_array))
+    return list_stat
 
 
 def generate_samples_and_compute_stat(trials, U, m, tempered, e, b, B, stat_func, with_poisson=True):

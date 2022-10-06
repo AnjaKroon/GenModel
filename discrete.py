@@ -83,12 +83,16 @@ def makeUniProbArr(U):
 
 
 def errFunct(U, init_array, e, percent_to_modify):
+    
     array = np.copy(init_array) # copy to avoid modifying the passed array
     
     # works to modify probability dist. array, works for odd U
     # Tells us how many bins in the probability distribution we are changing
     amt_to_modify = U*(percent_to_modify/100)
-
+    
+    if amt_to_modify *1/U < e:
+        print('!!! Cant modify ',e,'amount on only',percent_to_modify, 'percent of the support')
+        raise Exception
     # If |U| is odd, due to truncation in division, the 'extra bin' will go on the subtraction half.
     half_point = amt_to_modify//2
     # That means for this case, the bins_last will need to 'redistribute' how much is subtracted per bin
