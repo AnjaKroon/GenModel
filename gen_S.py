@@ -51,6 +51,12 @@ def test_to_reject_chi_square(uni_prob_array, p_emp_array):
         reject = False
     return reject
 
+def chi_square_stat(uni_prob_array, p_emp_array):
+    a = np.sum(uni_prob_array)
+    b =  np.sum(p_emp_array)
+    chi_square_out = scipy.stats.chisquare(uni_prob_array, p_emp_array)
+    p_value = chi_square_out[1]
+    return p_value
 
 def genSstat(dictionary, U):
     sum = 0

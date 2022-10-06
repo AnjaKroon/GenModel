@@ -1,7 +1,8 @@
 from binned import p_to_bp
 from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist
-from gen_S import test_to_reject_chi_square
+from gen_S import test_to_reject_chi_square, chi_square_stat
 import matplotlib.pyplot as plt
+from plot_utils import plot_stat, put_on_plot
 from sampling.poisson import poisson_empirical_dist
 
 import numpy as np
@@ -29,9 +30,9 @@ def get_chi_square(trials, U, m, tempered, e, b, B):
         p_emp = poisson_empirical_dist(
             U, m, new_samples, lambda m: sampleSpecificProbDist(genValArr(U), prob_array, m))
         p_emp_array = prob_dict_to_array(p_emp, U)
-        s = np.sum(p_emp_array)
-        rejected = test_to_reject_chi_square(uni_prob_array, p_emp_array)
-        chi_result_trials.append(rejected)
+        shoud_be_one = np.sum(p_emp_array)
+        stat = chi_square_stat(uni_prob_array, p_emp_array)
+        chi_result_trials.append(stat)
     return chi_result_trials
 
 
@@ -63,7 +64,7 @@ if __name__ == '__main__':
                 # uniform
                 chi_binned_uni_U = get_chi_square(
                     trials, U, m, tempered=False, e=0, b=100, B=B)
-
+                
                 # tempered
                 chi_binned_tempered_U = get_chi_square(
                     trials, U, m, tempered=True, e=init_e, b=init_b, B=B)
@@ -71,24 +72,22 @@ if __name__ == '__main__':
                 # tempered
                 chi_binned_mid_tempered_U = get_chi_square(
                     trials, U, m, tempered=True, e=init_e+0.05, b=init_b, B=B)
-
+               
                 # tempered
                 chi_binned_harder_tempered_U = get_chi_square(
                     trials, U, m, tempered=True, e=init_e+0.1, b=init_b, B=B)
-
-                succeded_to_reject_uniform = np.mean(chi_binned_uni_U)
-                succeded_to_reject_tempered = np.mean(chi_binned_tempered_U)
-                succeded_to_reject_mid_tempered = np.mean(chi_binned_mid_tempered_U)
                 
-                succeded_to_reject_harder_tempered = np.mean(chi_binned_harder_tempered_U)
 
-                B_uni.append(succeded_to_reject_uniform)
-                B_temper.append(succeded_to_reject_tempered)
-                B_mid_temper.append(succeded_to_reject_mid_tempered)
-                B_harder_temper.append(succeded_to_reject_harder_tempered)
-            plt.plot(Bs, B_uni, label='uni')
-            plt.plot(Bs, B_temper, label='hard tempered')
-            plt.plot(Bs, B_mid_temper, label='mid tempered')
-            plt.plot(Bs, B_harder_temper, label=' easy tempered')
-            plt.legend()
-            plt.show()
+                B_uni.append(chi_binned_uni_U)
+                B_temper.append(chi_binned_tempered_U)
+                B_mid_temper.append(chi_binned_mid_tempered_U)
+                B_harder_temper.append(chi_binned_harder_tempered_U)
+            
+            put_on_plot(Bs, {'uni':B_uni})
+            put_on_plot(Bs, {'hard tempered':B_temper})
+            put_on_plot(Bs, {'mid tempered':B_mid_temper})
+            put_on_plot(Bs, {'easy tempered':B_harder_temper})
+
+            plot_stat(None, None, 'chi_square_prob.pdf', 'Bins', 'goodness of fit')
+            
+
