@@ -10,7 +10,7 @@ import random
 import math
 
 
-def p_to_bp(histo_p, U, B):
+def p_to_bp_random(histo_p, U, B):
     amount_per_bin = math.floor(U/B)  # 3
     amount_final_bin = int(amount_per_bin + (U % B))  # 4
     
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     U = 10
     B = 3
 
-    b_p = p_to_bp(sample_histo, U, B)  # works
+    b_p = p_to_bp_random(sample_histo, U, B)  # works
     print(b_p)
     print('probability sum to : ', sum(b_p.values()))
     b_out = transform_samples(b_p, sample_histo, p_samples, U, B)  # works

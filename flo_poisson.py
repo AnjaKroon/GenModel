@@ -1,40 +1,11 @@
-from binned import p_to_bp
-from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist
-from gen_S import empirical_dist, genSstat
-from plot_utils import plot_S_stat, put_on_plot
-from sampling.poisson import poisson_empirical_dist
+
+from plot_utils import plot_stat, put_on_plot
+
 import sys
 import numpy as np
 import random
 
-
-def get_S(trials, U, m, tempered, with_poisson=True, binned=False, B=2):
-    uni_prob_arr = makeUniProbArr(U)
-    prob_array = uni_prob_arr
-    if tempered:
-        prob_array = errFunct(U, uni_prob_arr, e, b)
-    S_trials = []
-    if binned:
-        prob_hist = prob_array_to_dict(prob_array)
-        # I could make p to bp work on arrays rather than dictionaries?
-        prob_hist = p_to_bp(prob_hist, U, B)
-        prob_array = prob_dict_to_array(prob_hist)
-        U = B
-    for _ in range(trials):
-        new_samples = sampleSpecificProbDist(genValArr(U), prob_array, m)
-        if with_poisson:
-            p_emp = poisson_empirical_dist(
-                U, m, new_samples, lambda m: sampleSpecificProbDist(genValArr(U), prob_array, m))
-                # could we not replace the sampleSpecificProbDist(genValArr(U), prob_array, m) with new_samples
-                # so that we don't have to call again?
-        else:
-            p_emp = empirical_dist(
-                U, m, sampleSpecificProbDist(genValArr(U), prob_array, m))
-                # could we not replace the sampleSpecificProbDist(genValArr(U), prob_array, m) with new_samples
-                # so that we don't have to call again?
-        s_statistic = genSstat(p_emp, U)
-        S_trials.append(s_statistic)
-    return S_trials
+from statistic.generate_statistics import get_S
 
 
 if __name__ == '__main__':
@@ -44,7 +15,7 @@ if __name__ == '__main__':
 
     testCase = 2  # should be 1 or 2 depending on whether you want to run the program standalone or with a .sh script
     if testCase == 1:
-        if len(sys.argv) != 5: # changed from 6 to make it work with the U
+        if len(sys.argv) != 5:  # changed from 6 to make it work with the U
             print("Usage:", sys.argv[0], "U m e b t")
             sys.exit()
         #U = int(sys.argv[1])
@@ -78,23 +49,24 @@ if __name__ == '__main__':
     rank_poisson = []
     rank_binned = []
     rank_poisson_binned = []
-    list_U = [100, 100] #1e10
+    list_U = [100, 1000]  # 1e10
     list_M = [100]
-    # for m in list_M: 
+    # for m in list_M:
     for m in list_M:
         print("for this round m is ", m)
         for U in list_U:
 
             # BINNED CASE
+
             S_binned_uni_U = get_S(trials, U, m, tempered=False,
-                                with_poisson=False, binned=True, B=int(U/bins))
+                                   e=e, b=b, B=int(U/bins), with_poisson=False)
             S_binned_uni_poisson_U = get_S(
-                trials, U, m, tempered=False, with_poisson=True, binned=True, B=int(U/bins))
+                trials, U, m, tempered=False,  e=e, b=b, B=int(U/bins), with_poisson=True)
             # tempered
             S_binned_tempered_U = get_S(
-                trials, U, m, tempered=True, with_poisson=False, binned=True, B=int(U/bins))
+                trials, U, m, tempered=True,  e=e, b=b, B=int(U/bins), with_poisson=False)
             S_binned_tempered_poisson_U = get_S(
-                trials, U, m, tempered=True, with_poisson=True, binned=True, B=int(U/bins))
+                trials, U, m, tempered=True,  e=e, b=b, B=int(U/bins), with_poisson=True)
 
             # rank_uniform_bin vs rank_tempered_bin
             # uniform
@@ -118,7 +90,6 @@ if __name__ == '__main__':
             fraction_poisson_binned_rank = np.mean(
                 [S_binned_uni_poisson_U[i] < S_binned_tempered_poisson_U[i] for i in range(trials)])
 
-
             '''
             if (fraction_poisson_rank <= 0.5):  # how many times is the uniform better than the tempered
                 # 50 is saying we are not sure which one is better
@@ -129,7 +100,7 @@ if __name__ == '__main__':
                 print("For U:"+str(U)+" m:"+str(m)+" e:"+str(e)+" b:"+str(b)+" t:" +
                     str(trials)+"fraction_poisson_rank: " + str(fraction_poisson_rank))
             '''
-            
+
             # uniform
             # S_uni.append(S_uni_U)
             # S_uni_poisson.append(S_uni_poisson_U)
@@ -152,23 +123,23 @@ if __name__ == '__main__':
             rank_poisson_binned.append(fraction_poisson_binned_rank)
 
             # lines_S = {'g.t.': S_uni,
-                    # 'e=0.1': S_tempered}
+            # 'e=0.1': S_tempered}
             # lines_S_poisson = {
-                # 'g.t. with poisson.': S_uni_poisson,
-                # 'e=0.1 with poisson.': S_tempered_poisson}
+            # 'g.t. with poisson.': S_uni_poisson,
+            # 'e=0.1 with poisson.': S_tempered_poisson}
             # lines_rank = {'GT v. Tem m = '+str(m): rank,'GT v. Tem Poi. m = ' +str(m): rank_poisson}
             # lines_rank = {'GT v. Tem m = '+str(m): rank}
             # lines_S_binned = {'g.t.': S_uni_binned,
             #                 'e=0.1': S_tempered_binned}
             # lines_S_poisson_binned = {
             #     'g.t. with poisson.': S_uni_poisson_binned,
-                # 'e=0.1 with poisson.': S_tempered_poisson_binned}
+            # 'e=0.1 with poisson.': S_tempered_poisson_binned}
             lines_rank_binned = {
                 'GT v. Tem m = '+str(m): rank_binned,
-                'GT v. Tem Poi. m = ' +str(m): rank_poisson_binned}
+                'GT v. Tem Poi. m = ' + str(m): rank_poisson_binned}
         put_on_plot(x=list_U, dict_y=lines_rank_binned)
-        rank_binned = [] # clearing the array
-        rank_poisson_binned = [] # clearing the array
+        rank_binned = []  # clearing the array
+        rank_poisson_binned = []  # clearing the array
         '''
         plot_S_stat(x=list_U, dict_y=lines_S_poisson, title='m_' +
                     str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_Spoisson.pdf', xlabel='|U|', ylabel='S')
@@ -185,8 +156,9 @@ if __name__ == '__main__':
                     str(m) + '_e_'+str(e)+'_trials_'+str(trials)+'_S.pdf', xlabel='|U|', ylabel='S')
 '''
     # Ranking BINNED
-    plot_S_stat(x=list_U, dict_y=lines_rank_binned, title='BINS_'+str(bins)+'_Multiple_U_Multiple_M_e_'+str(e)+'_b_'+ str(b)+'_t_'+str(trials)+'_ranking.pdf', xlabel='|U|', ylabel='\% of accurate ranking')
+    plot_stat(title='BINS_'+str(bins)+'_Multiple_U_Multiple_M_e_'+str(e)+'_b_' + str(b) +
+              '_t_'+str(trials)+'_ranking.pdf', xlabel='|U|', ylabel='\% of accurate ranking')
 
     # plot_S_stat(x=list_U, dict_y=lines_rank, title='UNBINNED_Multiple_U_Multiple_M_e_'+str(e)+'_b_'+ str(b)+'_t_'+str(trials)+'_ranking.pdf', xlabel='|U|', ylabel='\% of accurate ranking')
-        # I think this will still overwrite as plot is being called. I think it does need to happen in plot_utils.py
+    # I think this will still overwrite as plot is being called. I think it does need to happen in plot_utils.py
     # U m e b "S of uniform": NUMBER "S of uniform with poisson":NUMBER "S of tempered":NUMBER

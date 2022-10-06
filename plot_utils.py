@@ -33,7 +33,7 @@ def get_ci(trials):
     return ci.confidence_interval
 
 
-def plot_stat(x, dict_y, title, xlabel, ylabel):
+def plot_stat(title, xlabel, ylabel):
     # my hunch is to wrap this in another for loop -- need to make sure it still runs without it
     # if there is only one m you want to work with, you need to provide a dictionary with that singe m in it -- constraint
     # print("x", x)

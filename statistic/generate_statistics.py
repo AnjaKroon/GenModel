@@ -1,10 +1,55 @@
 # objective of this code is to generate the S statistic according to algorithm 1
-from math import log, sqrt
 import numpy as np
 import sys
-from numpy import savetxt
 import pandas as pd
 import scipy
+from sampling.poisson import poisson_empirical_dist
+from binned import p_to_bp_random
+from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist
+
+
+def generate_samples_and_compute_stat(trials, U, m, tempered, e, b, B, stat_func, with_poisson=True):
+    uni_prob_arr = makeUniProbArr(U)
+    prob_array = uni_prob_arr
+    if tempered:
+        prob_array = errFunct(U, uni_prob_arr, e, b)
+    result_trials = []
+
+    prob_hist, _ = p_to_bp_random(prob_array_to_dict(prob_array), U, B)
+    prob_array = prob_dict_to_array(prob_hist, B)
+
+    uni_prob_hist, _ = p_to_bp_random(prob_array_to_dict(uni_prob_arr), U, B)
+    uni_prob_array = prob_dict_to_array(uni_prob_hist, B)
+    U = B
+
+    for _ in range(trials):
+        new_samples = sampleSpecificProbDist(genValArr(U), prob_array, m)
+        if with_poisson:
+            p_emp = poisson_empirical_dist(
+                U, m, new_samples, lambda m: sampleSpecificProbDist(genValArr(U), prob_array, m))
+
+        else:
+            p_emp = empirical_dist(
+                U, m, sampleSpecificProbDist(genValArr(U), prob_array, m))
+        p_emp_array = prob_dict_to_array(p_emp, U)
+        shoud_be_one = np.sum(p_emp_array)
+        stat = stat_func(uni_prob_array, p_emp_array)
+        result_trials.append(stat)
+    return result_trials
+
+
+def get_chi_square(trials, U, m, tempered, e, b, B):
+    result_trials = generate_samples_and_compute_stat(
+        trials, U, m, tempered, e, b, B, chi_square_stat)
+    return result_trials
+
+
+def get_S(trials, U, m, tempered, e, b, B, with_poisson):
+
+    result_trials = generate_samples_and_compute_stat(
+        trials, U, m, tempered, e, b, B, genSstat,with_poisson)
+
+    return result_trials
 
 
 def empirical_dist(incoming_U, incoming_m, incoming_arr_samples):
@@ -42,7 +87,7 @@ def intoCSV(arr, U, m, e, b):
 
 def test_to_reject_chi_square(uni_prob_array, p_emp_array):
     a = np.sum(uni_prob_array)
-    b =  np.sum(p_emp_array)
+    b = np.sum(p_emp_array)
     chi_square_out = scipy.stats.chisquare(uni_prob_array, p_emp_array)
     p_value = chi_square_out[1]
     if p_value < 0.99:
@@ -51,21 +96,20 @@ def test_to_reject_chi_square(uni_prob_array, p_emp_array):
         reject = False
     return reject
 
+
 def chi_square_stat(uni_prob_array, p_emp_array):
     a = np.sum(uni_prob_array)
-    b =  np.sum(p_emp_array)
+    b = np.sum(p_emp_array)
     chi_square_out = scipy.stats.chisquare(uni_prob_array, p_emp_array)
     p_value = chi_square_out[1]
     return p_value
 
-def genSstat(dictionary, U):
+
+def genSstat(uni_prob_array, p_emp_array):
     sum = 0
-    inv_U = 1/U
-    for i in range(U):
-        if i+1 in dictionary:
-            sum = sum+(abs(dictionary.get(i+1)-inv_U))
-        else:
-            sum = sum+inv_U
+    for i, p_val_ground_truth in enumerate(uni_prob_array):
+        emp_p_val = p_emp_array[i]
+        sum += np.abs(emp_p_val-p_val_ground_truth)
     sum = sum/2
     return sum
 
