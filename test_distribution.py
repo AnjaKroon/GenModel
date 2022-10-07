@@ -19,8 +19,8 @@ if __name__ == '__main__':
     init_b = 60
     trials = 50
 
-    Bs = [2]
-    list_U = [4343]
+    Bs = [2, 3]
+    list_U = [6**6]
     list_M = [1000]
     # for m in list_M:
     for m in list_M:

@@ -69,6 +69,12 @@ def find_flat_regions(ground_truth_p_dict):
 # use the algo to assign a bin to each algo
 
 
+def split(list_a, chunk_size):
+
+    for i in range(0, len(list_a), chunk_size):
+        yield list_a[i:i + chunk_size]
+
+
 def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
 
     predefined_bins_with_error = {}
@@ -83,7 +89,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
                 error = p_x - q_x
                 list_errors_index.append((error, index))
             else:
-                q_x = 0 
+                q_x = 0
                 p_x = s_flat
                 error = p_x - q_x
                 list_errors_index.append((error, index))
@@ -102,9 +108,11 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
                 indices_neg_bin.append(index)
                 cumul_neg_error += -error
         # the error that will be lost if we dont cut this bin
-        cut_error = cumul_neg_error + cumul_pos_error -np.abs((cumul_pos_error-cumul_neg_error))
+        cut_error = cumul_neg_error + cumul_pos_error - \
+            np.abs((cumul_pos_error-cumul_neg_error))
         # now we know how much error is contained in a split
-        predefined_bins_with_error[s] = {'cut_error': cut_error, 'pos_indices': indices_pos_bin, 'neg_indices': indices_neg_bin}
+        predefined_bins_with_error[s] = {
+            'cut_error': cut_error, 'pos_indices': indices_pos_bin, 'neg_indices': indices_neg_bin}
 
         s += 1  # increment the flat region index
 
@@ -141,17 +149,42 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
                 dict_pos_neg['neg_indices']
             mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
             bin_ind += 1
-    else:  # B>= 2s, we randomly cut one of the bins nothing else to be done
+    else:  # B>= 2s, we randomly cut the bins, nothing else to be done
+        num_random_cut = B - 2 * s
+        bin_with_cut = random.sample(list(range(s*2)), num_random_cut)
+        cuts_per_bin = {}
+        for c in bin_with_cut:
+            if c in cuts_per_bin:
+                cuts_per_bin[c] += 1
+            else:
+                cuts_per_bin[c] = 1
         bin_ind = 0
         for i in range(s):
             region_to_cut = sorted_s_by_potential_cut_error[i]
-            mapping_bin_to_index[bin_ind] = predefined_bins_with_error[region_to_cut]['pos_indices']
-            bin_ind += 1
-            mapping_bin_to_index[bin_ind] = predefined_bins_with_error[region_to_cut]['neg_indices']
-            bin_ind += 1
-        if B > 2*s:
-            raise NotImplemented
 
+            pos_indices_region_i = predefined_bins_with_error[region_to_cut]['pos_indices']
+            pos_ind = i*2
+            cuts_per_this_region = 0
+            if pos_ind in cuts_per_bin:
+                cuts_per_this_region = cuts_per_bin[pos_ind]
+            
+           
+            chunks_of_pos = split(pos_indices_region_i, math.ceil(
+                len(pos_indices_region_i)/(1+cuts_per_this_region)))
+            for chunk_indices in chunks_of_pos:
+                mapping_bin_to_index[bin_ind] = chunk_indices
+                bin_ind += 1
+
+            neg_indices_region_i = predefined_bins_with_error[region_to_cut]['neg_indices']
+            neg_ind = i*2+1
+            cuts_per_this_region = 0
+            if neg_ind in cuts_per_bin:
+                cuts_per_this_region = cuts_per_bin[neg_ind]
+            chunks_of_neg = split(neg_indices_region_i, math.ceil(
+                len(neg_indices_region_i)/(1+cuts_per_this_region)))
+            for chunk_indices in chunks_of_neg:
+                mapping_bin_to_index[bin_ind] = chunk_indices
+                bin_ind += 1
 
     new_histo_p = {}
     for bin_index, all_index in mapping_bin_to_index.items():
