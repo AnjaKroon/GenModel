@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     Bs = [2, 3, 4, 5, 6, 7, 8]
     list_U = [6**6]
-    list_M = [10000]
+    list_M = [100000]
     # for m in list_M:
     for m in list_M:
         print("for this round m is ", m)
