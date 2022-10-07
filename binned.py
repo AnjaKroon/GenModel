@@ -10,6 +10,8 @@ import random
 import math
 
 # return the dict of a binned pmf, with predined binning mapping_from_index_to_bin
+
+
 def p_to_bp_with_index(histo_p, U, B, mapping_from_index_to_bin):
     new_histo = {}
     for index, val in histo_p.items():
@@ -19,10 +21,14 @@ def p_to_bp_with_index(histo_p, U, B, mapping_from_index_to_bin):
         else:
             new_histo[bin] += val
     return new_histo
+
+# assign a bin at randoms to each element
+
+
 def p_to_bp_random(histo_p, U, B):
     amount_per_bin = math.floor(U/B)  # 3
     amount_final_bin = int(amount_per_bin + (U % B))  # 4
-    
+
     # shuffle the binning
     mapping_from_index_to_bin = {}
     mapping_bin_to_index = {}
@@ -45,6 +51,126 @@ def p_to_bp_random(histo_p, U, B):
             new_probability_for_bin = new_probability_for_bin + histo_p[j]
         new_histo[bin_index] = new_probability_for_bin
     return new_histo, mapping_from_index_to_bin
+
+
+def find_flat_regions(ground_truth_p_dict):
+    # todo , just return as is
+    flat_regions = {}
+    for key, p_val in ground_truth_p_dict.items():
+        if p_val in flat_regions:
+            flat_regions[p_val].append(key)
+        else:
+            flat_regions[p_val] = [key]
+    # sort all flat regions
+    for p_val in flat_regions.keys():
+        flat_regions[p_val].sort()
+    return flat_regions
+
+# use the algo to assign a bin to each algo
+
+
+def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
+
+    predefined_bins_with_error = {}
+    flat_regions = find_flat_regions(ground_truth_p_dict)
+    s = 0
+    for s_flat, indices in flat_regions.items():
+        list_errors_index = []
+        for index in indices:
+            if index in q_dic:
+                q_x = q_dic[index]
+                p_x = s_flat
+                error = p_x - q_x
+                list_errors_index.append((error, index))
+            else:
+                q_x = 0 
+                p_x = s_flat
+                error = p_x - q_x
+                list_errors_index.append((error, index))
+
+        # we separate the positive from the negative error to find where the bin split would be
+        cumul_pos_error = 0
+        cumul_neg_error = 0
+        # these lists will form the bins.
+        indices_pos_bin = []  # this could stay empty
+        indices_neg_bin = []  # this could stay empty
+        for error, index in list_errors_index:
+            if error > 0:
+                indices_pos_bin.append(index)
+                cumul_pos_error += error
+            else:
+                indices_neg_bin.append(index)
+                cumul_neg_error += -error
+        # the error that will be lost if we dont cut this bin
+        cut_error = cumul_neg_error + cumul_pos_error -np.abs((cumul_pos_error-cumul_neg_error))
+        # now we know how much error is contained in a split
+        predefined_bins_with_error[s] = {'cut_error': cut_error, 'pos_indices': indices_pos_bin, 'neg_indices': indices_neg_bin}
+
+        s += 1  # increment the flat region index
+
+    # find which bin have the more potential error if cut
+
+    sorted_s_by_potential_cut_error = sorted(list(predefined_bins_with_error.keys()),
+                                             key=lambda x: predefined_bins_with_error[x]['cut_error'])
+    mapping_bin_to_index = {}
+    mapping_from_index_to_bin = {}
+    # now we need to cut the predefined bins in the number of wanted bins B
+    if B < s:  # NOT EXACT SOL
+        raise NotImplemented
+    elif B == s:  # easiest scenario, we just return all flat regions
+        for region_to_left_uncut in range(s):
+            dict_pos_neg = predefined_bins_with_error[region_to_left_uncut]
+            indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
+                dict_pos_neg['neg_indices']
+            mapping_bin_to_index[region_to_left_uncut] = indices_of_the_whole_region
+
+    elif B > s and B < 2*s:
+        bin_ind = 0
+        how_many_flat_region_we_can_cut = 2*s - B
+        list_of_remaining_regions = list(range(s))
+        for i in range(how_many_flat_region_we_can_cut):
+            region_to_cut = sorted_s_by_potential_cut_error[i]
+            list_of_remaining_regions.delete(region_to_cut)
+            mapping_bin_to_index[bin_ind] = predefined_bins_with_error[region_to_cut]['pos_indices']
+            bin_ind += 1
+            mapping_bin_to_index[bin_ind] = predefined_bins_with_error[region_to_cut]['neg_indices']
+            bin_ind += 1
+        for region_to_left_uncut in list_of_remaining_regions:
+            dict_pos_neg = predefined_bins_with_error[region_to_left_uncut]
+            indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
+                dict_pos_neg['neg_indices']
+            mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
+            bin_ind += 1
+    else:  # B>= 2s, we randomly cut one of the bins nothing else to be done
+        bin_ind = 0
+        for i in range(s):
+            region_to_cut = sorted_s_by_potential_cut_error[i]
+            mapping_bin_to_index[bin_ind] = predefined_bins_with_error[region_to_cut]['pos_indices']
+            bin_ind += 1
+            mapping_bin_to_index[bin_ind] = predefined_bins_with_error[region_to_cut]['neg_indices']
+            bin_ind += 1
+        if B > 2*s:
+            raise NotImplemented
+
+
+    new_histo_p = {}
+    for bin_index, all_index in mapping_bin_to_index.items():
+        new_probability_for_bin = 0
+        for j in all_index:
+            if j in ground_truth_p_dict:
+                new_probability_for_bin = new_probability_for_bin + \
+                    ground_truth_p_dict[j]
+        new_histo_p[bin_index] = new_probability_for_bin
+
+    new_hiso_q = {}
+    for bin_index, all_index in mapping_bin_to_index.items():
+        new_probability_for_bin = 0
+        for j in all_index:
+            if j in q_dic:
+                new_probability_for_bin = new_probability_for_bin + q_dic[j]
+        new_hiso_q[bin_index] = new_probability_for_bin
+
+    return new_histo_p, new_hiso_q
 
 
 def transform_samples(b_p, histo_p, p_samples, U, B):
