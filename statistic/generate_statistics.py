@@ -9,7 +9,7 @@ from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, pr
 
 # default is without poissonization, we remove the option because it is not scalable
 # this return a list of empirical distribution dict, one for each trial
-
+# TODO large scale poisson.
 
 def generate_samples_scalable(trials, U, m, tempered, e, b):
     all_trials_p_emp = []
@@ -18,8 +18,11 @@ def generate_samples_scalable(trials, U, m, tempered, e, b):
     if tempered:
         prob_array = errFunct(U, uni_prob_arr, e, b)
     for _ in range(trials):
-        new_samples = scalabale_sample_distribution(
-            U, prob_array, m, flatten_dist=None)
+        if U >7**7:
+            new_samples = scalabale_sample_distribution(
+                U, prob_array, m, flatten_dist=None)
+        else:
+            new_samples = sampleSpecificProbDist(genValArr(U), prob_array, m)
         p_emp_dict = empirical_dist_no_zero(m, new_samples)
         all_trials_p_emp.append(p_emp_dict)
     return all_trials_p_emp
