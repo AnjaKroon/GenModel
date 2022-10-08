@@ -7,7 +7,7 @@ import math
 from time import time
 
 
-def stair(U, posU, ratio, S):
+def make_stair_prob(U, posU, ratio, S):
     # From my understanding
     # Take U * posU to get the amount of U that will have a stair function
     # S is the total amount of steps thus (U*posU)/S is the amount of U that each step will take
@@ -38,13 +38,14 @@ def stair(U, posU, ratio, S):
     current_dist = 0
     current_step = 0
     stair_histo = {}
-    if U < 6**6:
+    if U <= 6**6:
         for i, size_stair in enumerate(U_per_stairs):
             current_dist = p_each_stair[i]
             for _ in range(size_stair):
                 current_dist = p_each_stair[i]
                 stair_histo[current_step] = current_dist
                 current_step += 1
+       
     else:
         start_interval = 0
         for i, size_stair in enumerate(U_per_stairs):
@@ -62,6 +63,6 @@ if __name__ == '__main__':
     S = 6
 
     # U posU ratio and S are parameters that will define the stair function
-    stair_histo = stair(U, posU, ratio, S)
+    stair_histo = make_stair_prob(U, posU, ratio, S)
     print(np.sum(list(stair_histo.values())))
     print(stair_histo)

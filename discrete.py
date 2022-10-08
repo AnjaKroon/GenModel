@@ -118,7 +118,7 @@ def errFunct(U, init_array, e, percent_to_modify):
     for i in range(bins_last):
         # subtracts same amount to second half of bins you wish to change
         array[bins_first+i] = array[bins_first+i] - e_per_bin_last
-    # print(array) # for testing
+    should_be_one = np.sum(array)
     return array
 
 # Given: U the size of the probability space
@@ -156,7 +156,7 @@ NOT_TO_BIG = 10000
 #     print('the sampling tree is', tree_depht)
 #     # Then, we find even divisor
 
-
+# NOTDONE TODO scalable
 def scalabale_sample_distribution(U, function_prob, m, flatten_dist=None):
     size_subsampling_space = NOT_TO_BIG 
     probability = [
