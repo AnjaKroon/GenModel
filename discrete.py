@@ -187,6 +187,7 @@ def scalabale_sample_distribution(U, function_prob, m, flatten_dist=None):
     return samples
 
 
+
 if __name__ == '__main__':
     # This makes it so you can input U m e and b parameters when you run it in terminal.
     # This will make it easier to compare 'trials'. Will need to make a shell script

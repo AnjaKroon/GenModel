@@ -48,7 +48,7 @@ def stair(U, posU, ratio, S):
 
 if __name__ == '__main__':
     U = 6
-    posU = 10 # pos U is % of U with > 0 pmf
+    posU = 1 # pos U is % of U with > 0 pmf
     ratio = 3 # highest pmf/lowest pmf
     S = 3
     # U posU ratio and S are parameters that will define the stair function
