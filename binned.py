@@ -77,7 +77,7 @@ def split(list_a, chunk_size):
         yield list_a[i:i + chunk_size]
 
 
-def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
+def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
 
     predefined_bins_with_error = {}
     # be default, there is always the null space as well
@@ -87,8 +87,8 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
     for s_flat, indices in flat_regions.items():
         list_errors_index = []
         for index in indices:
-            if index in q_dic:
-                q_x = q_dic[index]
+            if index in q_dict:
+                q_x = q_dict[index]
                 p_x = s_flat
                 error = p_x - q_x
                 list_errors_index.append((error, index))
@@ -122,7 +122,8 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
         num_pos_flat_regions += 1  # increment the flat region index
 
     # find which bin have the more potential error if cut
-
+    if zero_error_regions > 1:
+        print('Warning, we got zero error regions')
     sorted_s_by_potential_cut_error = sorted(list(predefined_bins_with_error.keys()),
                                              key=lambda x: predefined_bins_with_error[x]['cut_error'])
     num_region_that_can_be_cut = (num_pos_flat_regions-zero_error_regions)
@@ -140,8 +141,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
 
     elif B > (num_pos_flat_regions+1) and B <= (2*num_region_that_can_be_cut + 1 + zero_error_regions):
         bin_ind = 0
-        how_many_flat_region_we_should_cut = 2 * \
-            num_region_that_can_be_cut + 1 + zero_error_regions - B
+        how_many_flat_region_we_should_cut = B - num_pos_flat_regions - 1
         list_of_remaining_regions = list(range(num_pos_flat_regions))
         for i in range(how_many_flat_region_we_should_cut):
             # by default, the zero error will be at the end so we can leave them in
@@ -159,6 +159,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
             bin_ind += 1
     else:  # B>= 2s, we randomly cut the bins, nothing else to be done. The error will be flat at this point.
         num_random_cut = B - 2*num_region_that_can_be_cut - 1 - zero_error_regions
+        random.seed(2)
         bin_with_cut = random.sample(
             list(range(num_region_that_can_be_cut*2)), num_random_cut)
         cuts_per_bin = {}
@@ -200,8 +201,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
                 dict_pos_neg['neg_indices']
             mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
             bin_ind += 1
-    
-    
+
     new_histo_p = {}
     for bin_index, all_index in mapping_bin_to_index.items():
         new_probability_for_bin = 0
@@ -211,15 +211,19 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
                     ground_truth_p_dict[j]
         new_histo_p[bin_index] = new_probability_for_bin
 
-    new_hiso_q = {}
+    new_histo_q = {}
+
     for bin_index, all_index in mapping_bin_to_index.items():
         new_probability_for_bin = 0
         for j in all_index:
-            if j in q_dic:
-                new_probability_for_bin = new_probability_for_bin + q_dic[j]
-        new_hiso_q[bin_index] = new_probability_for_bin
+            if j in q_dict:
+                new_probability_for_bin = new_probability_for_bin + q_dict[j]
+        new_histo_q[bin_index] = new_probability_for_bin
 
-    return new_histo_p, new_hiso_q
+    # add the zero bin
+    new_histo_q[B] = 1 - np.sum(list(new_histo_q.values()))
+    new_histo_p[B] = 0
+    return new_histo_p, new_histo_q
 
 
 def transform_samples(b_p, histo_p, p_samples, U, B):

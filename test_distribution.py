@@ -20,8 +20,10 @@ if __name__ == '__main__':
     init_e = 0.2
     init_b = 60
     trials = 50
+    S = 3
+    ratio = 2
     distribution_type = 'STAIRS'  # STAIRS
-    Bs = [4,5,6]
+    Bs = [4,5,6,7]
     power_base = 6
     list_U = [power_base**power_base]
     list_M = [1000]
@@ -42,8 +44,7 @@ if __name__ == '__main__':
             if distribution_type == 'UNIFORM':
                 ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
             elif distribution_type == 'STAIRS':
-                S = 3
-                ratio = 2
+                
                 ground_truth_p = make_stair_prob(
                     U, posU=(math.factorial(power_base)/U), ratio=ratio,  S=S)
             else:
@@ -83,12 +84,8 @@ if __name__ == '__main__':
                 compile_all_stats(easy_tempered_samples_list, stat_easy_temper,
                                   stat_easy_temper_baseline, U, B=B)  # compile stats for tempered
 
-            # put_on_plot(Bs, {'uni': B_uni})
-            # put_on_plot(Bs, {'hard tempered': B_temper})
-            # put_on_plot(Bs, {'mid tempered': B_mid_temper})
-            # put_on_plot(Bs, {'easy tempered': B_easy_temper})
 
-            # plot_stat('chi_square_prob.pdf', 'Bins', 'goodness of fit')
+            # TODO store those results before plotting
             print('Generating S plots...')
 
             put_on_plot(Bs, {'uni': stat_uni})

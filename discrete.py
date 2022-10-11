@@ -91,7 +91,7 @@ def makeUniProbArr(U):
 # percent_to_modify_null is the percentage of error to be situaded in zero space
 
 
-def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.001):
+def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
 
     array = np.copy(init_array)  # copy to avoid modifying the passed array
 
