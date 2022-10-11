@@ -14,8 +14,8 @@ def make_stair_prob(U, posU, ratio, S):
     # ratio is highest pmf/lowest pmf -- representative of the amount of "y step" in between each stair
     # pmf of each value for the whole U will have to sum to 1
     # highest pmf / lowest pmf = ratio -- (?/common denom) / (?/common denom)
-    U_with_stair = int(U*posU/100)
-    U_zero = U - U_with_stair
+    U_with_stair = int(posU * U)
+ 
 
     # be careful to consider the case this may be fractional
     U_for_each_S = math.floor(U_with_stair/S)
