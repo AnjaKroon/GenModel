@@ -91,7 +91,7 @@ def makeUniProbArr(U):
 # percent_to_modify_null is the percentage of error to be situaded in zero space
 
 
-def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0):
+def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.001):
 
     array = np.copy(init_array)  # copy to avoid modifying the passed array
 
@@ -118,7 +118,9 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0):
 
     e_added = e_per_section/bins_added  # error amount to add per element
     e_removed = e_per_section/bins_removed  # error amount to subtract per element
-
+    """
+    modification in the positive space
+    """
     # randomly select where we add and remove.
     # We create a list with all indices of the pos. space, then shuffle the list.
     shuffled_indices_pos = list(range(U_pos))
@@ -130,12 +132,22 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0):
 
     for i in shuffled_indices_pos[bins_added_in_pos:bins_added_in_pos+bins_removed]:
         # check that we are not removing too much
+       
         if array[i] < e_removed:
             print('The negative error is too much', e_removed,
                   ', too concentrated', percent_pos_space)
             raise EXCEPTION
         # subtracts same amount to second half of bins you wish to change
         array[i] = array[i] - e_removed
+    
+    """
+    modification in the null/zero space
+    """
+    # We just add in order in the null space
+    for i in range(U_pos, U_pos+bins_added_in_null):
+        assert array[i] == 0 # the array should be sorted s.t. the zero should be there
+        # adds same amount to first half of bins you wish to change
+        array[i] = e_added
 
     # this check that the array sum up to one, to be a valid prob. I use assert close because something it won't be excatly one because of numerical error.
     should_be_one = np.sum(array)

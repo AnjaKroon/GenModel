@@ -18,7 +18,7 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
     if tempered:
         prob_array = errFunct(U, prob_array, e, b)
     for _ in range(trials):
-        if U <= 6**6:
+        if U <= 7**7:
             new_samples = sampleSpecificProbDist(genValArr(U),prob_array , m)
         else:
             new_samples = scalabale_sample_distribution(

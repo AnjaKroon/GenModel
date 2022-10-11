@@ -38,7 +38,7 @@ def make_stair_prob(U, posU, ratio, S):
     current_dist = 0
     current_step = 0
     stair_histo = {}
-    if U <= 6**6:
+    if U <= 7**7:
         for i, size_stair in enumerate(U_per_stairs):
             current_dist = p_each_stair[i]
             for _ in range(size_stair):
