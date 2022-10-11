@@ -48,7 +48,9 @@ def p_to_bp_random(histo_p, U, B):
     for bin_index, all_index in mapping_bin_to_index.items():
         new_probability_for_bin = 0
         for j in all_index:
-            new_probability_for_bin = new_probability_for_bin + histo_p[j]
+            # if j not in histo_p, we assume that histo_p[j] = 0, so we can skip
+            if j in histo_p:
+                new_probability_for_bin = new_probability_for_bin + histo_p[j]
         new_histo[bin_index] = new_probability_for_bin
     return new_histo, mapping_from_index_to_bin
 
@@ -78,8 +80,10 @@ def split(list_a, chunk_size):
 def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
 
     predefined_bins_with_error = {}
+    # be default, there is always the null space as well
     flat_regions = find_flat_regions(ground_truth_p_dict)
-    s = 0
+    num_pos_flat_regions = 0
+    zero_error_regions = 0
     for s_flat, indices in flat_regions.items():
         list_errors_index = []
         for index in indices:
@@ -111,34 +115,38 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
         cut_error = cumul_neg_error + cumul_pos_error - \
             np.abs((cumul_pos_error-cumul_neg_error))
         # now we know how much error is contained in a split
-        predefined_bins_with_error[s] = {
+        predefined_bins_with_error[num_pos_flat_regions] = {
             'cut_error': cut_error, 'pos_indices': indices_pos_bin, 'neg_indices': indices_neg_bin}
-
-        s += 1  # increment the flat region index
+        if cut_error == 0:
+            zero_error_regions += 1
+        num_pos_flat_regions += 1  # increment the flat region index
 
     # find which bin have the more potential error if cut
 
     sorted_s_by_potential_cut_error = sorted(list(predefined_bins_with_error.keys()),
                                              key=lambda x: predefined_bins_with_error[x]['cut_error'])
+    num_region_that_can_be_cut = (num_pos_flat_regions-zero_error_regions)
     mapping_bin_to_index = {}
     mapping_from_index_to_bin = {}
     # now we need to cut the predefined bins in the number of wanted bins B
-    if B < s:  # NOT EXACT SOL
+    if B < num_pos_flat_regions+1:  # NOT EXACT SOL
         raise NotImplemented
-    elif B == s:  # easiest scenario, we just return all flat regions
-        for region_to_left_uncut in range(s):
+    elif B == num_pos_flat_regions+1:  # easiest scenario, we just return all flat regions
+        for region_to_left_uncut in range(num_pos_flat_regions):
             dict_pos_neg = predefined_bins_with_error[region_to_left_uncut]
             indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
                 dict_pos_neg['neg_indices']
             mapping_bin_to_index[region_to_left_uncut] = indices_of_the_whole_region
 
-    elif B > s and B < 2*s:
+    elif B > (num_pos_flat_regions+1) and B <= (2*num_region_that_can_be_cut + 1 + zero_error_regions):
         bin_ind = 0
-        how_many_flat_region_we_can_cut = 2*s - B
-        list_of_remaining_regions = list(range(s))
-        for i in range(how_many_flat_region_we_can_cut):
+        how_many_flat_region_we_should_cut = 2 * \
+            num_region_that_can_be_cut + 1 + zero_error_regions - B
+        list_of_remaining_regions = list(range(num_pos_flat_regions))
+        for i in range(how_many_flat_region_we_should_cut):
+            # by default, the zero error will be at the end so we can leave them in
             region_to_cut = sorted_s_by_potential_cut_error[i]
-            list_of_remaining_regions.delete(region_to_cut)
+            list_of_remaining_regions.remove(region_to_cut)
             mapping_bin_to_index[bin_ind] = predefined_bins_with_error[region_to_cut]['pos_indices']
             bin_ind += 1
             mapping_bin_to_index[bin_ind] = predefined_bins_with_error[region_to_cut]['neg_indices']
@@ -149,9 +157,10 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
                 dict_pos_neg['neg_indices']
             mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
             bin_ind += 1
-    else:  # B>= 2s, we randomly cut the bins, nothing else to be done
-        num_random_cut = B - 2 * s
-        bin_with_cut = random.sample(list(range(s*2)), num_random_cut)
+    else:  # B>= 2s, we randomly cut the bins, nothing else to be done. The error will be flat at this point.
+        num_random_cut = B - 2*num_region_that_can_be_cut - 1 - zero_error_regions
+        bin_with_cut = random.sample(
+            list(range(num_region_that_can_be_cut*2)), num_random_cut)
         cuts_per_bin = {}
         for c in bin_with_cut:
             if c in cuts_per_bin:
@@ -159,16 +168,16 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
             else:
                 cuts_per_bin[c] = 1
         bin_ind = 0
-        for i in range(s):
+        list_of_remaining_regions = list(range(num_pos_flat_regions))
+        for i in range(num_region_that_can_be_cut):
             region_to_cut = sorted_s_by_potential_cut_error[i]
-
+            list_of_remaining_regions.remove(region_to_cut)
             pos_indices_region_i = predefined_bins_with_error[region_to_cut]['pos_indices']
             pos_ind = i*2
             cuts_per_this_region = 0
             if pos_ind in cuts_per_bin:
                 cuts_per_this_region = cuts_per_bin[pos_ind]
-            
-           
+
             chunks_of_pos = split(pos_indices_region_i, math.ceil(
                 len(pos_indices_region_i)/(1+cuts_per_this_region)))
             for chunk_indices in chunks_of_pos:
@@ -185,7 +194,14 @@ def p_to_bp_algo(ground_truth_p_dict, q_dic,  U, B):
             for chunk_indices in chunks_of_neg:
                 mapping_bin_to_index[bin_ind] = chunk_indices
                 bin_ind += 1
-
+        for region_to_left_uncut in list_of_remaining_regions:
+            dict_pos_neg = predefined_bins_with_error[region_to_left_uncut]
+            indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
+                dict_pos_neg['neg_indices']
+            mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
+            bin_ind += 1
+    
+    
     new_histo_p = {}
     for bin_index, all_index in mapping_bin_to_index.items():
         new_probability_for_bin = 0

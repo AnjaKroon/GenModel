@@ -1,7 +1,9 @@
 # The objective of this code is to create samples from a slightly skewed uniform probability distribution for discrete events.
 
 from random import uniform
+import random
 import sys
+from tkinter import EXCEPTION
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import rv_discrete
@@ -86,39 +88,70 @@ def makeUniProbArr(U):
 # e which is the total amount of error that is introduced in the probability distribution array, and
 # percent_to_modify
 # Returns: new probability distribution.
+# percent_to_modify_null is the percentage of error to be situaded in zero space
 
 
-def errFunct(U, init_array, e, percent_to_modify):
+def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.001):
 
     array = np.copy(init_array)  # copy to avoid modifying the passed array
 
+    U_pos = np.where(array)[0].shape[0]  # count the positive space
+
+    # first, we compute the error on the positive space
+    percent_pos_space = percent_to_modify-percent_to_modify_null
+    assert percent_pos_space >= 0
     # works to modify probability dist. array, works for odd U
     # Tells us how many bins in the probability distribution we are changing
-    amt_to_modify = U*(percent_to_modify/100)
+    amt_to_modify_pos = U_pos*(percent_pos_space/100)
+    # on the null space, we can only add error.
+    amt_to_modify_null = (U-U_pos) * (percent_to_modify_null/100)
 
-    if amt_to_modify * 1/U < e:
-        print('!!! Cant modify ', e, 'amount on only',
-              percent_to_modify, 'percent of the support')
-        raise Exception
-    # If |U| is odd, due to truncation in division, the 'extra bin' will go on the subtraction half.
-    half_point = amt_to_modify//2
+    # If |U_pos| is odd, due to truncation in division, the 'extra bin' will go on the subtraction half.
+    half_point = amt_to_modify_pos//2
     # That means for this case, the bins_last will need to 'redistribute' how much is subtracted per bin
 
-    bins_first = int(half_point)
-    bins_last = int(amt_to_modify - half_point)
+    bins_added_in_pos = int(half_point)
+    bins_removed = int(amt_to_modify_pos - half_point)
+    bins_added_in_null = int(amt_to_modify_null)
+    bins_added = bins_added_in_null + bins_added_in_pos
     e_per_section = e/2
-    e_per_bin_first = e_per_section/bins_first  # amount to add to the first section
-    # amount to subtract from the second section
-    e_per_bin_last = e_per_section/bins_last
 
-    for i in range(bins_first):
+    e_added = e_per_section/bins_added  # error amount to add per element
+    e_removed = e_per_section/bins_removed  # error amount to subtract per element
+    """
+    modification in the positive space
+    """
+    # randomly select where we add and remove.
+    # We create a list with all indices of the pos. space, then shuffle the list.
+    shuffled_indices_pos = list(range(U_pos))
+    random.shuffle(shuffled_indices_pos)
+
+    for i in shuffled_indices_pos[:bins_added_in_pos]:
         # adds same amount to first half of bins you wish to change
-        array[i] = array[i] + e_per_bin_first
+        array[i] = array[i] + e_added
 
-    for i in range(bins_last):
+    for i in shuffled_indices_pos[bins_added_in_pos:bins_added_in_pos+bins_removed]:
+        # check that we are not removing too much
+       
+        if array[i] < e_removed:
+            print('The negative error is too much', e_removed,
+                  ', too concentrated', percent_pos_space)
+            raise EXCEPTION
         # subtracts same amount to second half of bins you wish to change
-        array[bins_first+i] = array[bins_first+i] - e_per_bin_last
+        array[i] = array[i] - e_removed
+    
+    """
+    modification in the null/zero space
+    """
+    # We just add in order in the null space
+    for i in range(U_pos, U_pos+bins_added_in_null):
+        assert array[i] == 0 # the array should be sorted s.t. the zero should be there
+        # adds same amount to first half of bins you wish to change
+        array[i] = e_added
+
+    # this check that the array sum up to one, to be a valid prob. I use assert close because something it won't be excatly one because of numerical error.
     should_be_one = np.sum(array)
+    np.testing.assert_allclose(should_be_one, 1)
     return array
 
 # Given: U the size of the probability space
@@ -158,7 +191,7 @@ NOT_TO_BIG = 10000
 
 # NOTDONE TODO scalable
 def scalabale_sample_distribution(U, function_prob, m, flatten_dist=None):
-    size_subsampling_space = NOT_TO_BIG 
+    size_subsampling_space = NOT_TO_BIG
     probability = [
         1/size_subsampling_space for _ in range(size_subsampling_space)]
     values = list(range(size_subsampling_space))

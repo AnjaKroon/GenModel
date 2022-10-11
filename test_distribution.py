@@ -1,11 +1,8 @@
 from tqdm import tqdm
-from binned import p_to_bp_random
-from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist
-from statistic.generate_statistics import chi_square_stat, perform_binning_and_compute_stats, genSstat, generate_samples_scalable, get_S, get_chi_square
+from discrete import makeUniProbArr, prob_array_to_dict
+from statistic.generate_statistics import chi_square_stat, perform_binning_and_compute_stats, genSstat, generate_samples_scalable
 import matplotlib.pyplot as plt
 from plot_utils import plot_stat, put_on_plot
-from sampling.poisson import poisson_empirical_dist
-
 import numpy as np
 import random
 
@@ -18,9 +15,10 @@ if __name__ == '__main__':
     init_e = 0.2
     init_b = 60
     trials = 50
-
-    Bs = [2, 3]
-    list_U = [6**6]
+    distribution_type = 'STAIRS'  # STAIRS
+    Bs = [4,5,6]
+    power_base = 6
+    list_U = [power_base**power_base]
     list_M = [1000]
     # for m in list_M:
     for m in list_M:

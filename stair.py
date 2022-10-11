@@ -13,36 +13,27 @@ def stair(U, posU, ratio, S):
     # ratio is highest pmf/lowest pmf -- representative of the amount of "y step" in between each stair
     # pmf of each value for the whole U will have to sum to 1
     # highest pmf / lowest pmf = ratio -- (?/common denom) / (?/common denom)
-    U_with_stair = U*posU
-    U_for_each_S = U_with_stair/S # be careful to consider the case this may be fractional
+    U_with_stair = int(posU * U)
+ 
 
     middle_step = math.floor(S/2)
     dist_middle_step = 1/U_with_stair
     stair_histo = {}
-
-    # DIST_DELTA is the standardized value in which the pmf increments between each step
-    highest = ratio
-    lowest = 1
-    DIST_DELTA = ((highest-lowest)/(S-1))/U_with_stair
-
-    current_step = middle_step
-    current_dist = dist_middle_step
-    while (current_step>-1):
-        stair_histo[current_step] =  current_dist
-        current_dist = current_dist + DIST_DELTA
-        current_step = current_step - 1 # to iterate though the while loop/the left half of the steps
-    
-    current_step = middle_step # reset the value of current step
-    current_dist = dist_middle_step # reset the value of the current distribution
-    current_step = current_step +1 # I don't want to overwrite the middle step. I want to start at the next one
-    while (current_step<S):
-        current_dist = current_dist - DIST_DELTA
-        stair_histo[current_step] = current_dist
-        current_step = current_step +1 # to iterature through the while loop/the right half of the steps
-    
-    # to check
-
-
+    if U <= 7**7:
+        for i, size_stair in enumerate(U_per_stairs):
+            current_dist = p_each_stair[i]
+            for _ in range(size_stair):
+                current_dist = p_each_stair[i]
+                stair_histo[current_step] = current_dist
+                current_step += 1
+       
+    else:
+        start_interval = 0
+        for i, size_stair in enumerate(U_per_stairs):
+            current_dist = p_each_stair[i]
+            interval = [start_interval, start_interval+size_stair]
+            stair_histo[i] = {'interval': interval, 'p': current_dist}
+            start_interval += size_stair
     return stair_histo
 
 
