@@ -17,13 +17,13 @@ if __name__ == '__main__':
     np.random.seed(3)
     random.seed(3)
 
-    init_e = 0.2
-    init_b = 60
+    init_e = 0.1
+    init_b = 30
     trials = 50
     S = 3
     ratio = 2
     distribution_type = 'STAIRS'  # STAIRS
-    Bs = [4,5,6,7]
+    Bs = [4, 5, 6, 7, 8]
     power_base = 6
     list_U = [power_base**power_base]
     list_M = [1000]
@@ -44,7 +44,7 @@ if __name__ == '__main__':
             if distribution_type == 'UNIFORM':
                 ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
             elif distribution_type == 'STAIRS':
-                
+
                 ground_truth_p = make_stair_prob(
                     U, posU=(math.factorial(power_base)/U), ratio=ratio,  S=S)
             else:
@@ -52,13 +52,13 @@ if __name__ == '__main__':
             # first, we generate all the samples here. The same samples should be reused for each B.
             # If it takes too much memory, we can put this in a for loop.
             ground_truth_samples_list = generate_samples_scalable(ground_truth_p,
-                trials, U, m, tempered=False, e=0, b=100)
+                                                                  trials, U, m, tempered=False, e=0, b=100)
             tempered_samples_list = generate_samples_scalable(ground_truth_p,
-                trials, U, m, tempered=True, e=init_e, b=init_b)
+                                                              trials, U, m, tempered=True, e=init_e, b=init_b)
             mid_tempered_samples_list = generate_samples_scalable(ground_truth_p,
-                trials, U, m, tempered=True, e=init_e*1.5, b=init_b)
+                                                                  trials, U, m, tempered=True, e=init_e*1.5, b=init_b)
             easy_tempered_samples_list = generate_samples_scalable(ground_truth_p,
-                trials, U, m, tempered=True, e=init_e*2, b=init_b)
+                                                                   trials, U, m, tempered=True, e=init_e*2, b=init_b)
 
             for B in tqdm(Bs):  # For each bin granularity
 
@@ -84,21 +84,15 @@ if __name__ == '__main__':
                 compile_all_stats(easy_tempered_samples_list, stat_easy_temper,
                                   stat_easy_temper_baseline, U, B=B)  # compile stats for tempered
 
-
             # TODO store those results before plotting
             print('Generating S plots...')
 
-            put_on_plot(Bs, {'uni': stat_uni})
-            put_on_plot(Bs, {'hard tempered': stat_temper})
-            put_on_plot(Bs, {'mid tempered': stat_mid_temper})
-            put_on_plot(Bs, {'easy tempered': stat_easy_temper})
+            put_on_plot(Bs, {'uni': stat_uni, 'hard tempered': stat_temper,
+                        'mid tempered': stat_mid_temper, 'easy tempered': stat_easy_temper})
 
-            plot_stat('algo_S.pdf', 'Bins', 'S')
+            plot_stat('algo_S.pdf', 'Bins', 'Emp  irical total variation error')
 
-            put_on_plot(Bs, {'uni random': stat_uni_baseline})
-            put_on_plot(Bs, {'hard tempered random': stat_temper_baseline})
-            put_on_plot(Bs, {'mid tempered random': stat_mid_temper_baseline})
-            put_on_plot(
-                Bs, {'easy tempered random': stat_easy_temper_baseline})
+            put_on_plot(Bs, {'uni random': stat_uni_baseline, 'hard tempered random': stat_temper_baseline,
+                        'mid tempered random': stat_mid_temper_baseline, 'easy tempered random': stat_easy_temper_baseline})
 
-            plot_stat('random_S.pdf', 'Bins', 'S')
+            plot_stat('random_S.pdf', 'Bins', 'Empirical total variation error')
