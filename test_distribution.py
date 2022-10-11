@@ -16,8 +16,8 @@ if __name__ == '__main__':
     init_b = 60
     trials = 50
     distribution_type = 'STAIRS'  # STAIRS
-    Bs = [4,5,6]
-    power_base = 6
+    Bs = [4,5,6, 7]
+    power_base = 7
     list_U = [power_base**power_base]
     list_M = [1000]
     # for m in list_M:
