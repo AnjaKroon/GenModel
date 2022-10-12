@@ -107,7 +107,7 @@ def samples_to_histo(samples):
             empirical_dict.update({str(item): val})
         else:                   
             empirical_dict.update({str(item):increment})            # add item to empirical_dict with the base "increment"
-            
+    print(empirical_dict)    
     # empirical_dict = {'1-2-3-4-5-6':0.8, '2-3-2-3-5-6':0.1,'6-5-2-3-4-1':0.1 }
     should_be_one = np.sum(list(empirical_dict.values()))
     print('should_be_one',should_be_one)
@@ -131,7 +131,7 @@ def build_ground_truth_dict():
             ground_truth_dict.update({str(item): round((1/(2*(6*5*4*3*2*1))),5)})
         else:
             ground_truth_dict.update({str(item): 0})
-    # print(ground_truth_dict)
+    print(ground_truth_dict)
     should_be_one = np.sum(list(ground_truth_dict.values()))
     print('should_be_one',should_be_one)
     return ground_truth_dict
@@ -144,6 +144,12 @@ def convert_key_sequence_to_int(histo_dict):
     # it is important that the stair shape is preserved on the ordering,
     # so 0...360 should be the likely permutation, 360...720 the rare, and the rest can be mapped to some int value
     # I would use the number of the sequence to give a natural order
+
+    # get length of histo_dict
+    # we are assuming s = 2 and numbers = 6 
+    # first half the permutations would be more likely case
+    # second half the permutations would be less likely case
+    # 
     return histo_dict
 
 if __name__ == '__main__':
