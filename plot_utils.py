@@ -25,7 +25,7 @@ def get_color(i):
     if i >= len(cycle):
         return cycle[i % len(cycle)]
     else:
-        return cycle[rd.randint(0,9)]
+        return cycle[i]
 
 
 def get_ci(trials):
@@ -40,8 +40,8 @@ def plot_stat(title, xlabel, ylabel):
     # print("dict_y", dict_y)
     # put_on_plot(x, dict_y)
 
-    SMALL_SIZE = 8
-    matplotlib.rcParams.update({'font.size': 8})
+    SMALL_SIZE = 5
+    matplotlib.rcParams.update({'font.size': 16})
 
     '''
     plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
@@ -56,7 +56,7 @@ def plot_stat(title, xlabel, ylabel):
 
     # idea to break this up here....
     # essentially invoke part 1 multiple times and then invoke part 2 as below
-    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.legend()
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.tight_layout()
