@@ -39,7 +39,6 @@ def stair_mapping(incoming_X_arr):
         else:
             histo.update({str(incoming_X_arr[j]): 0})      # should not trigger this but just to be safe 
     # IMPORTANT: TO ADD TO A DICTIONARY, I HAD TO TURN THE x EVENT INTO A STRING. IF YOU WISH TO USE AS AN ARRAY NEED TO CONVERT BACK
-
     return histo
 
 def make_stair_prob(U, posU, ratio, S):

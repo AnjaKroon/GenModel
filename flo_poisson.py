@@ -1,10 +1,8 @@
 
 from plot_utils import plot_stat, put_on_plot
-
 import sys
 import numpy as np
 import random
-
 from statistic.generate_statistics import get_S
 
 
@@ -57,7 +55,6 @@ if __name__ == '__main__':
         for U in list_U:
 
             # BINNED CASE
-
             S_binned_uni_U = get_S(trials, U, m, tempered=False,
                                    e=e, b=b, B=int(U/bins), with_poisson=False)
             S_binned_uni_poisson_U = get_S(
