@@ -9,10 +9,9 @@ from time import time
 from itertools import combinations, permutations
 from read_pickle import read_pickle_file
 from statistic.generate_statistics import genSstat, perform_binning_and_compute_stats
+from binned import p_to_bp_random, transform_samples 
 
 # OBSOLETE I THINK
-
-
 def stair_mapping(incoming_X_arr):
     # takes an incoming arr of x's
     # R.V. X = x where x = [1,2,3,4,5,6]
@@ -38,7 +37,6 @@ def stair_mapping(incoming_X_arr):
             elif i == 6:
                 check_one_of_ea[5] = 1
         if (0 in check_one_of_ea):
-            # check syntax how to update dictionaries # will also catch edge cases of X not including a num 1-6
             histo.update({str(incoming_X_arr[j]): 0})
         elif (incoming_X_arr[j][0] > incoming_X_arr[j][5]):
             histo.update({str(incoming_X_arr[j]): (3/(2**6))})
@@ -226,6 +224,17 @@ if __name__ == '__main__':
         empirical_dict, KEY_CONVERTING_DICT)
     ground_truth_dict = convert_key_sequence_to_int(
         ground_truth_dict, KEY_CONVERTING_DICT)
+    
+    print(empirical_dict)
+    # print(ground_truth_dict)
+    
+    # BINNING HERE?
+    U = len(samples_from_file)
+    print(U)
+    B = 3 # later to be changed to an array rotating through
+    # b_p = p_to_bp_random(empirical_dict, U, B)      
+    # b_out = transform_samples(b_p, sample_histo, p_samples, U, B)  # returns new samples
+
 
     # when we plot the dict in order, it should look like a stair
     x = list(ground_truth_dict.keys())

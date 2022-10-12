@@ -266,7 +266,7 @@ if __name__ == '__main__':
     b_p = p_to_bp_random(sample_histo, U, B)  # works
     print(b_p)
     print('probability sum to : ', sum(b_p.values()))
-    b_out = transform_samples(b_p, sample_histo, p_samples, U, B)  # works
+    b_out = transform_samples(b_p, sample_histo, p_samples, U, B)  # returns new samples
 
     # the question is how to get the relevant things in
     # need some sort of histo for the transform_samples -- there should be an array of the poissonized samples
