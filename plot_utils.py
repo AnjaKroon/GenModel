@@ -40,8 +40,8 @@ def plot_stat(title, xlabel, ylabel):
     # print("dict_y", dict_y)
     # put_on_plot(x, dict_y)
 
-    SMALL_SIZE = 5
-    matplotlib.rcParams.update({'font.size': 5})
+    SMALL_SIZE = 8
+    matplotlib.rcParams.update({'font.size': 8})
 
     '''
     plt.rc('font', size=SMALL_SIZE)          # controls default text sizes

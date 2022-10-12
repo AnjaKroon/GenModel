@@ -9,3 +9,5 @@ Out*
 *.pdf
 *.DS_Store
 /Notes
+/S_*
+compile*

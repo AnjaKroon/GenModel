@@ -11,7 +11,6 @@ from sampling.poisson import poisson_empirical_dist
 import numpy as np
 import random
 
-
 if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
@@ -41,14 +40,19 @@ if __name__ == '__main__':
             stat_temper_baseline = []
             stat_mid_temper_baseline = []
             stat_easy_temper_baseline = []
+            all_U = []
             if distribution_type == 'UNIFORM':
                 ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
+                # put_on_plot(all_U, ground_truth_p)
             elif distribution_type == 'STAIRS':
-                
                 ground_truth_p = make_stair_prob(
                     U, posU=(math.factorial(power_base)/U), ratio=ratio,  S=S)
+                for i in range(U+1):
+                    all_U.append(i)
+                put_on_plot(all_U, ground_truth_p)
             else:
                 raise NotImplemented
+            plot_stat('PMF_Uniform_Stairs.pdf', 'U', 'Probability')
             # first, we generate all the samples here. The same samples should be reused for each B.
             # If it takes too much memory, we can put this in a for loop.
             ground_truth_samples_list = generate_samples_scalable(ground_truth_p,
@@ -63,7 +67,7 @@ if __name__ == '__main__':
             for B in tqdm(Bs):  # For each bin granularity
 
                 # this fonction takes the samples, compile statistics, then store the result in all_stat_list
-                def compile_all_stats(all_samples_list, all_stat_list, baseline_all_stat_list,   U,  B):
+                def compile_all_stats(all_samples_list, all_stat_list, baseline_all_stat_list,   U,  B, title):
 
                     S_trials_for_this_B_list = perform_binning_and_compute_stats(
                         all_samples_list, ground_truth_p, U, B, stat_func=genSstat)
@@ -72,20 +76,23 @@ if __name__ == '__main__':
                                    for i in S_trials_for_this_B_list]
                     all_stat_list.append(algo_stat)
                     baseline_all_stat_list.append(random_stat)
+                    name = ("compile_stats_" + str(title) + ".txt")
+                    with open(name, "w") as output:
+                        output.write(str(baseline_all_stat_list))               # writing baseline_all_stat_list into file -- should it be all_stat_list?
 
                 # compile stats for ground truth
                 compile_all_stats(ground_truth_samples_list,
-                                  stat_uni, stat_uni_baseline, U, B=B)
+                                  stat_uni, stat_uni_baseline, U, B=B, title="ground_truth_samples")
                 # compile stats for tempered
                 compile_all_stats(tempered_samples_list,
-                                  stat_temper, stat_temper_baseline, U, B=B)
+                                  stat_temper, stat_temper_baseline, U, B=B, title="tempered samples")
                 compile_all_stats(mid_tempered_samples_list, stat_mid_temper,
-                                  stat_mid_temper_baseline, U, B=B)  # compile stats for tempered
+                                  stat_mid_temper_baseline, U, B=B, title="mid tempered samples")  # compile stats for tempered
                 compile_all_stats(easy_tempered_samples_list, stat_easy_temper,
-                                  stat_easy_temper_baseline, U, B=B)  # compile stats for tempered
+                                  stat_easy_temper_baseline, U, B=B, title="easy tempered samples")  # compile stats for tempered
 
-
-            # TODO store those results before plotting
+            # TODO store those results before plotting -- done
+            
             print('Generating S plots...')
 
             put_on_plot(Bs, {'uni': stat_uni})
@@ -100,5 +107,11 @@ if __name__ == '__main__':
             put_on_plot(Bs, {'mid tempered random': stat_mid_temper_baseline})
             put_on_plot(
                 Bs, {'easy tempered random': stat_easy_temper_baseline})
+            
+
+            '''
+            plot pmf of ground truth p for both uniform and stair
+            plot pmf of stat_temper_baseline, stat_mid_temper_baseline, stat_easy_temper_baseline
+            '''
 
             plot_stat('random_S.pdf', 'Bins', 'S')

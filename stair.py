@@ -6,6 +6,41 @@ from scipy.stats import rv_discrete
 import math
 from time import time
 
+def stair_mapping(incoming_X_arr):
+    # takes an incoming arr of x's 
+    # R.V. X = x where x = [1,2,3,4,5,6]
+    # if an x has x[0] > x[5] -- pr = 3/(2**6)
+    # if an x has x[5] > x[0] -- pr = 1/(2**6)
+    # if an x does not contain a full permutation, pr = 0
+
+    permutations_6 = [1,2,3,4,5,6]
+    histo = {}
+    for j in range(len(incoming_X_arr)): # for each possible event in incoming X arr
+        check_one_of_ea = [0,0,0,0,0,0]        
+        for i in incoming_X_arr[j]: # for each list item in each possible event
+            if i == 1:
+                check_one_of_ea[0] = 1
+            elif i == 2:
+                check_one_of_ea[1] = 1
+            elif i == 3:
+                check_one_of_ea[2] = 1
+            elif i == 4:
+                check_one_of_ea[3] = 1
+            elif i ==5:
+                check_one_of_ea[4] = 1
+            elif i == 6:
+                check_one_of_ea[5] = 1
+        if (0 in check_one_of_ea):
+            histo.update({str(incoming_X_arr[j]): 0})      # check syntax how to update dictionaries # will also catch edge cases of X not including a num 1-6
+        elif (incoming_X_arr[j][0] > incoming_X_arr[j][5]):
+            histo.update({str(incoming_X_arr[j]): (3/(2**6))})
+        elif (incoming_X_arr[j][0] < incoming_X_arr[j][5]):
+            histo.update({str(incoming_X_arr[j]): (1/(2**6))})
+        else:
+            histo.update({str(incoming_X_arr[j]): 0})      # should not trigger this but just to be safe 
+    # IMPORTANT: TO ADD TO A DICTIONARY, I HAD TO TURN THE x EVENT INTO A STRING. IF YOU WISH TO USE AS AN ARRAY NEED TO CONVERT BACK
+
+    return histo
 
 def make_stair_prob(U, posU, ratio, S):
     # From my understanding
@@ -62,7 +97,13 @@ if __name__ == '__main__':
     ratio = 3  # highest pmf/lowest pmf
     S = 6
 
+    soln = {}
+    X = [[1,2,3,4,5,6], [3,4,5,6,1,2], [1,2,2,3,4,5], [4,5,6,1,2,3], [1,2,4,3,5,6], [6,5,4,3,2,1]]
+    soln = stair_mapping(X)
+    print(soln)
+
     # U posU ratio and S are parameters that will define the stair function
     stair_histo = make_stair_prob(U, posU, ratio, S)
     print(np.sum(list(stair_histo.values())))
     print(stair_histo)
+
