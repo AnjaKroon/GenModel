@@ -22,7 +22,7 @@ if __name__ == '__main__':
     S = 3
     ratio = 2
     distribution_type = 'STAIRS'  # STAIRS
-    Bs = [4, 5, 6, 7, 8]
+    Bs = [3,4,5,6]
     power_base = 6
     list_U = [power_base**power_base]
     list_M = [1000]
