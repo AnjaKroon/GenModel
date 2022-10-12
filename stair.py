@@ -89,6 +89,27 @@ def make_stair_prob(U, posU, ratio, S):
             start_interval += size_stair
     return stair_histo
 
+# takes the samples
+def samples_to_histo(samples):
+    # TODO actually build the histo from the samples
+    empirical_dict = {'1-2-3-4-5-6':0.3, '2-3-2-3-5-6':0.1,'6-5-2-3-4-1':0.1 }
+    should_be_one = np.sum(list(empirical_dict.values()))
+    print('should_be_one',should_be_one)
+    return empirical_dict
+
+
+# by default, it is 6
+def build_ground_truth_dict():
+    # return a dict with all permutation as keys, and the value are the ground truth pmf either (3/(2**6)) or (1/(2**6))
+    ground_truth_dict = {}
+    ground_truth_dict['1-2-3-4-5-6'] = 3/(2**6)
+    # ...
+    
+    
+    should_be_one = np.sum(list(ground_truth_dict.values()))
+    print('should_be_one',should_be_one)
+    return ground_truth_dict
+
 
 if __name__ == '__main__':
     U = 78
@@ -101,6 +122,11 @@ if __name__ == '__main__':
     soln = stair_mapping(X)
     print(soln)
 
+
+    empirical_dict = samples_to_histo(X)
+    ground_truth_dict = build_ground_truth_dict()
+    
+    
     # U posU ratio and S are parameters that will define the stair function
     stair_histo = make_stair_prob(U, posU, ratio, S)
     print(np.sum(list(stair_histo.values())))
