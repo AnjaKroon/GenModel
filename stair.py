@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 from scipy.stats import rv_discrete
 import math
 from time import time
+from itertools import combinations, permutations
+from read_pickle import read_pickle_file
 
+# OBSOLETE I THINK
 def stair_mapping(incoming_X_arr):
     # takes an incoming arr of x's 
     # R.V. X = x where x = [1,2,3,4,5,6]
@@ -50,7 +53,6 @@ def make_stair_prob(U, posU, ratio, S):
     # highest pmf / lowest pmf = ratio -- (?/common denom) / (?/common denom)
     U_with_stair = int(posU * U)
  
-
     # be careful to consider the case this may be fractional
     U_for_each_S = math.floor(U_with_stair/S)
     U_for_last_S = U_with_stair - (S-1)*U_for_each_S
@@ -92,7 +94,20 @@ def make_stair_prob(U, posU, ratio, S):
 # takes the samples
 def samples_to_histo(samples):
     # TODO actually build the histo from the samples
-    empirical_dict = {'1-2-3-4-5-6':0.3, '2-3-2-3-5-6':0.1,'6-5-2-3-4-1':0.1 }
+    # get total size of the samples -- that will determine 'what to divide by'
+    # determine the "probability to add to each item if present"
+    amount_samples = len(samples) 
+    increment = 1/amount_samples 
+    empirical_dict = {}
+    for item in samples:
+        if str(item) in empirical_dict:                             # get value currently and add the "increment"                              
+            val = empirical_dict.get(str(item))                     # gets the value corresponding to the key (item, here)
+            val += increment
+            empirical_dict.update({str(item): val})
+        else:                   
+            empirical_dict.update({str(item):increment})            # add item to empirical_dict with the base "increment"
+            
+    # empirical_dict = {'1-2-3-4-5-6':0.8, '2-3-2-3-5-6':0.1,'6-5-2-3-4-1':0.1 }
     should_be_one = np.sum(list(empirical_dict.values()))
     print('should_be_one',should_be_one)
     return empirical_dict
@@ -101,11 +116,21 @@ def samples_to_histo(samples):
 # by default, it is 6
 def build_ground_truth_dict():
     # return a dict with all permutation as keys, and the value are the ground truth pmf either (3/(2**6)) or (1/(2**6))
-    ground_truth_dict = {}
-    ground_truth_dict['1-2-3-4-5-6'] = 3/(2**6)
-    # ...
-    
-    
+    # create 2D array with all permutations as keys
+    # 6*5*4*3*2*1 = 720
+    numbers = [1,2,3,4,5,6] 
+    c = list(permutations(range(1,7),6)) 
+    c = np.array(c) # decided to make this a np array to match file type coming in from pickle.py
+    # print(c)
+    ground_truth_dict = {} 
+    for item in c:
+        if item[0] > item[5]:
+            ground_truth_dict.update({str(item): round((3/(2*(6*5*4*3*2*1))),5)})
+        elif item[0] < item[5]:
+            ground_truth_dict.update({str(item): round((1/(2*(6*5*4*3*2*1))),5)})
+        else:
+            ground_truth_dict.update({str(item): 0})
+    # print(ground_truth_dict)
     should_be_one = np.sum(list(ground_truth_dict.values()))
     print('should_be_one',should_be_one)
     return ground_truth_dict
@@ -119,16 +144,16 @@ if __name__ == '__main__':
 
     soln = {}
     X = [[1,2,3,4,5,6], [3,4,5,6,1,2], [1,2,2,3,4,5], [4,5,6,1,2,3], [1,2,4,3,5,6], [6,5,4,3,2,1]]
-    soln = stair_mapping(X)
-    print(soln)
+    # soln = stair_mapping(X)
+    # print(soln)
 
-
-    empirical_dict = samples_to_histo(X)
-    ground_truth_dict = build_ground_truth_dict()
+    samples_from_file = read_pickle_file('100sample.pk')
+    empirical_dict = samples_to_histo(samples_from_file)
+    # ground_truth_dict = build_ground_truth_dict()
     
     
     # U posU ratio and S are parameters that will define the stair function
-    stair_histo = make_stair_prob(U, posU, ratio, S)
-    print(np.sum(list(stair_histo.values())))
-    print(stair_histo)
+    # stair_histo = make_stair_prob(U, posU, ratio, S)
+    # print(np.sum(list(stair_histo.values())))
+    # print(stair_histo)
 
