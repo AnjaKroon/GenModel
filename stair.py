@@ -7,6 +7,7 @@ import math
 from time import time
 from itertools import combinations, permutations
 from read_pickle import read_pickle_file
+from statistic.generate_statistics import genSstat, perform_binning_and_compute_stats
 
 # OBSOLETE I THINK
 def stair_mapping(incoming_X_arr):
@@ -136,8 +137,18 @@ def build_ground_truth_dict():
     return ground_truth_dict
 
 
+def convert_key_sequence_to_int(histo_dict):
+    # todo
+    # the histo dict is of the form : {[1 2 3 4 5 6]:pval}
+    # what we need would be {0:pval}
+    # it is important that the stair shape is preserved on the ordering,
+    # so 0...360 should be the likely permutation, 360...720 the rare, and the rest can be mapped to some int value
+    # I would use the number of the sequence to give a natural order
+    return histo_dict
+
 if __name__ == '__main__':
-    U = 78
+    U = 6**6
+    B=4
     posU = 23  # pos U is % of U with > 0 pmf
     ratio = 3  # highest pmf/lowest pmf
     S = 6
@@ -149,8 +160,33 @@ if __name__ == '__main__':
 
     samples_from_file = read_pickle_file('100sample.pk')
     empirical_dict = samples_to_histo(samples_from_file)
-    # ground_truth_dict = build_ground_truth_dict()
+    ground_truth_dict = build_ground_truth_dict()
+
+    empirical_dict = convert_key_sequence_to_int(empirical_dict)
+    ground_truth_dict = convert_key_sequence_to_int(ground_truth_dict)
+
+    # when we plot the dict in order, it should look like a stair
+    x = list(ground_truth_dict.keys())
+    x_sort_arg = np.argsort(x)
+    y = list(ground_truth_dict.values())
+    x = [x[i] for i in x_sort_arg]
+    y = [y[i] for i in x_sort_arg]
+    plt.plot(x,y)
+    plt.title('This should look like a stair function once you are done')
+    plt.show()
     
+    # when we plot the dict in order, it should look like a stair
+    x = list(empirical_dict.keys())
+    x_sort_arg = np.argsort(x)
+    y = list(empirical_dict.values())
+    x = [x[i] for i in x_sort_arg]
+    y = [y[i] for i in x_sort_arg]
+    plt.plot(x,y)
+    plt.title('This should look like a stair function once you are done')
+    plt.show()
+    
+    # this should work
+    perform_binning_and_compute_stats([empirical_dict], ground_truth_dict, U, B, stat_func=genSstat)
     
     # U posU ratio and S are parameters that will define the stair function
     # stair_histo = make_stair_prob(U, posU, ratio, S)
