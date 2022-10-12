@@ -228,12 +228,24 @@ if __name__ == '__main__':
     print(empirical_dict)
     # print(ground_truth_dict)
     
-    # BINNING HERE?
-    U = len(samples_from_file)
+    # BINNING
+    '''
+    
     print(U)
     B = 3 # later to be changed to an array rotating through
-    # b_p = p_to_bp_random(empirical_dict, U, B)      
-    # b_out = transform_samples(b_p, sample_histo, p_samples, U, B)  # returns new samples
+    b_p = p_to_bp_random(empirical_dict, U, B)   # transforms the probability distribution based on binning   
+    b_out = transform_samples(b_p, sample_histo, p_samples, U, B)  # returns new samples based on binning
+    # with new samples, would need to call samples_to_histo again to get a new dictionary corresponding to the new binned samples
+    empirical_dict = samples_to_histo(b_out)
+    # then get_converting_dict I think --  not sure about this one
+    empirical_dict = convert_key_sequence_to_int(
+        empirical_dict, KEY_CONVERTING_DICT)
+    # then convert_key_sequence_to_int I think
+    '''
+    U = len(samples_from_file) # -- check
+    print(perform_binning_and_compute_stats(empirical_dict, ground_truth_dict, U, B, stat_func=genSstat))
+    
+
 
 
     # when we plot the dict in order, it should look like a stair
