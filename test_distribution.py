@@ -22,7 +22,7 @@ if __name__ == '__main__':
     S = 3
     ratio = 2
     distribution_type = 'STAIRS'  # STAIRS
-    Bs = [3,4,5,6]
+    Bs = [4, 5, 6, 7, 8]
     power_base = 6
     list_U = [power_base**power_base]
     list_M = [1000]
@@ -49,10 +49,10 @@ if __name__ == '__main__':
                     U, posU=(math.factorial(power_base)/U), ratio=ratio,  S=S)
                 for i in range(U+1):
                     all_U.append(i)
-                put_on_plot(all_U, ground_truth_p)
+                #put_on_plot(all_U, ground_truth_p)
             else:
                 raise NotImplemented
-            plot_stat('PMF_Uniform_Stairs.pdf', 'U', 'Probability')
+           # plot_stat('PMF_Uniform_Stairs.pdf', 'U', 'Probability')
             # first, we generate all the samples here. The same samples should be reused for each B.
             # If it takes too much memory, we can put this in a for loop.
             ground_truth_samples_list = generate_samples_scalable(ground_truth_p,
@@ -76,20 +76,21 @@ if __name__ == '__main__':
                                    for i in S_trials_for_this_B_list]
                     all_stat_list.append(algo_stat)
                     baseline_all_stat_list.append(random_stat)
-                    name = ("compile_stats_" + str(title) + ".txt")
+                    name = ("compile_stats_" + str(B) + str(title) + ".txt")
                     with open(name, "w") as output:
-                        output.write(str(baseline_all_stat_list))               # writing baseline_all_stat_list into file -- should it be all_stat_list?
+                        # writing baseline_all_stat_list into file -- should it be all_stat_list?
+                        output.write(str(baseline_all_stat_list))
 
                 # compile stats for ground truth
                 compile_all_stats(ground_truth_samples_list,
                                   stat_uni, stat_uni_baseline, U, B=B, title="ground_truth_samples")
                 # compile stats for tempered
                 compile_all_stats(tempered_samples_list,
-                                  stat_temper, stat_temper_baseline, U, B=B, title="tempered samples")
+                                  stat_temper, stat_temper_baseline, U, B=B, title="tempered_samples")
                 compile_all_stats(mid_tempered_samples_list, stat_mid_temper,
-                                  stat_mid_temper_baseline, U, B=B, title="mid tempered samples")  # compile stats for tempered
+                                  stat_mid_temper_baseline, U, B=B, title="mid_tempered_samples")  # compile stats for tempered
                 compile_all_stats(easy_tempered_samples_list, stat_easy_temper,
-                                  stat_easy_temper_baseline, U, B=B)  # compile stats for tempered
+                                  stat_easy_temper_baseline, U, B=B, title="easy_tempered_samples")  # compile stats for tempered
 
             # TODO store those results before plotting
             print('Generating S plots...')
@@ -97,9 +98,11 @@ if __name__ == '__main__':
             put_on_plot(Bs, {'uni': stat_uni, 'hard tempered': stat_temper,
                         'mid tempered': stat_mid_temper, 'easy tempered': stat_easy_temper})
 
-            plot_stat('algo_S.pdf', 'Bins', 'Emp  irical total variation error')
+            plot_stat('algo_S.pdf', 'Bins',
+                      'Emp  irical total variation error')
 
             put_on_plot(Bs, {'uni random': stat_uni_baseline, 'hard tempered random': stat_temper_baseline,
                         'mid tempered random': stat_mid_temper_baseline, 'easy tempered random': stat_easy_temper_baseline})
 
-            plot_stat('random_S.pdf', 'Bins', 'Empirical total variation error')
+            plot_stat('random_S.pdf', 'Bins',
+                      'Empirical total variation error')
