@@ -1,15 +1,32 @@
 import math
 from tqdm import tqdm
-from binned import p_to_bp_random
-from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist
+from discrete import makeUniProbArr, prob_array_to_dict
 from stair import make_stair_prob
-from statistic.generate_statistics import chi_square_stat, perform_binning_and_compute_stats, genSstat, generate_samples_scalable, get_S, get_chi_square
+from statistic.generate_statistics import perform_binning_and_compute_stats, genSstat, generate_samples_scalable
 import matplotlib.pyplot as plt
 from plot_utils import plot_stat, put_on_plot
-from sampling.poisson import poisson_empirical_dist
-
+import scipy
 import numpy as np
 import random
+
+# we have [ [all trials model 1], [all trials model 2], ...]
+# the ground truth rank is model 1 < model 2 < ...
+
+
+def get_ranking_results(all_models_list_stats):
+    number_of_models = len(all_models_list_stats)
+    number_of_trials = len(all_models_list_stats[0])
+    ground_truth_ranking = list(range(number_of_models))
+    kendalltau_ranking_metric_all_trials = []
+
+    for i in range(number_of_trials):
+        trial_i_all_models = [trials[i] for trials in all_models_list_stats]
+        ranking_i = np.argsort(trial_i_all_models)
+        kendalltau = scipy.stats.kendalltau(ranking_i, ground_truth_ranking)[
+            0]  # only takes the statistic, higher is better
+        kendalltau_ranking_metric_all_trials.append(kendalltau)
+    return kendalltau_ranking_metric_all_trials
+
 
 if __name__ == '__main__':
     # Set the random seed
@@ -92,7 +109,7 @@ if __name__ == '__main__':
                 compile_all_stats(easy_tempered_samples_list, stat_easy_temper,
                                   stat_easy_temper_baseline, U, B=B, title="easy_tempered_samples")  # compile stats for tempered
 
-            # TODO store those results before plotting
+            
             print('Generating S plots...')
 
             put_on_plot(Bs, {'uni': stat_uni, 'hard tempered': stat_temper,
@@ -102,7 +119,20 @@ if __name__ == '__main__':
                       'Emp  irical total variation error')
 
             put_on_plot(Bs, {'uni random': stat_uni_baseline, 'hard tempered random': stat_temper_baseline,
-                        'mid tempered random': stat_mid_temper_baseline, 'easy tempered random': stat_easy_temper_baseline})
+                         'mid tempered random': stat_mid_temper_baseline, 'easy tempered random': stat_easy_temper_baseline})
 
             plot_stat('random_S.pdf', 'Bins',
                       'Empirical total variation error')
+
+            print('Generating ranking plots...')
+            
+            algo_ranking_results_all_trials_all_Bs = [get_ranking_results(
+                [stat_uni[i], stat_temper[i], stat_mid_temper[i], stat_easy_temper[i]]) for i in range(len(Bs))]
+
+            random_ranking_results_all_trials_all_Bs = [get_ranking_results(
+                [stat_uni_baseline[i], stat_temper_baseline[i], stat_mid_temper_baseline[i], stat_easy_temper_baseline[i]]) for i in range(len(Bs))]
+            #ranking_results_mean = [np.mean(ranking_results_all_trials) for ranking_results_all_trials in ranking_results_all_trials_all_Bs]
+
+            put_on_plot(Bs, {'algo': algo_ranking_results_all_trials_all_Bs,
+                        'random': random_ranking_results_all_trials_all_Bs})
+            plot_stat('ranking.pdf', 'Bins','Kendall tau distance')
