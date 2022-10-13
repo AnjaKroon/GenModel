@@ -38,7 +38,7 @@ if __name__ == '__main__':
     S = 3
     ratio = 2
     distribution_type = 'STAIRS'  # STAIRS
-    Bs = [4, 5, 6, 7, 8]
+    Bs = [4, 5]
     power_base = 6
     list_U = [power_base**power_base]
     list_M = [1000]
@@ -114,7 +114,7 @@ if __name__ == '__main__':
             # Transformer_samples_list = 
             
             # replace with empirical from pickle
-            ground_truth_samples_list = ground_truth_dict
+            ground_truth_samples_list = [ground_truth_dict]
             #ground_truth_samples_list = generate_samples_scalable(ground_truth_p,
                                                                   #trials, U, m, tempered=False, e=0, b=100)
             tempered_samples_list = [arg_max_empirical_dict]

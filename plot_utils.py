@@ -52,7 +52,6 @@ def plot_stat(title, xlabel, ylabel):
     plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
     plt.rc('figure', titlesize=SMALL_SIZE)  # fontsize of the figure title
     '''
-    
 
     # idea to break this up here....
     # essentially invoke part 1 multiple times and then invoke part 2 as below
@@ -63,11 +62,12 @@ def plot_stat(title, xlabel, ylabel):
     plt.savefig(title)
     plt.close()
 
-  
-def put_on_plot(x, dict_y): # x = [1,2,3] dict_y = {label:[[3,3,2],[4,5,4],[5,5,5]]}
+
+# x = [1,2,3] dict_y = {label:[[3,3,2],[4,5,4],[5,5,5]]}
+def put_on_plot(x, dict_y):
     for i, (key, val) in enumerate(dict_y.items()):
         color = get_color(i)
-        if type(val[0]) is list:
+        if type(val[0]) is list and len(val[0]) > 1:
             all_trials = val
             y = [np.mean(trials) for trials in all_trials]
             all_ci = [get_ci(trials) for trials in all_trials]
