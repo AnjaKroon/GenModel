@@ -12,8 +12,8 @@ if find_executable('latex'):
     matplotlib.rcParams['text.usetex'] = True
 
 font = {'family': 'normal',
-        'weight': 'bold',
-        'size': 10}
+        'weight': 'normal',
+        'size': 12}
 
 
 matplotlib.rc('font', **font)
@@ -41,7 +41,7 @@ def plot_stat(title, xlabel, ylabel):
     # put_on_plot(x, dict_y)
 
     SMALL_SIZE = 5
-    matplotlib.rcParams.update({'font.size': 16})
+    matplotlib.rcParams.update({'font.size': 14})
 
     '''
     plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
