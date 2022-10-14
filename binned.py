@@ -122,7 +122,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
             zero_error_regions += 1
         else:
             num_pos_flat_regions += 1  # increment the flat region index
-        region_index+=1
+        region_index += 1
     # find which bin have the more potential error if cut
     if zero_error_regions > 1:
         print('Warning, we got zero error regions')
@@ -161,14 +161,14 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
                 dict_pos_neg['neg_indices']
             mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
             bin_ind += 1
-    else:  # B>= 2s, we randomly cut the bins, nothing else to be done. The error will be flat at this point.
+    # B>= 2s, we randomly cut the bins, nothing else to be done. The error will be flat at this point.
+    elif num_region_that_can_be_cut > 0:
         num_random_cut = B - 2*num_region_that_can_be_cut - 1 - zero_error_regions
         random.seed(2)
-        if num_region_that_can_be_cut*2>0:
-            bin_with_cut = random.sample(
-                list(range(num_region_that_can_be_cut*2)), num_random_cut)
-        else:
-            bin_with_cut = []
+
+        bin_with_cut = random.choices(
+            list(range(num_region_that_can_be_cut*2)), k=num_random_cut)
+
         cuts_per_bin = {}
         for c in bin_with_cut:
             if c in cuts_per_bin:
@@ -208,6 +208,36 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
                 dict_pos_neg['neg_indices']
             mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
             bin_ind += 1
+    else:
+        num_random_cut = B - 1 - zero_error_regions
+        random.seed(2)
+        bin_with_cut = random.choices(list(range(zero_error_regions)), k=num_random_cut)
+
+        cuts_per_bin = {}
+        for c in bin_with_cut:
+            if c in cuts_per_bin:
+                cuts_per_bin[c] += 1
+            else:
+                cuts_per_bin[c] = 1
+        bin_ind = 0
+
+        for region_to_cut in list(range(zero_error_regions)):
+            if region_to_cut in cuts_per_bin:
+                num_cuts = cuts_per_bin[region_to_cut]
+                dict_pos_neg = predefined_bins_with_error[region_to_cut]
+                indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
+                    dict_pos_neg['neg_indices']
+                chunks = split(indices_of_the_whole_region, math.ceil(
+                    len(indices_of_the_whole_region)/(1+num_cuts)))
+                for chunk_indices in chunks:
+                    mapping_bin_to_index[bin_ind] = chunk_indices
+                    bin_ind += 1
+            else:
+                dict_pos_neg = predefined_bins_with_error[region_to_cut]
+                indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
+                    dict_pos_neg['neg_indices']
+                mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
+                bin_ind += 1
 
     new_histo_p = {}
     for bin_index, all_index in mapping_bin_to_index.items():

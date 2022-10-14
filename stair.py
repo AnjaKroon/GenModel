@@ -9,9 +9,11 @@ from time import time
 from itertools import combinations, permutations
 from read_pickle import read_pickle_file
 from statistic.generate_statistics import genSstat, perform_binning_and_compute_stats
-from binned import p_to_bp_random, transform_samples 
+from binned import p_to_bp_random, transform_samples
 
 # OBSOLETE I THINK
+
+
 def stair_mapping(incoming_X_arr):
     # takes an incoming arr of x's
     # R.V. X = x where x = [1,2,3,4,5,6]
@@ -116,7 +118,7 @@ def samples_to_histo(samples):
         else:
             # add item to empirical_dict with the base "increment"
             empirical_dict.update({str(item): increment})
-    
+
     # empirical_dict = {'1-2-3-4-5-6':0.8, '2-3-2-3-5-6':0.1,'6-5-2-3-4-1':0.1 }
     should_be_one = np.sum(list(empirical_dict.values()))
     print('should_be_one', should_be_one)
@@ -128,7 +130,7 @@ def build_ground_truth_dict():
     # return a dict with all permutation as keys, and the value are the ground truth pmf either (3/(2**6)) or (1/(2**6))
     # create 2D array with all permutations as keys
     # 6*5*4*3*2*1 = 720
-   
+
     c = list(permutations(range(6), 6))
     # decided to make this a np array to match file type coming in from pickle.py
     c = np.array(c)
@@ -137,13 +139,13 @@ def build_ground_truth_dict():
     for item in c:
         if item[0] < item[5]:
             ground_truth_dict.update(
-                {str(item): round((3/(2*(6*5*4*3*2*1))), 5)})
+                {str(item): 3/(2*(6*5*4*3*2*1))})
         elif item[0] > item[5]:
             ground_truth_dict.update(
-                {str(item): round((1/(2*(6*5*4*3*2*1))), 5)})
+                {str(item): 1/(2*(6*5*4*3*2*1))})
         else:
             ground_truth_dict.update({str(item): 0})
-   
+
     should_be_one = np.sum(list(ground_truth_dict.values()))
     print('should_be_one', should_be_one)
     return ground_truth_dict
@@ -197,7 +199,7 @@ def convert_key_sequence_to_int(histo_dict, KEY_CONVERTING_DICT):
 
     converted_dict = {}
     for key, val in histo_dict.items():
-        if key  in KEY_CONVERTING_DICT:
+        if key in KEY_CONVERTING_DICT:
             converted_dict[KEY_CONVERTING_DICT[key]] = val
     return converted_dict
 
@@ -224,10 +226,10 @@ if __name__ == '__main__':
         empirical_dict, KEY_CONVERTING_DICT)
     ground_truth_dict = convert_key_sequence_to_int(
         ground_truth_dict, KEY_CONVERTING_DICT)
-    
+
     print(empirical_dict)
     # print(ground_truth_dict)
-    
+
     # BINNING
     '''
     
@@ -242,10 +244,9 @@ if __name__ == '__main__':
         empirical_dict, KEY_CONVERTING_DICT)
     # then convert_key_sequence_to_int I think
     '''
-    U = len(samples_from_file) # -- check
-    print(perform_binning_and_compute_stats(empirical_dict, ground_truth_dict, U, B, stat_func=genSstat))
-
-
+    U = len(samples_from_file)  # -- check
+    print(perform_binning_and_compute_stats(empirical_dict,
+          ground_truth_dict, U, B, stat_func=genSstat))
 
     # when we plot the dict in order, it should look like a stair
     x = list(ground_truth_dict.keys())
@@ -257,7 +258,7 @@ if __name__ == '__main__':
     plt.title('This should look like a stair function once you are done')
     plt.show()
     plt.close()
-    
+
     x = list(empirical_dict.keys())
     x_sort_arg = np.argsort(x)
     y = list(empirical_dict.values())
@@ -276,4 +277,3 @@ if __name__ == '__main__':
     # stair_histo = make_stair_prob(U, posU, ratio, S)
     # print(np.sum(list(stair_histo.values())))
     # print(stair_histo)
-

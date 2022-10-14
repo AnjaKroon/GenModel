@@ -74,7 +74,11 @@ if __name__ == '__main__':
             # put_on_plot(Bs, {'GEN-MODEL-TYPE': stat_uni, 'samples from slightly tempered dist.': stat_temper,
                 # 'samples from medium tempered dist': stat_mid_temper, 'samples from heavily tempered': stat_easy_temper})
             # compile_all_stats(genmodel_samples_list, stat_genmodelX, stat_groundtruth, U, B=B, title="gen model x")
-
+            ground_truth_dict = build_ground_truth_dict() # same for all
+            KEY_CONVERTING_DICT = get_converting_dict() # same for all
+            ground_truth_dict = convert_key_sequence_to_int(ground_truth_dict, KEY_CONVERTING_DICT) # same for all
+            ground_truth_samples_list = generate_samples_scalable(ground_truth_dict,
+                                                                  1, U, m, tempered=False, e=0, b=100)
             arg_max_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/argmaxAR/13_08_2022__23_08/figure')
             arg_max_empirical_dict = samples_to_histo(arg_max_samples_from_file)
             # TODO: add the other elements later
@@ -88,14 +92,11 @@ if __name__ == '__main__':
 
             
 
-            ground_truth_dict = build_ground_truth_dict() # same for all
-            KEY_CONVERTING_DICT = get_converting_dict() # same for all
-
+            
             arg_max_empirical_dict = convert_key_sequence_to_int(arg_max_empirical_dict, KEY_CONVERTING_DICT)
             CDM_empirical_dict = convert_key_sequence_to_int(CDM_empirical_dict, KEY_CONVERTING_DICT)
             CNF_empirical_dict =convert_key_sequence_to_int(CNF_empirical_dict, KEY_CONVERTING_DICT)
-            ground_truth_dict = convert_key_sequence_to_int(ground_truth_dict, KEY_CONVERTING_DICT) # same for all
-
+            
             # argmax_samples_list = 
             # CDM_samples_list = 
             # CNF_samples_list = 
@@ -103,7 +104,7 @@ if __name__ == '__main__':
             # Transformer_samples_list = 
             
             # replace with empirical from pickle
-            ground_truth_samples_list = [ground_truth_dict]
+            
             #ground_truth_samples_list = generate_samples_scalable(ground_truth_p,
                                                                   #trials, U, m, tempered=False, e=0, b=100)
             tempered_samples_list = [arg_max_empirical_dict]
@@ -136,8 +137,8 @@ if __name__ == '__main__':
 
                 # compile stats for ground truth
                 # compile stats for ground truth
-                # compile_all_stats(ground_truth_samples_list,
-                #                   stat_uni, stat_uni_baseline, U, B=B, title="ground_truth_samples")
+                compile_all_stats(ground_truth_samples_list,
+                                  stat_uni, stat_uni_baseline, U, B=B, title="ground_truth_samples")
                 # compile stats for tempered
                 compile_all_stats(tempered_samples_list,
                                   stat_temper, stat_temper_baseline, U, B=B, title="tempered_samples")
@@ -148,7 +149,7 @@ if __name__ == '__main__':
 
             print('Generating S plots...')
 
-            put_on_plot(Bs, { 'arg max': stat_temper,
+            put_on_plot(Bs, { 'ground truth': stat_uni_baseline, 'arg max': stat_temper,
                         'CDM': stat_mid_temper, 'CNF': stat_easy_temper})
 
             plot_stat('algo_S.pdf', 'Bins',
