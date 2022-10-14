@@ -35,13 +35,12 @@ if __name__ == '__main__':
     init_e = 0.1
     init_b = 30
     trials = 50
-    S = 3
-    ratio = 2
+    
     distribution_type = 'STAIRS'  # STAIRS
-    Bs = [4, 5]
+    Bs = [3,4,5,6]
     power_base = 6
     list_U = [power_base**power_base]
-    list_M = [1000]
+    list_M = [100000]
     # for m in list_M:
     for m in list_M:
         print("for this round m is ", m)
@@ -57,17 +56,7 @@ if __name__ == '__main__':
             stat_mid_temper_baseline = []
             stat_easy_temper_baseline = []
             all_U = []
-            if distribution_type == 'UNIFORM':
-                ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
-                # put_on_plot(all_U, ground_truth_p)
-            elif distribution_type == 'STAIRS':
-                ground_truth_p = make_stair_prob(
-                    U, posU=(math.factorial(power_base)/U), ratio=ratio,  S=S)
-                for i in range(U+1):
-                    all_U.append(i)
-                #put_on_plot(all_U, ground_truth_p)
-            else:
-                raise NotImplemented
+            
            # plot_stat('PMF_Uniform_Stairs.pdf', 'U', 'Probability')
             # first, we generate all the samples here. The same samples should be reused for each B.
             # If it takes too much memory, we can put this in a for loop.
@@ -134,7 +123,7 @@ if __name__ == '__main__':
                 def compile_all_stats(all_samples_list, all_stat_list, baseline_all_stat_list,   U,  B, title):
 
                     S_trials_for_this_B_list = perform_binning_and_compute_stats(
-                        all_samples_list, ground_truth_p, U, B, stat_func=genSstat)
+                        all_samples_list, ground_truth_dict, U, B, stat_func=genSstat)
                     algo_stat = [i['B_algo'] for i in S_trials_for_this_B_list]
                     random_stat = [i['B_random']
                                    for i in S_trials_for_this_B_list]
@@ -147,19 +136,19 @@ if __name__ == '__main__':
 
                 # compile stats for ground truth
                 # compile stats for ground truth
-                compile_all_stats(ground_truth_samples_list,
-                                  stat_uni, stat_uni_baseline, U, B=B, title="ground_truth_samples")
+                # compile_all_stats(ground_truth_samples_list,
+                #                   stat_uni, stat_uni_baseline, U, B=B, title="ground_truth_samples")
                 # compile stats for tempered
                 compile_all_stats(tempered_samples_list,
                                   stat_temper, stat_temper_baseline, U, B=B, title="tempered_samples")
                 compile_all_stats(mid_tempered_samples_list, stat_mid_temper,
                                   stat_mid_temper_baseline, U, B=B, title="mid_tempered_samples")  # compile stats for tempered
                 compile_all_stats(easy_tempered_samples_list, stat_easy_temper,
-                                  stat_easy_temper_baseline, U, B=B, title="easy_tempered_samples")  # compile stats for tempered
+                                   stat_easy_temper_baseline, U, B=B, title="easy_tempered_samples")  # compile stats for tempered
 
             print('Generating S plots...')
 
-            put_on_plot(Bs, {'ground truth': stat_uni, 'arg max': stat_temper,
+            put_on_plot(Bs, { 'arg max': stat_temper,
                         'CDM': stat_mid_temper, 'CNF': stat_easy_temper})
 
             plot_stat('algo_S.pdf', 'Bins',

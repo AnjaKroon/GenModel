@@ -128,7 +128,7 @@ def build_ground_truth_dict():
     # return a dict with all permutation as keys, and the value are the ground truth pmf either (3/(2**6)) or (1/(2**6))
     # create 2D array with all permutations as keys
     # 6*5*4*3*2*1 = 720
-    numbers = [1, 2, 3, 4, 5, 6]
+   
     c = list(permutations(range(6), 6))
     # decided to make this a np array to match file type coming in from pickle.py
     c = np.array(c)

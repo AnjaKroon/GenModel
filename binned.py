@@ -84,6 +84,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
     flat_regions = find_flat_regions(ground_truth_p_dict)
     num_pos_flat_regions = 0
     zero_error_regions = 0
+    region_index = 0
     for s_flat, indices in flat_regions.items():
         list_errors_index = []
         for index in indices:
@@ -115,25 +116,28 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
         cut_error = cumul_neg_error + cumul_pos_error - \
             np.abs((cumul_pos_error-cumul_neg_error))
         # now we know how much error is contained in a split
-        predefined_bins_with_error[num_pos_flat_regions] = {
+        predefined_bins_with_error[region_index] = {
             'cut_error': cut_error, 'pos_indices': indices_pos_bin, 'neg_indices': indices_neg_bin}
         if cut_error == 0:
             zero_error_regions += 1
-        num_pos_flat_regions += 1  # increment the flat region index
-
+        else:
+            num_pos_flat_regions += 1  # increment the flat region index
+        region_index+=1
     # find which bin have the more potential error if cut
     if zero_error_regions > 1:
         print('Warning, we got zero error regions')
     sorted_s_by_potential_cut_error = sorted(list(predefined_bins_with_error.keys()),
                                              key=lambda x: predefined_bins_with_error[x]['cut_error'])
+    sorted_s_by_potential_cut_error.reverse()  # highest to lowest
     num_region_that_can_be_cut = (num_pos_flat_regions-zero_error_regions)
     mapping_bin_to_index = {}
     mapping_from_index_to_bin = {}
     # now we need to cut the predefined bins in the number of wanted bins B
     if B < num_pos_flat_regions+1:  # NOT EXACT SOL
         raise NotImplemented
-    elif B == num_pos_flat_regions+1:  # easiest scenario, we just return all flat regions
-        for region_to_left_uncut in range(num_pos_flat_regions):
+    # easiest scenario, we just return all flat regions
+    elif B == num_pos_flat_regions+zero_error_regions+1:
+        for region_to_left_uncut in range(num_pos_flat_regions+zero_error_regions):
             dict_pos_neg = predefined_bins_with_error[region_to_left_uncut]
             indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
                 dict_pos_neg['neg_indices']
@@ -160,8 +164,11 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
     else:  # B>= 2s, we randomly cut the bins, nothing else to be done. The error will be flat at this point.
         num_random_cut = B - 2*num_region_that_can_be_cut - 1 - zero_error_regions
         random.seed(2)
-        bin_with_cut = random.sample(
-            list(range(num_region_that_can_be_cut*2)), num_random_cut)
+        if num_region_that_can_be_cut*2>0:
+            bin_with_cut = random.sample(
+                list(range(num_region_that_can_be_cut*2)), num_random_cut)
+        else:
+            bin_with_cut = []
         cuts_per_bin = {}
         for c in bin_with_cut:
             if c in cuts_per_bin:
@@ -266,7 +273,8 @@ if __name__ == '__main__':
     b_p = p_to_bp_random(sample_histo, U, B)  # works
     print(b_p)
     print('probability sum to : ', sum(b_p.values()))
-    b_out = transform_samples(b_p, sample_histo, p_samples, U, B)  # returns new samples
+    b_out = transform_samples(
+        b_p, sample_histo, p_samples, U, B)  # returns new samples
 
     # the question is how to get the relevant things in
     # need some sort of histo for the transform_samples -- there should be an array of the poissonized samples
