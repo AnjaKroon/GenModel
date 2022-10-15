@@ -56,12 +56,14 @@ if __name__ == '__main__':
             stat_mid_temper_baseline = []
             stat_easy_temper_baseline = []
             all_U = []
+            tempered_samples_list = []
+            mid_tempered_samples_list = []
+            easy_tempered_samples_list = []
+            ground_truth_samples_list = []
             
            # plot_stat('PMF_Uniform_Stairs.pdf', 'U', 'Probability')
             # first, we generate all the samples here. The same samples should be reused for each B.
             # If it takes too much memory, we can put this in a for loop.
-            
-            
             
             # want to do the same as this but with the samples generated from the generative model
             # can use the perform binning & compute stats function
@@ -74,28 +76,55 @@ if __name__ == '__main__':
             # put_on_plot(Bs, {'GEN-MODEL-TYPE': stat_uni, 'samples from slightly tempered dist.': stat_temper,
                 # 'samples from medium tempered dist': stat_mid_temper, 'samples from heavily tempered': stat_easy_temper})
             # compile_all_stats(genmodel_samples_list, stat_genmodelX, stat_groundtruth, U, B=B, title="gen model x")
+            
             ground_truth_dict = build_ground_truth_dict() # same for all
             KEY_CONVERTING_DICT = get_converting_dict() # same for all
             ground_truth_dict = convert_key_sequence_to_int(ground_truth_dict, KEY_CONVERTING_DICT) # same for all
-            ground_truth_samples_list = generate_samples_scalable(ground_truth_dict,
-                                                                  1, U, m, tempered=False, e=0, b=100)
-            arg_max_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/argmaxAR/13_08_2022__23_08/figure')
-            arg_max_empirical_dict = samples_to_histo(arg_max_samples_from_file)
+            
+            ground_truth_samples_list = generate_samples_scalable(ground_truth_dict, 1, U, m, tempered=False, e=0, b=100)
+
+            pickle_files = ['1sample.pk', '2sample.pk', '3sample.pk', '4sample.pk', '5sample.pk', '6sample.pk', '7sample.pk', '8sample.pk']
+            
+            for file_name_pickle in pickle_files:
+                arg_max_samples_from_file = read_pickle_file(file_name_pickle, './S_6_K_6/argmaxAR/13_08_2022__23_08/figure')
+                arg_max_empirical_dict = samples_to_histo(arg_max_samples_from_file)
+
+                CDM_samples_from_file = read_pickle_file(file_name_pickle, './S_6_K_6/CDM/07_08_2022__11_49/figure')
+                CDM_empirical_dict = samples_to_histo(CDM_samples_from_file)
+
+                CNF_samples_from_file = read_pickle_file(file_name_pickle, './S_6_K_6/CNF/14_08_2022__10_54/figure')
+                CNF_empirical_dict = samples_to_histo(CNF_samples_from_file)
+
+            
+                arg_max_empirical_dict = convert_key_sequence_to_int(arg_max_empirical_dict, KEY_CONVERTING_DICT)
+                CDM_empirical_dict = convert_key_sequence_to_int(CDM_empirical_dict, KEY_CONVERTING_DICT)
+                CNF_empirical_dict =convert_key_sequence_to_int(CNF_empirical_dict, KEY_CONVERTING_DICT)
+                
+                
+                tempered_samples_list.append(arg_max_empirical_dict) # append here and then repeat for another pickle file
+                mid_tempered_samples_list.append(CDM_empirical_dict)
+                easy_tempered_samples_list.append(CNF_empirical_dict)
+                # ground_truth_samples_list.append(ground_truth_samples_one_it_list)
+
+            
+            
+            # arg_max_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/argmaxAR/13_08_2022__23_08/figure')
+            # arg_max_empirical_dict = samples_to_histo(arg_max_samples_from_file)
             # TODO: add the other elements later
 
-            CDM_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/CDM/07_08_2022__11_49/figure')
-            CDM_empirical_dict = samples_to_histo(CDM_samples_from_file)
+            #CDM_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/CDM/07_08_2022__11_49/figure')
+            #CDM_empirical_dict = samples_to_histo(CDM_samples_from_file)
 
-            CNF_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/CNF/14_08_2022__10_54/figure')
-            CNF_empirical_dict = samples_to_histo(CNF_samples_from_file)
-
-
-            
+            #CNF_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/CNF/14_08_2022__10_54/figure')
+            #CNF_empirical_dict = samples_to_histo(CNF_samples_from_file)
 
             
-            arg_max_empirical_dict = convert_key_sequence_to_int(arg_max_empirical_dict, KEY_CONVERTING_DICT)
-            CDM_empirical_dict = convert_key_sequence_to_int(CDM_empirical_dict, KEY_CONVERTING_DICT)
-            CNF_empirical_dict =convert_key_sequence_to_int(CNF_empirical_dict, KEY_CONVERTING_DICT)
+            #arg_max_empirical_dict = convert_key_sequence_to_int(arg_max_empirical_dict, KEY_CONVERTING_DICT)
+            #CDM_empirical_dict = convert_key_sequence_to_int(CDM_empirical_dict, KEY_CONVERTING_DICT)
+            #CNF_empirical_dict =convert_key_sequence_to_int(CNF_empirical_dict, KEY_CONVERTING_DICT)
+            # tempered_samples_list = [arg_max_empirical_dict] # append here and then repeat for another file
+            # mid_tempered_samples_list = [CDM_empirical_dict]
+            # easy_tempered_samples_list = [CNF_empirical_dict]
             
             # argmax_samples_list = 
             # CDM_samples_list = 
@@ -107,9 +136,7 @@ if __name__ == '__main__':
             
             #ground_truth_samples_list = generate_samples_scalable(ground_truth_p,
                                                                   #trials, U, m, tempered=False, e=0, b=100)
-            tempered_samples_list = [arg_max_empirical_dict]
-            mid_tempered_samples_list = [CDM_empirical_dict]
-            easy_tempered_samples_list = [CNF_empirical_dict]
+            
             # tempered_samples_list = generate_samples_scalable(ground_truth_p,
                                                               #trials, U, m, tempered=True, e=init_e, b=init_b)
             # mid_tempered_samples_list = generate_samples_scalable(ground_truth_p,
