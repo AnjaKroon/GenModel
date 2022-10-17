@@ -24,7 +24,7 @@ if __name__ == '__main__':
     distribution_type = 'STAIRS'  # STAIRS
 
     Bs = [4, 5, 6, 7, 8]
-    power_base = 5
+    power_base = 6
     list_U = [power_base**power_base]
     list_M = [1000]
 
@@ -70,17 +70,29 @@ if __name__ == '__main__':
             for B in tqdm(Bs):  # For each bin granularity
 
                 for i, all_samples_list in enumerate(list_of_samples):
-
+                    test = perform_binning_and_compute_stats(
+                        all_samples_list, ground_truth_p, U, U, stat_func=genSstat)
                     S_trials_for_this_B_list = perform_binning_and_compute_stats(
                         all_samples_list, ground_truth_p, U, B, stat_func=genSstat)
+
                     algo_stat = [i['B_algo'] for i in S_trials_for_this_B_list]
                     random_stat = [i['B_random']
                                    for i in S_trials_for_this_B_list]
-
+                    no_binning = [i['B_random'] for i in test]
                     list_of_results_stats[0][i].append(algo_stat)
                     list_of_results_stats[1][i].append(random_stat)
+                    list_of_results_stats[2][i].append(no_binning)
 
             print('Generating S plots...')
+
+            plotting_dict_no_binning = {}
+            for i, title in enumerate(list_of_title_q):
+                plotting_dict_no_binning[title] = list_of_results_stats[2][i]
+            put_on_plot(Bs, plotting_dict_no_binning)
+            prefix_title = 'U_' + str(U) + '_m_' + str(m)
+            prefix_title = os.path.join('figures', prefix_title)
+            plot_stat(prefix_title+'_nobinning_S.pdf', 'Bins',
+                      'Empirical Total Variation Error')
 
             plotting_dict_algo = {}
             for i, title in enumerate(list_of_title_q):

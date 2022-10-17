@@ -10,6 +10,8 @@ from scipy.stats import rv_discrete
 
 from time import time
 
+from tqdm import tqdm
+
 # transform a prob array into a dictionnary
 
 
@@ -84,6 +86,12 @@ def makeUniProbArr(U):
         prob_arr.append(prob)
     return prob_arr
 
+
+def find_interval(query, intervals):
+    for i, interval in enumerate(intervals):
+        if interval[0] <= query and query < interval[1]:  # we found the interval of the query
+            return i
+
 # Given: U as size of probability space, array as the probability distribution (assumed uniform coming in)
 # e which is the total amount of error that is introduced in the probability distribution array, and
 # percent_to_modify
@@ -93,13 +101,23 @@ def makeUniProbArr(U):
 
 def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
 
-    array = np.copy(init_array)  # copy to avoid modifying the passed array
-
-    U_pos = np.where(array)[0].shape[0]  # count the positive space
-
-    # first, we compute the error on the positive space
+    is_optimized = type(list(init_array.values())[0]) is dict
     percent_pos_space = percent_to_modify-percent_to_modify_null
     assert percent_pos_space >= 0
+    if not is_optimized:
+        array = np.copy(init_array)  # copy to avoid modifying the passed array
+
+        U_pos = np.where(array)[0].shape[0]  # count the positive space
+    else:
+        prob_optimized_dict = init_array
+        mass_in_each_part = [(val['interval'][1] - val['interval'][0]) * val['p']
+                             for key, val in prob_optimized_dict.items()]
+        should_be_one = np.sum(mass_in_each_part)
+        size_each_regions = [(val['interval'][1] - val['interval'][0])
+                             for _, val in prob_optimized_dict.items()]
+        intervals = [val['interval'] for _, val in prob_optimized_dict.items()]
+
+        U_pos = np.sum(size_each_regions)  # count the positive space
     # works to modify probability dist. array, works for odd U
     # Tells us how many bins in the probability distribution we are changing
     amt_to_modify_pos = U_pos*(percent_pos_space/100)
@@ -118,41 +136,119 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
 
     e_added = e_per_section/bins_added  # error amount to add per element
     e_removed = e_per_section/bins_removed  # error amount to subtract per element
-    """
-    modification in the positive space
-    """
-    # randomly select where we add and remove.
-    # We create a list with all indices of the pos. space, then shuffle the list.
-    shuffled_indices_pos = list(range(U_pos))
-    random.shuffle(shuffled_indices_pos)
+    is_optimized = type(list(init_array.values())[0]) is dict
+    if not is_optimized:
 
-    for i in shuffled_indices_pos[:bins_added_in_pos]:
-        # adds same amount to first half of bins you wish to change
-        array[i] = array[i] + e_added
+        """
+        modification in the positive space
+        """
+        # randomly select where we add and remove.
+        # We create a list with all indices of the pos. space, then shuffle the list.
+        shuffled_indices_pos = list(range(U_pos))
+        random.shuffle(shuffled_indices_pos)
 
-    for i in shuffled_indices_pos[bins_added_in_pos:bins_added_in_pos+bins_removed]:
-        # check that we are not removing too much
-       
-        if array[i] < e_removed:
-            print('The negative error is too much', e_removed,
-                  ', too concentrated', percent_pos_space)
-            raise EXCEPTION
-        # subtracts same amount to second half of bins you wish to change
-        array[i] = array[i] - e_removed
-    
-    """
-    modification in the null/zero space
-    """
-    # We just add in order in the null space
-    for i in range(U_pos, U_pos+bins_added_in_null):
-        assert array[i] == 0 # the array should be sorted s.t. the zero should be there
-        # adds same amount to first half of bins you wish to change
-        array[i] = e_added
+        for i in shuffled_indices_pos[:bins_added_in_pos]:
+            # adds same amount to first half of bins you wish to change
+            array[i] = array[i] + e_added
 
-    # this check that the array sum up to one, to be a valid prob. I use assert close because something it won't be excatly one because of numerical error.
-    should_be_one = np.sum(array)
-    np.testing.assert_allclose(should_be_one, 1)
-    return array
+        for i in shuffled_indices_pos[bins_added_in_pos:bins_added_in_pos+bins_removed]:
+            # check that we are not removing too much
+
+            if array[i] < e_removed:
+                print('The negative error is too much', e_removed,
+                      ', too concentrated', percent_pos_space)
+                raise EXCEPTION
+            # subtracts same amount to second half of bins you wish to change
+            array[i] = array[i] - e_removed
+
+        """
+        modification in the null/zero space
+        """
+        # We just add in order in the null space
+        for i in range(U_pos, U_pos+bins_added_in_null):
+            # the array should be sorted s.t. the zero should be there
+            assert array[i] == 0
+            # adds same amount to first half of bins you wish to change
+            array[i] = e_added
+
+        # this check that the array sum up to one, to be a valid prob. I use assert close because something it won't be excatly one because of numerical error.
+        should_be_one = np.sum(array)
+        np.testing.assert_allclose(should_be_one, 1)
+        return array
+    else:
+
+        """
+        modification in the positive space
+        """
+        # This should be otimized
+        shuffled_indices_pos = list(range(U_pos))
+        random.shuffle(shuffled_indices_pos)
+        print('Starting the tempering process...')
+        new_inverse_tempered_dict = {}
+
+        def tempering(range, to_be_added):
+            for i in tqdm(range):
+                index_interval_to_cut = find_interval(i, intervals)
+                p_value_of_interval = prob_optimized_dict[index_interval_to_cut]['p']
+                new_p_value = p_value_of_interval + to_be_added
+                if new_p_value in new_inverse_tempered_dict:
+                    new_inverse_tempered_dict[new_p_value].append((i, i+1))
+                else:
+                    new_inverse_tempered_dict[new_p_value] = [(i, i+1)]
+                if p_value_of_interval in new_inverse_tempered_dict:
+                    cut_intervals = new_inverse_tempered_dict[p_value_of_interval].copy(
+                    )
+                    # this takes more and more time
+                    within_cut_index = find_interval(i, cut_intervals)
+                    cut_interval = cut_intervals[within_cut_index]
+                    new_interval_1 = (cut_interval[0], i)
+                    new_interval_2 = (i+1, cut_interval[1])
+                    cut_intervals.remove(cut_interval)
+                    cut_intervals.append(new_interval_1)
+                    cut_intervals.append(new_interval_2)
+                    new_inverse_tempered_dict[p_value_of_interval] = cut_intervals
+                else:
+                    cut_interval = prob_optimized_dict[index_interval_to_cut]['interval'].copy(
+                    )
+                    new_interval_1 = (cut_interval[0], i)
+                    new_interval_2 = (i+1, cut_interval[1])
+                    new_inverse_tempered_dict[p_value_of_interval] = [
+                        new_interval_1, new_interval_2]
+
+        # positive tempering
+        tempering(shuffled_indices_pos[:bins_added_in_pos], e_added)
+        # negative tempering
+        tempering(
+            shuffled_indices_pos[bins_added_in_pos:bins_added_in_pos+bins_removed], -e_added)
+
+        print('starting the inverting process...')
+        # invert the dict
+        new_tempered_dict = {}
+        j = 0
+        for key, val in tqdm(new_inverse_tempered_dict.items()):
+            for interval in val:
+                new_tempered_dict[j] = {'interval': interval, 'p': key}
+                j += 1
+
+        """
+        modification in the null/zero space
+        """
+        assert e_added not in new_tempered_dict  # hoping
+        new_tempered_dict[j] = {'interval': (
+            U_pos, U_pos+bins_added_in_null), 'p': e_added}
+        # We just add in order in the null space
+        mass_in_each_part = [(val['interval'][1] - val['interval'][0]) * val['p']
+                             for key, val in new_tempered_dict.items()]
+        should_be_one = np.sum(mass_in_each_part)
+        print('CHEATING')
+        for key, val in new_tempered_dict.items():
+            new_tempered_dict[key]['p'] = val['p'] /should_be_one
+        mass_in_each_part = [(val['interval'][1] - val['interval'][0]) * val['p']
+                             for key, val in new_tempered_dict.items()]
+        should_be_one = np.sum(mass_in_each_part)
+        np.testing.assert_allclose(should_be_one, 1)
+        return new_tempered_dict
+
 
 # Given: U the size of the probability space
 # Returns: Array with one of each element in the probability space
@@ -174,49 +270,40 @@ def sampleSpecificProbDist(value, probability, m):
     return new_samples
 
 
-NOT_TO_BIG = 10000
-
-
-# def find_bigger_divisor(U):
-#     # first we find how deep the tree needs to be. (How many sampling step will be needed)
-#     tree_is_too_wide = True
-#     tree_depht = 2
-#     while tree_is_too_wide:
-#         tree_wideness = U**(1/tree_depht)
-#         if tree_wideness < NOT_TO_BIG:
-#             tree_is_too_wide = False
-#         tree_depht += 1
-#     print('the sampling tree is', tree_depht)
-#     # Then, we find even divisor
+def find_bigger_divisor(w):
+    NOT_TO_BIG = 50000
+    # first we find how deep the tree needs to be. (How many sampling step will be needed)
+    tree_is_too_wide = True
+    tree_depht = 2
+    while tree_is_too_wide:
+        tree_wideness = U**(1/tree_depht)
+        if tree_wideness < NOT_TO_BIG:
+            tree_is_too_wide = False
+        tree_depht += 1
+    print('the sampling tree is', tree_depht)
+    # Then, we find even divisor
 
 # NOTDONE TODO scalable
-def scalabale_sample_distribution(U, function_prob, m, flatten_dist=None):
-    size_subsampling_space = NOT_TO_BIG
-    probability = [
-        1/size_subsampling_space for _ in range(size_subsampling_space)]
-    values = list(range(size_subsampling_space))
-    if flatten_dist is None:  # we can assume that the distribution is uniform, so we can split the space however we like
-        first_split_space = int(U / size_subsampling_space)
-        assert first_split_space * size_subsampling_space == U  # we need this for now
-        second_split_space = int(first_split_space / size_subsampling_space)
-        assert second_split_space * \
-            size_subsampling_space == first_split_space  # we need this for now
 
-        distrib = rv_discrete(values=(values, probability))
-        sample_first_space = distrib.rvs(size=m)
-        sample_second_space = distrib.rvs(size=m)
 
-        probability = [1/second_split_space for _ in range(second_split_space)]
-        values = list(range(second_split_space))
-        distrib_reminder = rv_discrete(values=(values, probability))
-        sample_reminder = distrib_reminder.rvs(size=m)
-
-        # build the samples from the tree sampling scheme
-        samples = [m*size_subsampling_space *
-                   second_split_space for m in sample_first_space]
-        samples = [m+(sample_second_space[i]*second_split_space)
-                   for i, m in enumerate(samples)]
-        samples = [m+(sample_reminder[i]) for i, m in enumerate(samples)]
+def scalabale_sample_distribution(U, prob_optimized_dict, m):
+    mass_in_each_part = [(val['interval'][1] - val['interval'][0]) * val['p']
+                         for key, val in prob_optimized_dict.items()]
+    should_be_one = np.sum(mass_in_each_part)
+    size_each_regions = [(val['interval'][1] - val['interval'][0])
+                         for _, val in prob_optimized_dict.items()]
+    regions = list(prob_optimized_dict.keys())
+    # FIRST SAMPLING, which region to sample from
+    samples = sampleSpecificProbDist(regions, mass_in_each_part, m)
+    for region in regions:
+        # small error, the first number can be overwritten
+        index_with_region = np.where(samples == region)[0]
+        m_in_region = index_with_region.shape[0]
+        interval_of_region = prob_optimized_dict[region]['interval']
+        in_region_samples = random.choices(
+            range(interval_of_region[0], interval_of_region[1]), k=m_in_region)
+        offset = np.sum(size_each_regions[:region])
+        samples[index_with_region] = in_region_samples + offset
     return samples
 
 

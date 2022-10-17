@@ -34,17 +34,28 @@ def get_ranking_results(all_models_list_stats):
 
 def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
     all_trials_p_emp = []
-    prob_array = prob_dict_to_array(ground_truth_p, U)
-    if tempered:
-        prob_array = errFunct(U, prob_array, e, b)
-    for _ in range(trials):
-        if U <= 7**7:
-            new_samples = sampleSpecificProbDist(genValArr(U), prob_array, m)
-        else:
-            new_samples = scalabale_sample_distribution(
-                U, prob_array, m, flatten_dist=None)
-        p_emp_dict = empirical_dist_no_zero(m, new_samples)
-        all_trials_p_emp.append(p_emp_dict)
+    # first, check if the ground truth is given in the optimized format
+    is_optimized = type(list(ground_truth_p.values())[0]) is dict
+    if not is_optimized: # the space is small enough to follow normal sampling procedure
+        prob_array = prob_dict_to_array(ground_truth_p, U)
+        if tempered:
+            prob_array = errFunct(U, prob_array, e, b)
+        for _ in range(trials):
+
+            new_samples = sampleSpecificProbDist(
+                genValArr(U), prob_array, m)
+
+            p_emp_dict = empirical_dist_no_zero(m, new_samples)
+            all_trials_p_emp.append(p_emp_dict)
+    else: # the space is too big
+        prob_optimized_dict = ground_truth_p
+        if tempered:
+            prob_optimized_dict = errFunct(U, ground_truth_p, e, b)
+        for _ in range(trials):
+
+            new_samples = scalabale_sample_distribution(U, prob_optimized_dict, m)
+            p_emp_dict = empirical_dist_no_zero(m, new_samples)
+            all_trials_p_emp.append(p_emp_dict)
     return all_trials_p_emp
 
 
