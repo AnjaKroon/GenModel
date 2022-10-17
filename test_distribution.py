@@ -2,7 +2,7 @@ import math
 from tqdm import tqdm
 from discrete import makeUniProbArr, prob_array_to_dict
 from stair import make_stair_prob
-from statistic.generate_statistics import perform_binning_and_compute_stats, genSstat, generate_samples_scalable
+from statistic.generate_statistics import get_ranking_results, perform_binning_and_compute_stats, genSstat, generate_samples_scalable
 from plot_utils import plot_stat, put_on_plot
 import scipy
 import numpy as np
