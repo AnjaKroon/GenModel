@@ -217,18 +217,44 @@ if __name__ == '__main__':
     # soln = stair_mapping(X)
     # print(soln)
 
-    samples_from_file = read_pickle_file('100sample.pk')
-    empirical_dict = samples_to_histo(samples_from_file)
     ground_truth_dict = build_ground_truth_dict()
-
     KEY_CONVERTING_DICT = get_converting_dict()
-    empirical_dict = convert_key_sequence_to_int(
-        empirical_dict, KEY_CONVERTING_DICT)
-    ground_truth_dict = convert_key_sequence_to_int(
-        ground_truth_dict, KEY_CONVERTING_DICT)
+    ground_truth_dict = convert_key_sequence_to_int(ground_truth_dict, KEY_CONVERTING_DICT)
 
-    print(empirical_dict)
+    samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/argmaxAR/13_08_2022__23_08/figure')
+    empirical_dict = samples_to_histo(samples_from_file)
+    empirical_dict = convert_key_sequence_to_int(empirical_dict, KEY_CONVERTING_DICT)
+
+    CDM_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/CDM/07_08_2022__11_49/figure')
+    CDM_empirical_dict = samples_to_histo(CDM_samples_from_file)
+    CDM_empirical_dict = convert_key_sequence_to_int(CDM_empirical_dict, KEY_CONVERTING_DICT)
+
+    CNF_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/CNF/14_08_2022__10_54/figure')
+    CNF_empirical_dict = samples_to_histo(CNF_samples_from_file)
+    CNF_empirical_dict = convert_key_sequence_to_int(CNF_empirical_dict, KEY_CONVERTING_DICT)
+    
+
+    # print(empirical_dict)
     # print(ground_truth_dict)
+
+    #empirical_dict = [empirical_dict]
+    #ground_truth_dict = [ground_truth_dict]
+
+    U = len(samples_from_file)  # -- check
+    #print(U)
+    # print(perform_binning_and_compute_stats(empirical_dict, ground_truth_dict, U, B, stat_func=genSstat))
+    
+
+
+    # arg_max_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/argmaxAR/13_08_2022__23_08/figure')
+    # arg_max_empirical_dict = samples_to_histo(arg_max_samples_from_file)
+    #arg_max_empirical_dict = convert_key_sequence_to_int(arg_max_empirical_dict, KEY_CONVERTING_DICT)
+    # tempered_samples_list = [arg_max_empirical_dict] # append here and then repeat for another file
+
+    # ground_truth_samples_list = []
+    # ground_truth_dict = build_ground_truth_dict() # same for all
+    # KEY_CONVERTING_DICT = get_converting_dict() # same for all
+    # ground_truth_dict = convert_key_sequence_to_int(ground_truth_dict, KEY_CONVERTING_DICT) # same for all
 
     # BINNING
     '''
@@ -244,34 +270,54 @@ if __name__ == '__main__':
         empirical_dict, KEY_CONVERTING_DICT)
     # then convert_key_sequence_to_int I think
     '''
-    U = len(samples_from_file)  # -- check
-    print(perform_binning_and_compute_stats(empirical_dict,
-          ground_truth_dict, U, B, stat_func=genSstat))
+    
 
     # when we plot the dict in order, it should look like a stair
-    x = list(ground_truth_dict.keys())
+    
+    #plt.title('This should look like a stair function once you are done')
+    #plt.show()
+    #plt.close()
+
+   
+
+    
+    x = list(CDM_empirical_dict.keys())
     x_sort_arg = np.argsort(x)
-    y = list(ground_truth_dict.values())
+    y = list(CDM_empirical_dict.values())
     x = [x[i] for i in x_sort_arg]
     y = [y[i] for i in x_sort_arg]
-    plt.plot(x, y)
-    plt.title('This should look like a stair function once you are done')
-    plt.show()
-    plt.close()
+    plt.plot(x[0:720], y[0:720], color='y', label='CDM', linewidth=0.35)
 
     x = list(empirical_dict.keys())
     x_sort_arg = np.argsort(x)
     y = list(empirical_dict.values())
     x = [x[i] for i in x_sort_arg]
     y = [y[i] for i in x_sort_arg]
-    plt.plot(x[0:720], y[0:720])
-    plt.title('This should approach the stair function, maybe it is failing.')
+    plt.plot(x[0:720], y[0:720], label='ARGMAX', linewidth=0.35)
+
+    x = list(ground_truth_dict.keys())
+    x_sort_arg = np.argsort(x)
+    y = list(ground_truth_dict.values())
+    x = [x[i] for i in x_sort_arg]
+    y = [y[i] for i in x_sort_arg]
+    plt.plot(x, y, color='r', label='stair')
+
+    
+    x = list(CNF_empirical_dict.keys())
+    x_sort_arg = np.argsort(x)
+    y = list(CNF_empirical_dict.values())
+    x = [x[i] for i in x_sort_arg]
+    y = [y[i] for i in x_sort_arg]
+    plt.plot(x[0:720], y[0:720], color='c', label='CNF', linewidth=0.35)
+
+
+    #plt.title('100samples.pk')
+    plt.legend()
     plt.show()
     plt.close()
 
     # this should work
-    perform_binning_and_compute_stats(
-        [empirical_dict], ground_truth_dict, U, B, stat_func=genSstat)
+    perform_binning_and_compute_stats([empirical_dict], ground_truth_dict, U, B, stat_func=genSstat)
 
     # U posU ratio and S are parameters that will define the stair function
     # stair_histo = make_stair_prob(U, posU, ratio, S)

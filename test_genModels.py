@@ -110,6 +110,9 @@ if __name__ == '__main__':
             
             # arg_max_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/argmaxAR/13_08_2022__23_08/figure')
             # arg_max_empirical_dict = samples_to_histo(arg_max_samples_from_file)
+            #arg_max_empirical_dict = convert_key_sequence_to_int(arg_max_empirical_dict, KEY_CONVERTING_DICT)
+            # tempered_samples_list = [arg_max_empirical_dict] # append here and then repeat for another file
+
             # TODO: add the other elements later
 
             #CDM_samples_from_file = read_pickle_file('100sample.pk', './S_6_K_6/CDM/07_08_2022__11_49/figure')
@@ -119,10 +122,10 @@ if __name__ == '__main__':
             #CNF_empirical_dict = samples_to_histo(CNF_samples_from_file)
 
             
-            #arg_max_empirical_dict = convert_key_sequence_to_int(arg_max_empirical_dict, KEY_CONVERTING_DICT)
+            
             #CDM_empirical_dict = convert_key_sequence_to_int(CDM_empirical_dict, KEY_CONVERTING_DICT)
             #CNF_empirical_dict =convert_key_sequence_to_int(CNF_empirical_dict, KEY_CONVERTING_DICT)
-            # tempered_samples_list = [arg_max_empirical_dict] # append here and then repeat for another file
+            #
             # mid_tempered_samples_list = [CDM_empirical_dict]
             # easy_tempered_samples_list = [CNF_empirical_dict]
             
