@@ -1,11 +1,31 @@
-# objective of this code is to generate the S statistic according to algorithm 1
-import numpy as np
+
 import sys
 import pandas as pd
 import scipy
 from sampling.poisson import poisson_empirical_dist
 from binned import p_to_bp_algo, p_to_bp_random, p_to_bp_with_index
 from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist, scalabale_sample_distribution
+import numpy as np
+
+# compute kendall tau ranking score
+# we have [ [all trials model 1], [all trials model 2], ...]
+# the ground truth rank is model 1 < model 2 < ...
+
+
+def get_ranking_results(all_models_list_stats):
+    number_of_models = len(all_models_list_stats)
+    number_of_trials = len(all_models_list_stats[0])
+    ground_truth_ranking = list(range(number_of_models))
+    kendalltau_ranking_metric_all_trials = []
+
+    for i in range(number_of_trials):
+        trial_i_all_models = [trials[i] for trials in all_models_list_stats]
+        ranking_i = np.argsort(trial_i_all_models)
+        kendalltau = scipy.stats.kendalltau(ranking_i, ground_truth_ranking)[
+            0]  # only takes the statistic, higher is better
+        kendalltau_ranking_metric_all_trials.append(kendalltau)
+    return kendalltau_ranking_metric_all_trials
+
 
 # default is without poissonization, we remove the option because it is not scalable
 # this return a list of empirical distribution dict, one for each trial
@@ -19,7 +39,7 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
         prob_array = errFunct(U, prob_array, e, b)
     for _ in range(trials):
         if U <= 7**7:
-            new_samples = sampleSpecificProbDist(genValArr(U),prob_array , m)
+            new_samples = sampleSpecificProbDist(genValArr(U), prob_array, m)
         else:
             new_samples = scalabale_sample_distribution(
                 U, prob_array, m, flatten_dist=None)

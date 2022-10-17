@@ -3,29 +3,11 @@ from tqdm import tqdm
 from discrete import makeUniProbArr, prob_array_to_dict
 from stair import make_stair_prob
 from statistic.generate_statistics import perform_binning_and_compute_stats, genSstat, generate_samples_scalable
-import matplotlib.pyplot as plt
 from plot_utils import plot_stat, put_on_plot
 import scipy
 import numpy as np
 import random
 
-# we have [ [all trials model 1], [all trials model 2], ...]
-# the ground truth rank is model 1 < model 2 < ...
-
-
-def get_ranking_results(all_models_list_stats):
-    number_of_models = len(all_models_list_stats)
-    number_of_trials = len(all_models_list_stats[0])
-    ground_truth_ranking = list(range(number_of_models))
-    kendalltau_ranking_metric_all_trials = []
-
-    for i in range(number_of_trials):
-        trial_i_all_models = [trials[i] for trials in all_models_list_stats]
-        ranking_i = np.argsort(trial_i_all_models)
-        kendalltau = scipy.stats.kendalltau(ranking_i, ground_truth_ranking)[
-            0]  # only takes the statistic, higher is better
-        kendalltau_ranking_metric_all_trials.append(kendalltau)
-    return kendalltau_ranking_metric_all_trials
 
 
 if __name__ == '__main__':
