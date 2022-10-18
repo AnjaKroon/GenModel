@@ -2,6 +2,7 @@
 import sys
 import pandas as pd
 import scipy
+from tqdm import tqdm
 from sampling.poisson import poisson_empirical_dist
 from binned import p_to_bp_algo, p_to_bp_random, p_to_bp_with_index
 from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist, scalabale_sample_distribution
@@ -62,7 +63,7 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
 # for this, we already have the samples, but they are not binned
 def perform_binning_and_compute_stats(all_trials_q_dict, ground_truth_p_dict, U, B, stat_func):
     list_stat = []
-    for q_dict in all_trials_q_dict:
+    for q_dict in tqdm(all_trials_q_dict):
         # first, we do the binning randomly, obtain the new binned distribution
         binnned_p_hist, mapping_from_index_to_bin = p_to_bp_random(
             ground_truth_p_dict, U, B)

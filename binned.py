@@ -24,13 +24,27 @@ def p_to_bp_with_index(histo_p, U, B, mapping_from_index_to_bin):
             new_histo[bin] += val
     return new_histo
 
+# the historgram could be
+
+
+def get_probability_at_element(j, histogram):
+    is_optimized = type(list(histogram.values())[0]) is dict
+
+    if is_optimized:
+        intervals = [val['interval'] for _, val in histogram.items()]
+        interval_index = find_interval(j, intervals)
+        if interval_index in histogram:
+            return histogram[interval_index]['p']
+    else:
+        if j in histogram:
+            return histogram[j]
+    return 0  # if the index doesn't appear, we assume the prob is 0
+
 # assign a bin at randoms to each element
 
 
-def p_to_bp_random(histo_p, U, B):
-    is_optimized = type(list(histo_p.values())[0]) is dict
-    if is_optimized:
-        intervals = [val['interval'] for _, val in histo_p.items()]
+def p_to_bp_random(ground_truth_p_dict, U, B):
+
     amount_per_bin = math.floor(U/B)  # 3
     amount_final_bin = int(amount_per_bin + (U % B))  # 4
 
@@ -50,21 +64,12 @@ def p_to_bp_random(histo_p, U, B):
             mapping_from_index_to_bin[shuffled_index] = i
             mapping_bin_to_index[i].append(shuffled_index)
     new_histo = {}
-    
+
     for bin_index, all_index in mapping_bin_to_index.items():
         new_probability_for_bin = 0
         for j in all_index:
-            # if j not in histo_p, we assume that histo_p[j] = 0, so we can skip
-
-            if is_optimized:
-                interval_index = find_interval(j, intervals)
-                if interval_index in histo_p:
-                    new_probability_for_bin = new_probability_for_bin + \
-                        histo_p[interval_index]['p']
-            else:
-                if j in histo_p:
-                    new_probability_for_bin = new_probability_for_bin + \
-                        histo_p[j]
+            new_probability_for_bin = new_probability_for_bin + \
+                get_probability_at_element(j, ground_truth_p_dict)
         new_histo[bin_index] = new_probability_for_bin
     return new_histo, mapping_from_index_to_bin
 
@@ -153,7 +158,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
     sorted_s_by_potential_cut_error.reverse()  # highest to lowest
     num_region_that_can_be_cut = (num_pos_flat_regions-zero_error_regions)
     mapping_bin_to_index = {}
-    
+
     # now we need to cut the predefined bins in the number of wanted bins B
     if B < num_pos_flat_regions+1:  # NOT EXACT SOL
         raise NotImplemented
@@ -266,9 +271,9 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
     for bin_index, all_index in mapping_bin_to_index.items():
         new_probability_for_bin = 0
         for j in all_index:
-            if j in ground_truth_p_dict:
-                new_probability_for_bin = new_probability_for_bin + \
-                    ground_truth_p_dict[j]
+            new_probability_for_bin = new_probability_for_bin + \
+                get_probability_at_element(j, ground_truth_p_dict)
+
         new_histo_p[bin_index] = new_probability_for_bin
 
     new_histo_q = {}
@@ -276,8 +281,8 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
     for bin_index, all_index in mapping_bin_to_index.items():
         new_probability_for_bin = 0
         for j in all_index:
-            if j in q_dict:
-                new_probability_for_bin = new_probability_for_bin + q_dict[j]
+            new_probability_for_bin = new_probability_for_bin + \
+                get_probability_at_element(j, q_dict)
         new_histo_q[bin_index] = new_probability_for_bin
 
     # add the zero bin

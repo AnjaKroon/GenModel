@@ -23,12 +23,12 @@ if __name__ == '__main__':
     ratio = 2
     distribution_type = 'STAIRS'  # STAIRS
 
-    Bs = [4, 5, 6, 7, 8]
+    Bs = [4, 5, 6]
     power_base = 6
     list_U = [power_base**power_base]
     list_M = [1000]
 
-    list_of_binning_algo = ['algo', 'random', 'none']
+    list_of_binning_algo = ['algo', 'random']
     list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]
     list_of_title_q = [
         'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
@@ -81,7 +81,7 @@ if __name__ == '__main__':
                     list_of_results_stats[0][i].append(algo_stat)
                     list_of_results_stats[1][i].append(random_stat)
                     #list_of_results_stats[2][i].append(no_binning)
-
+            
             print('Generating S plots...')
 
             # plotting_dict_no_binning = {}
