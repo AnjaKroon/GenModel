@@ -9,6 +9,8 @@ import numpy as np
 import random
 import math
 
+from discrete import find_interval
+
 # return the dict of a binned pmf, with predined binning mapping_from_index_to_bin
 
 
@@ -26,6 +28,9 @@ def p_to_bp_with_index(histo_p, U, B, mapping_from_index_to_bin):
 
 
 def p_to_bp_random(histo_p, U, B):
+    is_optimized = type(list(histo_p.values())[0]) is dict
+    if is_optimized:
+        intervals = [val['interval'] for _, val in histo_p.items()]
     amount_per_bin = math.floor(U/B)  # 3
     amount_final_bin = int(amount_per_bin + (U % B))  # 4
 
@@ -45,28 +50,45 @@ def p_to_bp_random(histo_p, U, B):
             mapping_from_index_to_bin[shuffled_index] = i
             mapping_bin_to_index[i].append(shuffled_index)
     new_histo = {}
+    
     for bin_index, all_index in mapping_bin_to_index.items():
         new_probability_for_bin = 0
         for j in all_index:
             # if j not in histo_p, we assume that histo_p[j] = 0, so we can skip
-            if j in histo_p:
-                new_probability_for_bin = new_probability_for_bin + histo_p[j]
+
+            if is_optimized:
+                interval_index = find_interval(j, intervals)
+                if interval_index in histo_p:
+                    new_probability_for_bin = new_probability_for_bin + \
+                        histo_p[interval_index]['p']
+            else:
+                if j in histo_p:
+                    new_probability_for_bin = new_probability_for_bin + \
+                        histo_p[j]
         new_histo[bin_index] = new_probability_for_bin
     return new_histo, mapping_from_index_to_bin
 
 
-def find_flat_regions(ground_truth_p_dict):
-    # todo , just return as is
-    flat_regions = {}
-    for key, p_val in ground_truth_p_dict.items():
-        if p_val in flat_regions:
-            flat_regions[p_val].append(key)
-        else:
-            flat_regions[p_val] = [key]
-    # sort all flat regions
-    for p_val in flat_regions.keys():
-        flat_regions[p_val].sort()
-    return flat_regions
+def find_flat_regions(ground_truth_p_dict, is_optimized):
+    if is_optimized:
+        flat_regions = {}
+        for key, val in ground_truth_p_dict.items():
+            p_val = val['p']
+            interval = val['interval']
+            flat_regions[p_val] = range(interval[0], interval[1])
+
+        return flat_regions
+    else:
+        flat_regions = {}
+        for key, p_val in ground_truth_p_dict.items():
+            if p_val in flat_regions:
+                flat_regions[p_val].append(key)
+            else:
+                flat_regions[p_val] = [key]
+        # sort all flat regions
+        for p_val in flat_regions.keys():
+            flat_regions[p_val].sort()
+        return flat_regions
 
 # use the algo to assign a bin to each algo
 
@@ -78,10 +100,10 @@ def split(list_a, chunk_size):
 
 
 def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
-
+    is_optimized = type(list(ground_truth_p_dict.values())[0]) is dict
     predefined_bins_with_error = {}
     # be default, there is always the null space as well
-    flat_regions = find_flat_regions(ground_truth_p_dict)
+    flat_regions = find_flat_regions(ground_truth_p_dict, is_optimized)
     num_pos_flat_regions = 0
     zero_error_regions = 0
     region_index = 0
@@ -131,7 +153,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
     sorted_s_by_potential_cut_error.reverse()  # highest to lowest
     num_region_that_can_be_cut = (num_pos_flat_regions-zero_error_regions)
     mapping_bin_to_index = {}
-    mapping_from_index_to_bin = {}
+    
     # now we need to cut the predefined bins in the number of wanted bins B
     if B < num_pos_flat_regions+1:  # NOT EXACT SOL
         raise NotImplemented
@@ -211,7 +233,8 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
     else:
         num_random_cut = B - 1 - zero_error_regions
         random.seed(2)
-        bin_with_cut = random.choices(list(range(zero_error_regions)), k=num_random_cut)
+        bin_with_cut = random.choices(
+            list(range(zero_error_regions)), k=num_random_cut)
 
         cuts_per_bin = {}
         for c in bin_with_cut:

@@ -91,6 +91,7 @@ def find_interval(query, intervals):
     for i, interval in enumerate(intervals):
         if interval[0] <= query and query < interval[1]:  # we found the interval of the query
             return i
+    return -1
 
 # Given: U as size of probability space, array as the probability distribution (assumed uniform coming in)
 # e which is the total amount of error that is introduced in the probability distribution array, and
@@ -101,7 +102,7 @@ def find_interval(query, intervals):
 
 def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
 
-    is_optimized = type(list(init_array.values())[0]) is dict
+    is_optimized = not type(init_array) is list
     percent_pos_space = percent_to_modify-percent_to_modify_null
     assert percent_pos_space >= 0
     if not is_optimized:
@@ -136,7 +137,7 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
 
     e_added = e_per_section/bins_added  # error amount to add per element
     e_removed = e_per_section/bins_removed  # error amount to subtract per element
-    is_optimized = type(list(init_array.values())[0]) is dict
+   
     if not is_optimized:
 
         """
@@ -201,32 +202,43 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
                     # this takes more and more time
                     within_cut_index = find_interval(i, cut_intervals)
                     cut_interval = cut_intervals[within_cut_index]
-                    new_interval_1 = (cut_interval[0], i)
-                    new_interval_2 = (i+1, cut_interval[1])
                     cut_intervals.remove(cut_interval)
-                    cut_intervals.append(new_interval_1)
-                    cut_intervals.append(new_interval_2)
+                    if cut_interval[0] < i:
+                        new_interval_1 = (cut_interval[0], i)
+                        cut_intervals.insert(within_cut_index, new_interval_1)
+                    if i+1 < cut_interval[1]:
+                        new_interval_2 = (i+1, cut_interval[1])
+                        cut_intervals.insert(
+                            within_cut_index+1, new_interval_2)
+
+                    
                     new_inverse_tempered_dict[p_value_of_interval] = cut_intervals
                 else:
                     cut_interval = prob_optimized_dict[index_interval_to_cut]['interval'].copy(
                     )
-                    new_interval_1 = (cut_interval[0], i)
-                    new_interval_2 = (i+1, cut_interval[1])
-                    new_inverse_tempered_dict[p_value_of_interval] = [
-                        new_interval_1, new_interval_2]
+                    cut_intervals = []
+                    if cut_interval[0] < i:
+                        new_interval_1 = (cut_interval[0], i)
+                        cut_intervals.append(new_interval_1)
+                    if i+1 < cut_interval[1]:
+                        new_interval_2 = (i+1, cut_interval[1])
+                        cut_intervals.append(new_interval_2)
+
+                    new_inverse_tempered_dict[p_value_of_interval] = cut_intervals
 
         # positive tempering
         tempering(shuffled_indices_pos[:bins_added_in_pos], e_added)
         # negative tempering
         tempering(
-            shuffled_indices_pos[bins_added_in_pos:bins_added_in_pos+bins_removed], -e_added)
+            shuffled_indices_pos[bins_added_in_pos:bins_added_in_pos+bins_removed], -e_removed)
 
         print('starting the inverting process...')
         # invert the dict
         new_tempered_dict = {}
         j = 0
         for key, val in tqdm(new_inverse_tempered_dict.items()):
-            for interval in val:
+            sorted_val = sorted(val, key=lambda x: x[0])
+            for interval in sorted_val:
                 new_tempered_dict[j] = {'interval': interval, 'p': key}
                 j += 1
 
@@ -237,12 +249,6 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
         new_tempered_dict[j] = {'interval': (
             U_pos, U_pos+bins_added_in_null), 'p': e_added}
         # We just add in order in the null space
-        mass_in_each_part = [(val['interval'][1] - val['interval'][0]) * val['p']
-                             for key, val in new_tempered_dict.items()]
-        should_be_one = np.sum(mass_in_each_part)
-        print('CHEATING')
-        for key, val in new_tempered_dict.items():
-            new_tempered_dict[key]['p'] = val['p'] /should_be_one
         mass_in_each_part = [(val['interval'][1] - val['interval'][0]) * val['p']
                              for key, val in new_tempered_dict.items()]
         should_be_one = np.sum(mass_in_each_part)
@@ -270,20 +276,6 @@ def sampleSpecificProbDist(value, probability, m):
     return new_samples
 
 
-def find_bigger_divisor(w):
-    NOT_TO_BIG = 50000
-    # first we find how deep the tree needs to be. (How many sampling step will be needed)
-    tree_is_too_wide = True
-    tree_depht = 2
-    while tree_is_too_wide:
-        tree_wideness = U**(1/tree_depht)
-        if tree_wideness < NOT_TO_BIG:
-            tree_is_too_wide = False
-        tree_depht += 1
-    print('the sampling tree is', tree_depht)
-    # Then, we find even divisor
-
-# NOTDONE TODO scalable
 
 
 def scalabale_sample_distribution(U, prob_optimized_dict, m):
@@ -292,12 +284,17 @@ def scalabale_sample_distribution(U, prob_optimized_dict, m):
     should_be_one = np.sum(mass_in_each_part)
     size_each_regions = [(val['interval'][1] - val['interval'][0])
                          for _, val in prob_optimized_dict.items()]
+
     regions = list(prob_optimized_dict.keys())
     # FIRST SAMPLING, which region to sample from
     samples = sampleSpecificProbDist(regions, mass_in_each_part, m)
+    index_with_regions = []
     for region in regions:
         # small error, the first number can be overwritten
         index_with_region = np.where(samples == region)[0]
+        index_with_regions.append(index_with_region)
+    for i, region in enumerate(regions):
+        index_with_region = index_with_regions[i]
         m_in_region = index_with_region.shape[0]
         interval_of_region = prob_optimized_dict[region]['interval']
         in_region_samples = random.choices(
