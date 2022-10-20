@@ -4,7 +4,7 @@ from plot_utils import plot_stat, put_on_plot
 import numpy as np
 import random
 from read_pickle import read_pickle_file
-from stair import samples_to_histo, build_ground_truth_dict, get_converting_dict, convert_key_sequence_to_int
+from sampling.stair import samples_to_histo, build_ground_truth_dict, get_converting_dict, convert_key_sequence_to_int
 
 
 if __name__ == '__main__':

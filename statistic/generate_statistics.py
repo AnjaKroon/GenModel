@@ -1,11 +1,12 @@
 
+import random
 import sys
 import pandas as pd
 import scipy
 from tqdm import tqdm
 from sampling.poisson import poisson_empirical_dist
-from binned import p_to_bp_algo, p_to_bp_random, p_to_bp_with_index
-from discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist, scalabale_sample_distribution
+from statistic.binned import p_to_bp_algo, p_to_bp_random, p_to_bp_with_index
+from sampling.discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist, scalabale_sample_distribution
 import numpy as np
 
 # compute kendall tau ranking score
@@ -37,7 +38,7 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
     all_trials_p_emp = []
     # first, check if the ground truth is given in the optimized format
     is_optimized = type(list(ground_truth_p.values())[0]) is dict
-    if not is_optimized: # the space is small enough to follow normal sampling procedure
+    if not is_optimized:  # the space is small enough to follow normal sampling procedure
         prob_array = prob_dict_to_array(ground_truth_p, U)
         if tempered:
             prob_array = errFunct(U, prob_array, e, b)
@@ -48,46 +49,17 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
 
             p_emp_dict = empirical_dist_no_zero(m, new_samples)
             all_trials_p_emp.append(p_emp_dict)
-    else: # the space is too big
+    else:  # the space is too big
         prob_optimized_dict = ground_truth_p
         if tempered:
             prob_optimized_dict = errFunct(U, ground_truth_p, e, b)
         for _ in range(trials):
 
-            new_samples = scalabale_sample_distribution(U, prob_optimized_dict, m)
+            new_samples = scalabale_sample_distribution(
+                U, prob_optimized_dict, m)
             p_emp_dict = empirical_dist_no_zero(m, new_samples)
             all_trials_p_emp.append(p_emp_dict)
     return all_trials_p_emp
-
-
-# for this, we already have the samples, but they are not binned
-def perform_binning_and_compute_stats(all_trials_q_dict, ground_truth_p_dict, U, B, stat_func):
-    list_stat = []
-    for q_dict in tqdm(all_trials_q_dict):
-        # first, we do the binning randomly, obtain the new binned distribution
-        binnned_p_hist, mapping_from_index_to_bin = p_to_bp_random(
-            ground_truth_p_dict, U, B)
-        binnned_q_hist = p_to_bp_with_index(
-            q_dict, U, B, mapping_from_index_to_bin)
-        # here its ok to transform the distirbution to an array because the space is supppose to be very small
-        binnned_p_array = prob_dict_to_array(binnned_p_hist, B)
-        binnned_q_array = prob_dict_to_array(binnned_q_hist, B)
-
-        # whatever stat we are computing on binnned_p_array vs binnned_q_array
-        B_random = stat_func(
-            binnned_p_array, binnned_q_array)
-
-        # then we apply the algorithm
-        binnned_p_hist, binnned_q_hist = p_to_bp_algo(
-            ground_truth_p_dict, q_dict,  U, B)
-        # here its ok to transform the distirbution to an array because the space is supppose to be very small
-        binnned_p_array = prob_dict_to_array(binnned_p_hist, B)
-        binnned_q_array = prob_dict_to_array(binnned_q_hist, B)
-
-        # whatever stat we are computing on binnned_p_array vs binnned_q_array
-        B_algo = stat_func(binnned_p_array, binnned_q_array)
-        list_stat.append({'B_random': B_random, 'B_algo': B_algo})
-    return list_stat
 
 
 def generate_samples_and_compute_stat(trials, U, m, tempered, e, b, B, stat_func, with_poisson=True):
@@ -122,6 +94,44 @@ def generate_samples_and_compute_stat(trials, U, m, tempered, e, b, B, stat_func
         stat = stat_func(uni_prob_array, p_emp_array)
         result_trials.append(stat)
     return result_trials
+
+
+def test_for_l2(q_samples, m, alpha_signi, U):
+    list_x_in_samples = []
+    for x, num in enumerate(q_samples):
+        list_x_in_samples = list_x_in_samples + [x for _ in range(num)]
+    random.shuffle(list_x_in_samples)
+    t = int(5 * np.log2(1/alpha_signi))
+    sub_m = int(m/t)
+    error = np.sqrt(10*np.sqrt(U)/(sub_m-1))
+   
+    all_col = []
+    # count the number of pairwise collision in subset sample sub_m
+    for index_subset in range(t):
+        col = 0
+        choose_2_from_m = 0
+        subsamples = list_x_in_samples[sub_m *
+                                       index_subset: sub_m*(index_subset+1)]
+        for i in range(sub_m):
+            for j in range(i+1, sub_m):
+                choose_2_from_m += 1  # just do +1 cause I am lazy
+                if subsamples[i] == subsamples[j]:
+                    col += 1
+            all_col.append(col/choose_2_from_m)
+    return np.median(all_col), error
+
+
+def reject_if_bad_test(prob_array, q_emp_array, m):
+    # recover histrogram
+    q_samples = [int(m*p) for p in q_emp_array]
+    # first step, transform stair to uniform
+    q2_estimate, error = test_for_l2(q_samples, m, 1/3, len(q_emp_array))
+    p2 = np.sum([p**2 for p in prob_array])
+    lower_bound_l2 = p2 + q2_estimate -2 * np.sqrt(q2_estimate) * max(prob_array)
+    lower_bound_l2 = np.sqrt(lower_bound_l2)
+    bigger_error_to_test =  lower_bound_l2 - error
+    
+    return bigger_error_to_test
 
 
 def get_chi_square(trials, U, m, tempered, e, b, B):
@@ -194,9 +204,20 @@ def test_to_reject_chi_square(uni_prob_array, p_emp_array):
     return reject
 
 
+def search_list_for_value(array, val):
+    if val in array:
+        index = array.index(val)
+        return index
+    return None
+
+
 def chi_square_stat(uni_prob_array, p_emp_array):
     a = np.sum(uni_prob_array)
     b = np.sum(p_emp_array)
+    key_zero = search_list_for_value(uni_prob_array, 0)
+    if key_zero is not None and p_emp_array[key_zero] == 0:
+        del uni_prob_array[key_zero]
+        del p_emp_array[key_zero]
     chi_square_out = scipy.stats.chisquare(uni_prob_array, p_emp_array)
     p_value = chi_square_out[1]
     return p_value

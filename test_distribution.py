@@ -1,13 +1,14 @@
-from asyncio import start_unix_server
 import math
-import os
 from tqdm import tqdm
-from discrete import makeUniProbArr, prob_array_to_dict
-from stair import make_stair_prob
-from statistic.generate_statistics import get_ranking_results, perform_binning_and_compute_stats, genSstat, generate_samples_scalable
-from plot_utils import plot_stat, put_on_plot
+from figure_generater import generating_S_rank_plots
+from sampling.discrete import makeUniProbArr, prob_array_to_dict
+from file_helper import load_samples
+from sampling.stair import make_stair_prob
+from statistic.binning_algo import binning_on_samples
 import numpy as np
 import random
+
+from statistic.generate_statistics import reject_if_bad_test
 
 
 if __name__ == '__main__':
@@ -23,13 +24,13 @@ if __name__ == '__main__':
     ratio = 2
     distribution_type = 'STAIRS'  # STAIRS
 
-    Bs = [4, 5, 6]
+    Bs = [8]
     power_base = 6
     list_U = [power_base**power_base]
-    list_M = [1000]
+    list_M = [50000]
 
     list_of_binning_algo = ['algo', 'random']
-    list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]
+    list_of_espilon_q = [ init_e*2]
     list_of_title_q = [
         'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
 
@@ -55,82 +56,20 @@ if __name__ == '__main__':
 
             else:
                 raise NotImplemented
-
-            # obtain the samples
-            list_of_samples = []
-            for e in list_of_espilon_q:
-                if e == 0:
-                    samples = generate_samples_scalable(
-                        ground_truth_p, trials, U, m, tempered=False, e=0, b=100)
-                else:
-                    samples = generate_samples_scalable(
-                        ground_truth_p, trials, U, m, tempered=True, e=e, b=init_b)
-                list_of_samples.append(samples)
+            list_of_samples = load_samples(
+                list_of_espilon_q, init_b, ground_truth_p, trials, U, m)
 
             for B in tqdm(Bs):  # For each bin granularity
 
                 for i, all_samples_list in enumerate(list_of_samples):
-                   
-                    S_trials_for_this_B_list = perform_binning_and_compute_stats(
-                        all_samples_list, ground_truth_p, U, B, stat_func=genSstat)
-
-                    algo_stat = [i['B_algo'] for i in S_trials_for_this_B_list]
-                    random_stat = [i['B_random']
-                                   for i in S_trials_for_this_B_list]
-                    
-                    list_of_results_stats[0][i].append(algo_stat)
-                    list_of_results_stats[1][i].append(random_stat)
-                    #list_of_results_stats[2][i].append(no_binning)
-            
-            print('Generating S plots...')
-
-            # plotting_dict_no_binning = {}
-            # for i, title in enumerate(list_of_title_q):
-            #     plotting_dict_no_binning[title] = list_of_results_stats[2][i]
-            # put_on_plot(Bs, plotting_dict_no_binning)
-            # prefix_title = 'U_' + str(U) + '_m_' + str(m)
-            # prefix_title = os.path.join('figures', prefix_title)
-            # plot_stat(prefix_title+'_nobinning_S.pdf', 'Bins',
-            #           'Empirical Total Variation Error')
-
-            plotting_dict_algo = {}
-            for i, title in enumerate(list_of_title_q):
-                plotting_dict_algo[title] = list_of_results_stats[0][i]
-            put_on_plot(Bs, plotting_dict_algo)
-            prefix_title = 'U_' + str(U) + '_m_' + str(m)
-            prefix_title = os.path.join('figures', prefix_title)
-            plot_stat(prefix_title+'_algo_S.pdf', 'Bins',
-                      'Empirical Total Variation Error')
-
-            plotting_dict_random = {}
-            for i, title in enumerate(list_of_title_q):
-                plotting_dict_random[title] = list_of_results_stats[1][i]
-            put_on_plot(Bs, plotting_dict_random)
-
-            # error of _____ w.r.t ground truth
-            # for no temper, samples are generated from uniform dist
-            # for heavily temper, samples are generated from heavily tempered distribution
-            # thus, the gen model should have an easier time distinguishing the heavily
-            # tempered case and will easily give it a lower rank
-
-            plot_stat(prefix_title+'_random_S.pdf', 'Bins',
-                      'Empirical total variation error')
-
-            print('Generating ranking plots...')
-
-            algo_ranking_results_all_trials_all_Bs = []
-            for i in range(len(Bs)):
-                list_at_B = [q[i] for q in list_of_results_stats[0]]
-                algo_ranking_results_all_trials_all_Bs.append(
-                    get_ranking_results(list_at_B))
-
-            random_ranking_results_all_trials_all_Bs = []
-            for i in range(len(Bs)):
-                list_at_B = [q[i] for q in list_of_results_stats[1]]
-                random_ranking_results_all_trials_all_Bs.append(
-                    get_ranking_results(list_at_B))
-
-            put_on_plot(Bs, {'algo': algo_ranking_results_all_trials_all_Bs,
-                        'random': random_ranking_results_all_trials_all_Bs})
-            plot_stat(prefix_title + '_ranking.pdf',
-                      'Bins', 'Kendall tau distance')
+                    list_binned_algo = binning_on_samples(
+                        'algo', all_samples_list, ground_truth_p, U, B)
+                    list_binned_random = binning_on_samples(
+                        'random', all_samples_list, ground_truth_p, U, B)
+                    # test_algo = [reject_if_bad_test(
+                    #     trial['p'], trial['q'], m) for trial in list_binned_algo]
+                    test_random = [reject_if_bad_test(
+                        trial['p'], trial['q'], m) for trial in list_binned_random]
+                
+                    print(np.mean(test_algo))
+                    print(np.mean(test_random))
