@@ -70,15 +70,20 @@ def put_on_plot(x, dict_y):
         if type(val[0]) is list and len(val[0]) > 1:
             all_trials = val
             y = [np.mean(trials) for trials in all_trials]
-            all_ci = [get_ci(trials) for trials in all_trials]
+
             plt.plot(x, y, color=color, label=key)
-            ci_over = [ci.high for i, ci in enumerate(all_ci)]
-            ci_under = [ci.low for i, ci in enumerate(all_ci)]
-            plt.fill_between(x, ci_under, ci_over, color=color, alpha=.1)
+            try:
+                all_ci = [get_ci(trials) for trials in all_trials]
+                ci_over = [ci.high for i, ci in enumerate(all_ci)]
+                ci_under = [ci.low for i, ci in enumerate(all_ci)]
+                plt.fill_between(x, ci_under, ci_over, color=color, alpha=.1)
+            except:
+                print('couldnt do the ci', all_trials[0])
         else:
             print(x)
             print(val)
             plt.plot(x, val, color=color, label=key)
+
 
     # idea to break this up here....
     # essentially invoke part 1 multiple times and then invoke part 2 as below

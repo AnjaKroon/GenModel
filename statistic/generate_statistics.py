@@ -1,4 +1,5 @@
 
+import math
 import random
 import sys
 import pandas as pd
@@ -96,42 +97,53 @@ def generate_samples_and_compute_stat(trials, U, m, tempered, e, b, B, stat_func
     return result_trials
 
 
-def test_for_l2(q_samples, m, alpha_signi, U):
-    list_x_in_samples = []
-    for x, num in enumerate(q_samples):
-        list_x_in_samples = list_x_in_samples + [x for _ in range(num)]
-    random.shuffle(list_x_in_samples)
-    t = int(5 * np.log2(1/alpha_signi))
-    sub_m = int(m/t)
-    error = np.sqrt(10*np.sqrt(U)/(sub_m-1))
-   
-    all_col = []
-    # count the number of pairwise collision in subset sample sub_m
-    for index_subset in range(t):
-        col = 0
-        choose_2_from_m = 0
-        subsamples = list_x_in_samples[sub_m *
-                                       index_subset: sub_m*(index_subset+1)]
-        for i in range(sub_m):
-            for j in range(i+1, sub_m):
-                choose_2_from_m += 1  # just do +1 cause I am lazy
-                if subsamples[i] == subsamples[j]:
-                    col += 1
-            all_col.append(col/choose_2_from_m)
-    return np.median(all_col), error
+# def test_for_l2(q_samples, m, alpha_signi, U):
+#     list_x_in_samples = []
+#     for x, num in enumerate(q_samples):
+#         list_x_in_samples = list_x_in_samples + [x for _ in range(num)]
+#     random.shuffle(list_x_in_samples)
+#     t = int(5 * np.log2(1/alpha_signi))
+#     sub_m = int(m/t)
+#     error = np.sqrt(10*np.sqrt(U)/(sub_m-1))
+
+#     all_col = []
+#     # count the number of pairwise collision in subset sample sub_m
+#     for index_subset in range(t):
+#         col = 0
+#         choose_2_from_m = 0
+#         subsamples = list_x_in_samples[sub_m *
+#                                        index_subset: sub_m*(index_subset+1)]
+#         for i in range(sub_m):
+#             for j in range(i+1, sub_m):
+#                 choose_2_from_m += 1  # just do +1 cause I am lazy
+#                 if subsamples[i] == subsamples[j]:
+#                     col += 1
+#             all_col.append(col/choose_2_from_m)
+#     return np.median(all_col), error
+
+def compute_self_collisions(q_samples):
+    num_collisions = 0
+    for num_samples_per_x in q_samples:
+        number_pairs = math.comb(num_samples_per_x, 2)
+        num_collisions += number_pairs
+    return num_collisions
 
 
 def reject_if_bad_test(prob_array, q_emp_array, m):
+    epsilon = 0.05
     # recover histrogram
     q_samples = [int(m*p) for p in q_emp_array]
-    # first step, transform stair to uniform
-    q2_estimate, error = test_for_l2(q_samples, m, 1/3, len(q_emp_array))
-    p2 = np.sum([p**2 for p in prob_array])
-    lower_bound_l2 = p2 + q2_estimate -2 * np.sqrt(q2_estimate) * max(prob_array)
-    lower_bound_l2 = np.sqrt(lower_bound_l2)
-    bigger_error_to_test =  lower_bound_l2 - error
-    
-    return bigger_error_to_test
+    num_collisions = compute_self_collisions(q_samples)
+    q_2_estimate = num_collisions
+    p_2_coll = (m-1)*m/2 * np.sum([p**2 for p in prob_array])
+    s_pq = m * np.sum([prob_array[i] * num_samples_per_x for i,
+                      num_samples_per_x in enumerate(q_samples)])
+    r = 2*m/(m-1)*(q_2_estimate+p_2_coll)
+    s = 2*s_pq
+    diff = r-s
+    boundary_val = 3*m**2*epsilon**2/4
+    reject = r-s > boundary_val
+    return reject
 
 
 def get_chi_square(trials, U, m, tempered, e, b, B):
