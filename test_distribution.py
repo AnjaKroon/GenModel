@@ -1,14 +1,13 @@
 import math
 from tqdm import tqdm
-from figure_generater import generating_S_rank_plots
 from plot_utils import plot_stat, put_on_plot
 from sampling.discrete import makeUniProbArr, prob_array_to_dict
 from file_helper import load_samples
+from sampling.loading_samples import load_generative_model_samples
 from sampling.stair import make_stair_prob
 from statistic.binning_algo import binning_on_samples
 import numpy as np
 import random
-
 from statistic.generate_statistics import reject_if_bad_test
 
 
@@ -16,49 +15,56 @@ if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
+    experiment = "GEN"  # either SYNTH or GEN
 
-    init_e = 0.1
-    init_b = 30
-    trials = 50
+    if experiment == "SYNTH":  # if we generate q ourselves
+        Bs = [4, 5, 6, 7, 8]
+        power_base = 6
+        list_U = [power_base**power_base]
+        list_M = [50000]
+        init_e = 0.1
+        init_b = 30
+        trials = 50
+        S = 3
+        ratio = 2
+        distribution_type = 'STAIRS'  # STAIRS
 
-    S = 3
-    ratio = 2
-    distribution_type = 'STAIRS'  # STAIRS
+        list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]
+        list_of_title_q = [
+            'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
+    else:  # if we take q as the generative models we have, we load the samples.
+        power_base = 6
+        list_U = [power_base**power_base]
+        list_M = [10000]
+        S = 2
 
-    Bs = [4, 5, 6, 7, 8]
-    power_base = 6
-    list_U = [power_base**power_base]
-    list_M = [50000]
-
+    Bs = list(range(S+1, 2*(S+1)))
     list_of_binning_algo = ['algo', 'random']
-    list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]
-    list_of_title_q = [
-        'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
 
-    # create list of results,
-    list_of_results_stats = []
-    for _ in list_of_binning_algo:
-        list_of_q_results_stats = []
-        for _ in list_of_espilon_q:
-            list_of_q_results_stats.append([])
-        list_of_results_stats.append(list_of_q_results_stats)
-
+    
     for m in list_M:
         print("for this round m is ", m)
         for U in list_U:
             print("and U is ", U)
+            if experiment == "SYNTH":
+                if distribution_type == 'UNIFORM':
+                    ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
 
-            if distribution_type == 'UNIFORM':
-                ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
+                elif distribution_type == 'STAIRS':
+                    ground_truth_p = make_stair_prob(
+                        U, posU=(math.factorial(power_base)/U), ratio=ratio,  S=S)
 
-            elif distribution_type == 'STAIRS':
-                ground_truth_p = make_stair_prob(
-                    U, posU=(math.factorial(power_base)/U), ratio=ratio,  S=S)
-
+                else:
+                    raise NotImplemented
+                list_of_samples = load_samples(
+                    list_of_espilon_q, init_b, ground_truth_p, trials, U, m)
             else:
-                raise NotImplemented
-            list_of_samples = load_samples(
-                list_of_espilon_q, init_b, ground_truth_p, trials, U, m)
+                dict_of_samples, ground_truth_p = load_generative_model_samples()
+                list_of_samples = [val for _, val in dict_of_samples.items()]
+                list_of_title_q = [key for key, _ in dict_of_samples.items()]
+
+          
+
 
             store_results_algo = {}
             store_results_random = {}
@@ -82,7 +88,6 @@ if __name__ == '__main__':
                     store_results_algo[q_name].append(test_algo)
                     store_results_random[q_name].append(test_random)
 
-    
     put_on_plot(Bs, store_results_algo)
     plot_stat('algo.pdf', 'Bins', 'algo')
 
