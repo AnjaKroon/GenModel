@@ -7,7 +7,7 @@ from statistic.binned import p_to_bp_algo, p_to_bp_random, p_to_bp_with_index
 def binning_on_samples(binning_algo, all_trials_q_dict, ground_truth_p_dict, U, B):
     list_binned = []
     for q_dict in all_trials_q_dict:
-        if binning_algo == 'algo':
+        if binning_algo == 'random':
             # first, we do the binning randomly, obtain the new binned distribution
             binnned_p_hist, mapping_from_index_to_bin = p_to_bp_random(
                 ground_truth_p_dict, U, B)

@@ -15,13 +15,15 @@ if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
-    experiment = "GEN"  # either SYNTH or GEN
-
+    experiment = "SYNTH"  # either SYNTH or GEN
+    test_epsilon = 0.2
+    delta = 1/3
     if experiment == "SYNTH":  # if we generate q ourselves
-        Bs = [4, 5, 6, 7, 8]
+        print('You are running the synthetic experiment...')
+
         power_base = 6
         list_U = [power_base**power_base]
-        list_M = [50000]
+        list_M = [10000]
         init_e = 0.1
         init_b = 30
         trials = 50
@@ -33,15 +35,15 @@ if __name__ == '__main__':
         list_of_title_q = [
             'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
     else:  # if we take q as the generative models we have, we load the samples.
+        print('You are running the generative model experiment...')
         power_base = 6
         list_U = [power_base**power_base]
         list_M = [10000]
         S = 2
 
-    Bs = list(range(S+1, 2*(S+1)))
+    Bs = list(range(S+1, 2*(S+1)+1))
     list_of_binning_algo = ['algo', 'random']
 
-    
     for m in list_M:
         print("for this round m is ", m)
         for U in list_U:
@@ -63,14 +65,12 @@ if __name__ == '__main__':
                 list_of_samples = [val for _, val in dict_of_samples.items()]
                 list_of_title_q = [key for key, _ in dict_of_samples.items()]
 
-          
-
-
             store_results_algo = {}
             store_results_random = {}
             for title in list_of_title_q:
                 store_results_algo[title] = []
                 store_results_random[title] = []
+            
             for B in tqdm(Bs):  # For each bin granularity
 
                 for i, all_samples_list in enumerate(list_of_samples):
@@ -79,9 +79,9 @@ if __name__ == '__main__':
                     list_binned_random = binning_on_samples(
                         'random', all_samples_list, ground_truth_p, U, B)
                     test_algo = [reject_if_bad_test(
-                        trial['p'], trial['q'], m) for trial in list_binned_algo]
+                        trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_algo]
                     test_random = [reject_if_bad_test(
-                        trial['p'], trial['q'], m) for trial in list_binned_random]
+                        trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_random]
 
                     q_name = list_of_title_q[i]
 
@@ -89,7 +89,7 @@ if __name__ == '__main__':
                     store_results_random[q_name].append(test_random)
 
     put_on_plot(Bs, store_results_algo)
-    plot_stat('algo.pdf', 'Bins', 'algo')
+    plot_stat(experiment+'algo.pdf', 'Bins', 'algo')
 
     put_on_plot(Bs, store_results_random)
-    plot_stat('random.pdf', 'Bins', 'random')
+    plot_stat(experiment+'random.pdf', 'Bins', 'random')

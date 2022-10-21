@@ -129,21 +129,24 @@ def compute_self_collisions(q_samples):
     return num_collisions
 
 
-def reject_if_bad_test(prob_array, q_emp_array, m):
-    epsilon = 0.05
-    # recover histrogram
-    q_samples = [int(m*p) for p in q_emp_array]
-    num_collisions = compute_self_collisions(q_samples)
-    q_2_estimate = num_collisions
-    p_2_coll = (m-1)*m/2 * np.sum([p**2 for p in prob_array])
-    s_pq = m * np.sum([prob_array[i] * num_samples_per_x for i,
-                      num_samples_per_x in enumerate(q_samples)])
-    r = 2*m/(m-1)*(q_2_estimate+p_2_coll)
-    s = 2*s_pq
-    diff = r-s
-    boundary_val = 3*m**2*epsilon**2/4
-    reject = r-s > boundary_val
-    return reject
+def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
+    k = int(np.log2(1/0.05))
+    all_trial = []
+    for _ in range(k):
+        # recover histrogram
+        q_samples = [int(m*p) for p in q_emp_array]
+        num_collisions = compute_self_collisions(q_samples)
+        q_2_estimate = num_collisions
+        p_2_coll = (m-1)*m/2 * np.sum([p**2 for p in prob_array])
+        s_pq = m * np.sum([prob_array[i] * num_samples_per_x for i,
+                           num_samples_per_x in enumerate(q_samples)])
+        r = 2*m/(m-1)*(q_2_estimate+p_2_coll)
+        s = 2*s_pq
+        diff = r-s
+        boundary_val = 3*m**2*epsilon**2/4
+        reject = r-s > boundary_val
+        all_trial.append(reject)
+    return np.mean(all_trial) > 0.5  # reject if majority rejects
 
 
 def get_chi_square(trials, U, m, tempered, e, b, B):

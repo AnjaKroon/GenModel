@@ -1,5 +1,6 @@
 from tqdm import tqdm
 from sampling.loading_samples import load_generative_model_samples
+from statistic.binning_algo import perform_binning_and_compute_stats
 from statistic.generate_statistics import get_ranking_results, genSstat
 from plot_utils import plot_stat, put_on_plot
 import numpy as np
