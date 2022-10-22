@@ -31,7 +31,7 @@ def perform_binning_and_compute_stats(all_trials_q_dict, ground_truth_p_dict, U,
         'algo', all_trials_q_dict, ground_truth_p_dict, U, B)
     list_binned_random = binning_on_samples(
         'random', all_trials_q_dict, ground_truth_p_dict, U, B)
-    for i in len(all_trials_q_dict):
+    for i in range(len(all_trials_q_dict)):         #added range
         binned_algo = list_binned_algo[i]
         B_random = stat_func(binned_algo['p'], binned_algo['q'])
         binned_random = list_binned_random[i]
