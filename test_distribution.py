@@ -1,4 +1,5 @@
 import math
+import os
 from tqdm import tqdm
 from plot_utils import plot_stat, put_on_plot
 from sampling.discrete import makeUniProbArr, prob_array_to_dict
@@ -8,7 +9,7 @@ from sampling.stair import make_stair_prob
 from statistic.binning_algo import binning_on_samples
 import numpy as np
 import random
-from statistic.generate_statistics import genSstat, reject_if_bad_test
+from statistic.generate_statistics import genSstat, get_ranking_results, reject_if_bad_test
 
 
 if __name__ == '__main__':
@@ -67,7 +68,8 @@ if __name__ == '__main__':
 
             store_results_algo = {}
             store_results_random = {}
-            metrics = ['S','test']
+            store_results_ranking = {'algo': [], 'random': []}
+            metrics = ['S', 'test']
             for metric in metrics:
                 store_results_algo[metric] = {}
                 store_results_random[metric] = {}
@@ -100,16 +102,27 @@ if __name__ == '__main__':
                     store_results_algo['S'][q_name].append(S_algo)
                     store_results_random['S'][q_name].append(S_random)
                 # compute correct correct with S
+                ranking_algo = get_ranking_results(
+                    [store_results_algo['S'][q_name][-1] for q_name in list_of_title_q])
+                ranking_random = get_ranking_results(
+                    [store_results_random['S'][q_name][-1] for q_name in list_of_title_q])
 
-    prefix = create_prefix_from_list([experiment, U, m, trials, S, ratio]) 
+                store_results_ranking['algo'].append(ranking_algo)
+                store_results_ranking['random'].append(ranking_random)
+
+    prefix = create_prefix_from_list([experiment, U, m, trials, S, ratio])
+    prefix = os.path.join('figures', prefix)
     put_on_plot(Bs, store_results_algo['test'])
     plot_stat(prefix+'test_algo.pdf', 'Bins', 'algo')
-    
+
     put_on_plot(Bs, store_results_random['test'])
     plot_stat(prefix+'test_random.pdf', 'Bins', 'random')
-     
+
     put_on_plot(Bs, store_results_algo['S'])
     plot_stat(prefix+'S_algo.pdf', 'Bins', 'algo')
 
     put_on_plot(Bs, store_results_random['S'])
     plot_stat(prefix+'S_random.pdf', 'Bins', 'random')
+
+    put_on_plot(Bs, store_results_ranking)
+    plot_stat(prefix+'ranking.pdf', 'Bins', 'algo')
