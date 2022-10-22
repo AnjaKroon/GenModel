@@ -16,7 +16,7 @@ if __name__ == '__main__':
     np.random.seed(3)
     random.seed(3)
     experiment = "SYNTH"  # either SYNTH or GEN
-    test_epsilon = 0.2
+    test_epsilon = 0.1
     delta = 1/3
     if experiment == "SYNTH":  # if we generate q ourselves
         print('You are running the synthetic experiment...')
@@ -26,7 +26,7 @@ if __name__ == '__main__':
         list_M = [10000]
         init_e = 0.1
         init_b = 30
-        trials = 50
+        trials = 10
         S = 3
         ratio = 2
         distribution_type = 'STAIRS'  # STAIRS
@@ -82,10 +82,13 @@ if __name__ == '__main__':
                         trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_algo]
                     test_random = [reject_if_bad_test(
                         trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_random]
-
+                    
                     q_name = list_of_title_q[i]
-
+                    print(q_name)
+                    print(np.mean(test_algo))
+                    print(np.mean(test_random))
                     store_results_algo[q_name].append(test_algo)
+                    
                     store_results_random[q_name].append(test_random)
 
     put_on_plot(Bs, store_results_algo)

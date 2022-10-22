@@ -146,6 +146,7 @@ def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
         boundary_val = 3*m**2*epsilon**2/4
         reject = r-s > boundary_val
         all_trial.append(reject)
+    print(np.mean(all_trial))
     return np.mean(all_trial) > 0.5  # reject if majority rejects
 
 
