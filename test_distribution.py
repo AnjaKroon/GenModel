@@ -8,14 +8,14 @@ from sampling.stair import make_stair_prob
 from statistic.binning_algo import binning_on_samples
 import numpy as np
 import random
-from statistic.generate_statistics import reject_if_bad_test
+from statistic.generate_statistics import genSstat, reject_if_bad_test
 
 
 if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
-    experiment = "GEN"  # either SYNTH or GEN
+    experiment = "SYNTH"  # either SYNTH or GEN
     test_epsilon = 0.18
     delta = 0.05
     if experiment == "SYNTH":  # if we generate q ourselves
@@ -24,11 +24,11 @@ if __name__ == '__main__':
         power_base = 6
         list_U = [power_base**power_base]
         list_M = [10000]
-        init_e = 0.05
+        init_e = 0.1
         init_b = 30
         trials = 10
-        S = 2
-        ratio = 3
+        S = 3
+        ratio = 2
         distribution_type = 'STAIRS'  # STAIRS
 
         list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]
@@ -59,7 +59,7 @@ if __name__ == '__main__':
                 else:
                     raise NotImplemented
                 list_of_samples = load_samples(
-                    list_of_espilon_q, init_b, ground_truth_p, trials, U, m)
+                    list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio)
             else:
                 dict_of_samples, ground_truth_p = load_generative_model_samples()
                 list_of_samples = [val for _, val in dict_of_samples.items()]
@@ -67,10 +67,14 @@ if __name__ == '__main__':
 
             store_results_algo = {}
             store_results_random = {}
-            for title in list_of_title_q:
-                store_results_algo[title] = []
-                store_results_random[title] = []
-            
+            metrics = ['S','test']
+            for metric in metrics:
+                store_results_algo[metric] = {}
+                store_results_random[metric] = {}
+                for title in list_of_title_q:
+                    store_results_algo[metric][title] = []
+                    store_results_random[metric][title] = []
+
             for B in tqdm(Bs):  # For each bin granularity
 
                 for i, all_samples_list in enumerate(list_of_samples):
@@ -78,21 +82,33 @@ if __name__ == '__main__':
                         'algo', all_samples_list, ground_truth_p, U, B)
                     list_binned_random = binning_on_samples(
                         'random', all_samples_list, ground_truth_p, U, B)
+                    # run statistical test
                     test_algo = [reject_if_bad_test(
                         trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_algo]
                     test_random = [reject_if_bad_test(
                         trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_random]
-                    
+                    # compute S reults
+                    S_algo = [genSstat(trial['p'], trial['q'])
+                              for trial in list_binned_algo]
+                    S_random = [genSstat(trial['p'], trial['q'])
+                                for trial in list_binned_random]
+
                     q_name = list_of_title_q[i]
-                    print(q_name)
-                    print(np.mean(test_algo))
-                    print(np.mean(test_random))
-                    store_results_algo[q_name].append(test_algo)
-                    
-                    store_results_random[q_name].append(test_random)
 
-    put_on_plot(Bs, store_results_algo)
-    plot_stat(experiment+'algo.pdf', 'Bins', 'algo')
+                    store_results_algo['test'][q_name].append(test_algo)
+                    store_results_random['test'][q_name].append(test_random)
+                    store_results_algo['S'][q_name].append(S_algo)
+                    store_results_random['S'][q_name].append(S_random)
+                # compute correct correct with S
 
-    put_on_plot(Bs, store_results_random)
-    plot_stat(experiment+'random.pdf', 'Bins', 'random')
+    put_on_plot(Bs, store_results_algo['test'])
+    plot_stat(experiment+'testalgo.pdf', 'Bins', 'algo')
+
+    put_on_plot(Bs, store_results_random['test'])
+    plot_stat(experiment+'testrandom.pdf', 'Bins', 'random')
+
+    put_on_plot(Bs, store_results_algo['algo'])
+    plot_stat(experiment+'Salgo.pdf', 'Bins', 'algo')
+
+    put_on_plot(Bs, store_results_random['algo'])
+    plot_stat(experiment+'Srandom.pdf', 'Bins', 'random')

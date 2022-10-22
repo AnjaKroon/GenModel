@@ -49,13 +49,13 @@ def create_prefix_from_list(list_name):
 # this function will either load existing samples or generate new ones
 
 
-def load_samples(list_of_espilon_q, b, ground_truth_p, trials, U, m):
+def load_samples(list_of_espilon_q, b, ground_truth_p, trials, U, m, S, ratio):
     # obtain the samples
     list_of_samples = []
     directory_samples_file = 'samples_storing'
     for e in list_of_espilon_q:
         sample_file = create_prefix_from_list(
-            [U, m, trials, b, e]) + '_samples.pk'
+            [U, m, trials, b, e, S, ratio]) + '_samples.pk'
         sample_file_path = os.path.join(directory_samples_file, sample_file)
 
         def generating_samples_func():
