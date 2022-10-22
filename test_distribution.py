@@ -22,7 +22,7 @@ if __name__ == '__main__':
     if experiment == "SYNTH":  # if we generate q ourselves
         print('You are running the synthetic experiment...')
 
-        power_base = 6
+        power_base = 10
         list_U = [power_base**power_base]
         list_M = [10000]
         init_e = 0.1

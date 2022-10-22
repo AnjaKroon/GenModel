@@ -2,6 +2,7 @@
 
 import random
 import sys
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import rv_discrete
@@ -81,12 +82,32 @@ def makeUniProbArr(U):
         prob_arr.append(prob)
     return prob_arr
 
-
+# basic binary search
+def find_in_sorted_intervals(query, sorted_intervals):
+    #current_list_intervals = sorted_intervals
+    current_list_index = range(len(sorted_intervals))
+    while True:
+        # check if we have tiny list
+        if len(current_list_index)==0:
+            return -1
+        else:
+            half_lookup = int(len(current_list_index)/2)
+            current_index = current_list_index[half_lookup]
+            current_interval = sorted_intervals[current_index]
+        
+            if current_interval[0] <= query and current_interval[1] > query:
+                return current_index
+            elif current_interval[1] <= query:
+                current_list_index = current_list_index[half_lookup+1:]
+                
+            else:
+                current_list_index = current_list_index[:half_lookup]
+        
+    
 def find_interval(query, intervals):
-    for i, interval in enumerate(intervals):
-        if interval[0] <= query and query < interval[1]:  # we found the interval of the query
-            return i
-    return -1
+    
+    index_sorted = find_in_sorted_intervals(query, intervals)
+    return index_sorted
 
 # Given: U as size of probability space, array as the probability distribution (assumed uniform coming in)
 # e which is the total amount of error that is introduced in the probability distribution array, and
@@ -176,7 +197,7 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
         """
         modification in the positive space
         """
-        # This should be otimized
+        # This should be otimized u
         shuffled_indices_pos = list(range(U_pos))
         random.shuffle(shuffled_indices_pos)
         print('Starting the tempering process...')
@@ -197,14 +218,17 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
                     # this takes more and more time
                     within_cut_index = find_interval(i, cut_intervals)
                     cut_interval = cut_intervals[within_cut_index]
-                    cut_intervals.remove(cut_interval)
+
+                    del cut_intervals[within_cut_index]
+
                     if cut_interval[0] < i:
                         new_interval_1 = (cut_interval[0], i)
                         cut_intervals.insert(within_cut_index, new_interval_1)
+                        within_cut_index =within_cut_index+1
                     if i+1 < cut_interval[1]:
                         new_interval_2 = (i+1, cut_interval[1])
                         cut_intervals.insert(
-                            within_cut_index+1, new_interval_2)
+                            within_cut_index, new_interval_2)
 
                     new_inverse_tempered_dict[p_value_of_interval] = cut_intervals
                 else:
