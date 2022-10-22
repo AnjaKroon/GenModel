@@ -16,7 +16,7 @@ if __name__ == '__main__':
     np.random.seed(3)
     random.seed(3)
     experiment = "GEN"  # either SYNTH or GEN
-    test_epsilon = 0.1
+    test_epsilon = 0.15
     delta = 0.05
     if experiment == "SYNTH":  # if we generate q ourselves
         print('You are running the synthetic experiment...')
