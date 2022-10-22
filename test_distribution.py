@@ -2,7 +2,7 @@ import math
 from tqdm import tqdm
 from plot_utils import plot_stat, put_on_plot
 from sampling.discrete import makeUniProbArr, prob_array_to_dict
-from file_helper import load_samples
+from file_helper import create_prefix_from_list, load_samples
 from sampling.loading_samples import load_generative_model_samples
 from sampling.stair import make_stair_prob
 from statistic.binning_algo import binning_on_samples
@@ -101,14 +101,15 @@ if __name__ == '__main__':
                     store_results_random['S'][q_name].append(S_random)
                 # compute correct correct with S
 
+    prefix = create_prefix_from_list([experiment, U, m, trials, S, ratio]) 
     put_on_plot(Bs, store_results_algo['test'])
-    plot_stat(experiment+'testalgo.pdf', 'Bins', 'algo')
-
+    plot_stat(prefix+'test_algo.pdf', 'Bins', 'algo')
+    
     put_on_plot(Bs, store_results_random['test'])
-    plot_stat(experiment+'testrandom.pdf', 'Bins', 'random')
+    plot_stat(prefix+'test_random.pdf', 'Bins', 'random')
+     
+    put_on_plot(Bs, store_results_algo['S'])
+    plot_stat(prefix+'S_algo.pdf', 'Bins', 'algo')
 
-    put_on_plot(Bs, store_results_algo['algo'])
-    plot_stat(experiment+'Salgo.pdf', 'Bins', 'algo')
-
-    put_on_plot(Bs, store_results_random['algo'])
-    plot_stat(experiment+'Srandom.pdf', 'Bins', 'random')
+    put_on_plot(Bs, store_results_random['S'])
+    plot_stat(prefix+'S_random.pdf', 'Bins', 'random')
