@@ -15,20 +15,20 @@ if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
-    experiment = "SYNTH"  # either SYNTH or GEN
+    experiment = "GEN"  # either SYNTH or GEN
     test_epsilon = 0.1
-    delta = 1/3
+    delta = 0.05
     if experiment == "SYNTH":  # if we generate q ourselves
         print('You are running the synthetic experiment...')
 
         power_base = 6
         list_U = [power_base**power_base]
         list_M = [10000]
-        init_e = 0.1
+        init_e = 0.05
         init_b = 30
         trials = 10
-        S = 3
-        ratio = 2
+        S = 2
+        ratio = 3
         distribution_type = 'STAIRS'  # STAIRS
 
         list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]

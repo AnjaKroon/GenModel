@@ -1,15 +1,10 @@
 # The objective of this code is to create samples from a slightly skewed uniform probability distribution for discrete events.
 
-from random import uniform
 import random
 import sys
-from tkinter import EXCEPTION
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import rv_discrete
-
-from time import time
-
 from tqdm import tqdm
 
 # transform a prob array into a dictionnary
@@ -137,7 +132,7 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
 
     e_added = e_per_section/bins_added  # error amount to add per element
     e_removed = e_per_section/bins_removed  # error amount to subtract per element
-   
+
     if not is_optimized:
 
         """
@@ -158,7 +153,7 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
             if array[i] < e_removed:
                 print('The negative error is too much', e_removed,
                       ', too concentrated', percent_pos_space)
-                raise EXCEPTION
+                raise Exception
             # subtracts same amount to second half of bins you wish to change
             array[i] = array[i] - e_removed
 
@@ -211,7 +206,6 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
                         cut_intervals.insert(
                             within_cut_index+1, new_interval_2)
 
-                    
                     new_inverse_tempered_dict[p_value_of_interval] = cut_intervals
                 else:
                     cut_interval = prob_optimized_dict[index_interval_to_cut]['interval'].copy(
@@ -274,8 +268,6 @@ def sampleSpecificProbDist(value, probability, m):
     distrib = rv_discrete(values=(value, probability))
     new_samples = distrib.rvs(size=m)
     return new_samples
-
-
 
 
 def scalabale_sample_distribution(U, prob_optimized_dict, m):
