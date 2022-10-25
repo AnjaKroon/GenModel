@@ -281,14 +281,51 @@ if __name__ == '__main__':
     y = list(CDM_empirical_dict.values())
     x = [x[i] for i in x_sort_arg]
     y = [y[i] for i in x_sort_arg]
-    plt.plot(x[0:720], y[0:720], color='y', label='CDM', linewidth=0.35)
+    y_new = []
+    y_left = y[0:360]
+    y_left.sort(reverse=True)
+    y_right = y[360:]
+    y_right.sort(reverse=True)
+    for item in y_left:
+        y_new.append(item)
+    for thing in y_right:
+        y_new.append(thing)
+    plt.plot(x[0:720], y_new[0:720], color='y', label='CDM')
+    # plt.plot(x[0:720], y[0:720], color='y', label='CDM', linewidth=0.35)
 
     x = list(empirical_dict.keys())
     x_sort_arg = np.argsort(x)
     y = list(empirical_dict.values())
     x = [x[i] for i in x_sort_arg]
     y = [y[i] for i in x_sort_arg]
-    plt.plot(x[0:720], y[0:720], label='ARGMAX', linewidth=0.35)
+    y_new = []
+    y_left = y[0:360]
+    y_left.sort(reverse=True)
+    y_right = y[360:]
+    y_right.sort(reverse=True)
+    for item in y_left:
+        y_new.append(item)
+    for thing in y_right:
+        y_new.append(thing)
+    plt.plot(x[0:720], y_new[0:720], label='ARGMAX')
+    # plt.plot(x[0:720], y[0:720], label='ARGMAX', linewidth=0.35)
+
+    x = list(CNF_empirical_dict.keys())
+    x_sort_arg = np.argsort(x)
+    y = list(CNF_empirical_dict.values())
+    x = [x[i] for i in x_sort_arg]
+    y = [y[i] for i in x_sort_arg]
+    y_new = []
+    y_left = y[0:360]
+    y_left.sort(reverse=True)
+    y_right = y[360:]
+    y_right.sort(reverse=True)
+    for item in y_left:
+        y_new.append(item)
+    for thing in y_right:
+        y_new.append(thing)
+    plt.plot(x[0:720], y_new[0:720], color='c', label='CNF')
+    # plt.plot(x[0:720], y[0:720], color='c', label='CNF', linewidth=0.35)
 
     x = list(ground_truth_dict.keys())
     x_sort_arg = np.argsort(x)
@@ -296,13 +333,6 @@ if __name__ == '__main__':
     x = [x[i] for i in x_sort_arg]
     y = [y[i] for i in x_sort_arg]
     plt.plot(x, y, color='r', label='stair')
-
-    x = list(CNF_empirical_dict.keys())
-    x_sort_arg = np.argsort(x)
-    y = list(CNF_empirical_dict.values())
-    x = [x[i] for i in x_sort_arg]
-    y = [y[i] for i in x_sort_arg]
-    plt.plot(x[0:720], y[0:720], color='c', label='CNF', linewidth=0.35)
 
     # plt.title('100samples.pk')
     plt.legend()
