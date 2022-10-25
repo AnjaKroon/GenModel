@@ -64,8 +64,10 @@ def plot_stat(title, xlabel, ylabel):
 
 
 # x = [1,2,3] dict_y = {label:[[3,3,2],[4,5,4],[5,5,5]]}
-def put_on_plot(x, dict_y):
+def put_on_plot(x, dict_y, label_dict=None):
     for i, (key, val) in enumerate(dict_y.items()):
+        if label_dict is not None:
+            key = label_dict[key]
         color = get_color(i)
         if type(val[0]) is list and len(val[0]) > 1:
             all_trials = val
@@ -87,28 +89,4 @@ def put_on_plot(x, dict_y):
 
     # idea to break this up here....
     # essentially invoke part 1 multiple times and then invoke part 2 as below
-'''
-def plot_S_stat(x, dict_y, title, xlabel, ylabel):
-    for i, (key, val) in enumerate(dict_y.items()):
-            color = get_color(i)
-            if type(val[0]) is list:
-                all_trials = val
-                y = [np.mean(trials) for trials in all_trials]
-                all_ci = [get_ci(trials) for trials in all_trials]
-                plt.plot(x, y, color=color, label=key)
-                ci_over = [ci.high for i, ci in enumerate(all_ci)]
-                ci_under = [ci.low for i, ci in enumerate(all_ci)]
-                plt.fill_between(x, ci_under, ci_over, color=color, alpha=.1)
-            else:
-                print(x)
-                print(val)
-                #for i in val:
-                #    plt.plot(x, i, color=color, label=key)
-                plt.plot(x, val, color=color, label=key)
-    plt.legend()
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.tight_layout()
-    plt.savefig(title)
-    plt.close()
-    '''
+

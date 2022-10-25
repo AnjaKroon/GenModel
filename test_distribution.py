@@ -22,12 +22,12 @@ if __name__ == '__main__':
     if experiment == "SYNTH":  # if we generate q ourselves
         print('You are running the synthetic experiment...')
 
-        power_base = 10
+        power_base = 6
         list_U = [power_base**power_base]
-        list_M = [10000]
+        list_M = [1000]
         init_e = 0.1
         init_b = 30
-        trials = 10
+        trials = 50
         S = 3
         ratio = 2
         distribution_type = 'STAIRS'  # STAIRS
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
             store_results_algo = {}
             store_results_random = {}
-            store_results_ranking = {'algo': [], 'random': []}
+            store_results_ranking = {'algo': [], 'random' : []}
             metrics = ['S', 'test']
             for metric in metrics:
                 store_results_algo[metric] = {}
@@ -124,5 +124,6 @@ if __name__ == '__main__':
     put_on_plot(Bs, store_results_random['S'])
     plot_stat(prefix+'S_random.pdf', 'Bins', 'random')
 
-    put_on_plot(Bs, store_results_ranking)
-    plot_stat(prefix+'ranking.pdf', 'Bins', 'algo')
+    label_dict = {'algo' : r'$\mathcal{B}^*_k$','random': r'random  $\mathcal{B}_k$' }
+    put_on_plot(Bs, store_results_ranking, label_dict)
+    plot_stat(prefix+'ranking.pdf', 'Bins', r'Kendall rank correlation coefficient')
