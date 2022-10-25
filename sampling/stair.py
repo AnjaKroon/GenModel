@@ -6,9 +6,6 @@ from itertools import permutations
 from file_helper import read_pickle_file
 from statistic.generate_statistics import genSstat
 
-# OBSOLETE I THINK
-
-
 def stair_mapping(incoming_X_arr):
     # takes an incoming arr of x's
     # R.V. X = x where x = [1,2,3,4,5,6]
@@ -290,6 +287,7 @@ if __name__ == '__main__':
         y_new.append(item)
     for thing in y_right:
         y_new.append(thing)
+    # send y_new up to the calculate dtv function
     plt.plot(x[0:720], y_new[0:720], color='y', label='CDM')
     # plt.plot(x[0:720], y[0:720], color='y', label='CDM', linewidth=0.35)
 
