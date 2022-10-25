@@ -4,7 +4,7 @@ from sampling.stair import build_ground_truth_dict, convert_key_sequence_to_int,
 from statistic.generate_statistics import generate_samples_scalable
 
 
-def load_generative_model_samples(m=10000):
+def load_generative_model_samples(num_file=10, m=10000):
     U = 6**6
     ground_truth_dict = build_ground_truth_dict()  # same for all
     KEY_CONVERTING_DICT = get_converting_dict()  # same for all
@@ -14,8 +14,9 @@ def load_generative_model_samples(m=10000):
     ground_truth_samples_list = generate_samples_scalable(
         ground_truth_dict, 10, U, m, tempered=False, e=0, b=100)
 
-    pickle_files = ['1sample.pk', '2sample.pk', '3sample.pk',
-                    '4sample.pk', '5sample.pk', '6sample.pk', '7sample.pk', '8sample.pk']
+    pickle_files = ['0sample.pk', '1sample.pk', '2sample.pk', '3sample.pk',
+                    '4sample.pk', '5sample.pk', '6sample.pk', '7sample.pk', '8sample.pk', '9sample.pk']
+    pickle_files = pickle_files[:num_file]
     argmax_samples = []
     cdm_samples = []
     cnf_samples = []
