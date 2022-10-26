@@ -51,7 +51,7 @@ if __name__ == '__main__':
         max_index = np.where(np.array(x) < 360)[0].shape[0]
         max_index_end = np.where(np.array(x) < 720)[0].shape[0]
         end_end = np.where(np.array(x) < len(x))[0].shape[0] # indicator function, need to figure out how many elements in x beyond 720
-        print("end end", end_end) # how many elements are beyond 720
+        # print("end end", end_end) # how many elements are beyond 720
 
         y_left = y[0:max_index]
         y_left.sort(reverse=True)
@@ -61,10 +61,10 @@ if __name__ == '__main__':
         y_right.sort(reverse=True)
         y_right = y_right + [0 for _ in range(720-max_index_end)]
 
-        print("len y", len(y))
+        #print("len y", len(y))
         y_zero = y[max_index_end: max_index_end+end_end]
         y_zero.sort(reverse=True)
-        print("len y zero", len(y_zero)) # this is how many x units you need to add
+        #print("len y zero", len(y_zero)) # this is how many x units you need to add
 
         for item in y_left:
             y_new.append(item)
@@ -77,6 +77,7 @@ if __name__ == '__main__':
         print("lengths", len(y_gt), len(y_new))
         loc_dtv = compute_dtv(y_gt, y_new)
         label = label + ": d_tv = " + "{:2.4f}".format(loc_dtv)
+        # y_new = y_new[:900]
         plt.plot(list(range(len(y_new))), y_new, color=color, label=label)
     # plt.plot(x[0:720], y[0:720], color='y', label='CDM', linewidth=0.35)
     sorting_plot(CDM_empirical_dict, label='CDM', color='y')
@@ -85,13 +86,30 @@ if __name__ == '__main__':
 
     x = list(ground_truth_dict.keys())
     x_sort_arg = np.argsort(x)
-    y = list(ground_truth_dict.values())
+    # print(x_sort_arg)
+    y = list(ground_truth_dict.values()) # make x values go until 1104
+    # for however many "leftovers", set 
+    
     x = [x[i] for i in x_sort_arg]
     y = [y[i] for i in x_sort_arg]
     # print(x) # this has all of them
     # print(y) # this has all of them and is in order
-
-    plt.plot(x, y, color='r', label='Ground Truth Distribution')
+    for to_add in range(720, 1452):
+        x.append(to_add)
+        y.append(0)
+    print(len(x))
+    print(len(y))
+    # x = x[:900]
+    # y = y[0:900]
+    x_first = x[:360]
+    y_first = y[:360]
+    x_second = x[360:720]
+    y_second = y[360:720]
+    x_third = x[720:1452]
+    y_third = y[720:1452]
+    plt.plot(x_first, y_first, color='r', label='Ground Truth Distribution')
+    plt.plot(x_second, y_second, color='r')
+    plt.plot(x_third, y_third, color='r')
 
     # plt.title('100samples.pk')
     plt.ylabel("Empirical pmf")
