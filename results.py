@@ -1,39 +1,73 @@
 
+import matplotlib.font_manager as font_manager
 import numpy as np
 import matplotlib.pyplot as plt
- 
+from distutils.spawn import find_executable
+import matplotlib
+if find_executable('latex'):
+    matplotlib.rcParams['text.usetex'] = True
+
+
 # set width of bar
-barWidth = 0.2
-fig = plt.subplots(figsize =(12, 8))
- 
+barWidth = 0.05
+fig = plt.subplots(figsize=(12, 8))
+font = {'family': 'normal',
+        'weight': 'normal',
+        'size': 20}
+
+
+matplotlib.rc('font', **font)
 # set height of bar
-B3 = [0, 100, 100, 100]
-B4 = [0, 30, 100, 100]
-B5 = [0, 0, 0, 100]
-B6 = [0, 0, 0, 100]
- 
+t1 = [3, 4, 5, 6]
+t2 = [3, 4, 5, 6]
+t3 = [3, 4, 5, 6]
+t4 = [3, 4, 5, 6]
+t5 = [3, 4, 5, 6]
+t6 = [3, 4, 5, 6]
+t7 = [3, 4, 5, 6]
+t8 = [3, 5, 5, 6]
+t9 = [3, 5, 5, 6]
+t10 = [3, 5, 5, 6]
 # Set position of bar on X axis
-br1 = np.arange(len(B3))
+br1 = np.arange(len(t1))
 br2 = [x + barWidth for x in br1]
 br3 = [x + barWidth for x in br2]
 br4 = [x + barWidth for x in br3]
- 
+br5 = [x + barWidth for x in br4]
+br6 = [x + barWidth for x in br5]
+br7 = [x + barWidth for x in br6]
+br8 = [x + barWidth for x in br7]
+br9 = [x + barWidth for x in br8]
+br10 = [x + barWidth for x in br9]
+plt.axhline(y = 3, color = 'k', linestyle = '-')
 # Make the plot
-plt.bar(br1, B3, color ='r', width = barWidth,
-        edgecolor ='grey', label ='k=3')
-plt.bar(br2, B4, color ='g', width = barWidth,
-        edgecolor ='grey', label ='k=4')
-plt.bar(br3, B5, color ='b', width = barWidth,
-        edgecolor ='grey', label ='k=5')
-plt.bar(br4, B6, color ='k', width = barWidth,
-        edgecolor ='grey', label ='k=6')
-import matplotlib.font_manager as font_manager
+plt.bar(br1, t1, color='r', width=barWidth,
+        edgecolor='grey')
+plt.bar(br2, t2, color='r', width=barWidth,
+        edgecolor='grey')
+plt.bar(br3, t3, color='r', width=barWidth,
+        edgecolor='grey')
+plt.bar(br4, t4, color='r', width=barWidth,
+        edgecolor='grey')
+plt.bar(br5, t5, color='r', width=barWidth,
+        edgecolor='grey')
+plt.bar(br6, t6, color='r', width=barWidth,
+        edgecolor='grey')
+plt.bar(br7, t7, color='r', width=barWidth,
+        edgecolor='grey')
+plt.bar(br8, t8, color='r', width=barWidth,
+        edgecolor='grey')
+plt.bar(br9, t9, color='r', width=barWidth,
+        edgecolor='grey')
+plt.bar(br10, t10, color='r', width=barWidth,
+        edgecolor='grey')
+
 # Adding Xticks
-plt.xlabel('Generative models', fontsize = 18)
-plt.ylabel('Percentage of trials that passed', fontsize = 18)
-plt.xticks([r + barWidth for r in range(len(B3))],
-        ['CNF', 'argmax', 'CDM', 'ground truth'],fontsize=18)
-font = font_manager.FontProperties(style='normal', size=18)
-plt.legend(prop=font)
-#plt.show()
+plt.ylabel(r'granularity level $k$', fontsize=20)
+plt.yticks([i for i in range(3,7)],
+           [r'3',r'4',r'5',r'6'], fontsize=20)
+plt.xticks([r + 4*barWidth for r in range(len(br10))],
+           [r'CNF', r'ARGMAX', r'CDM', r'ground truth'], fontsize=20)
+
+# plt.show()
 plt.savefig('rank.pdf')
