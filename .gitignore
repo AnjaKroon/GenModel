@@ -12,3 +12,4 @@ Out*
 /S_*
 compile*
 *.pk
+*.ipynb_checkpoints
