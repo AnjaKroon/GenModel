@@ -1,7 +1,19 @@
 import os
 import pickle as pk
-
+from os import listdir
+from os.path import isfile, join
 from statistic.generate_statistics import generate_samples_scalable
+
+
+def load_all_files(path):
+
+    return [f for f in listdir(path) if isfile(join(path, f))]
+
+
+def store_for_plotting(data, title):
+    file_path = os.path.join('results', title+'.pk')
+    with open(file_path, 'wb') as f:  # store the data
+        pk.dump(data, f)
 
 
 def read_pickle_file(filename, p):

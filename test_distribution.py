@@ -1,9 +1,8 @@
 import math
 import os
 from tqdm import tqdm
-from plot_utils import plot_stat, put_on_plot, put_plot_rank
 from sampling.discrete import makeUniProbArr, prob_array_to_dict
-from file_helper import create_prefix_from_list, load_samples
+from file_helper import create_prefix_from_list, load_samples, store_for_plotting
 from sampling.loading_samples import load_generative_model_samples
 from sampling.stair import make_stair_prob
 from statistic.binning_algo import binning_on_samples
@@ -16,7 +15,7 @@ if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
-    experiment = "GEN"  # either SYNTH or GEN
+    experiment = "SYNTH"  # either SYNTH or GEN
     test_epsilon = 0.18
     delta = 0.05
     if experiment == "SYNTH":  # if we generate q ourselves
@@ -70,7 +69,7 @@ if __name__ == '__main__':
 
             store_results_algo = {}
             store_results_random = {}
-            store_results_ranking = {'algo': [], 'random' : []}
+            store_results_ranking = {'algo': [], 'random': []}
             metrics = ['S', 'test']
             for metric in metrics:
                 store_results_algo[metric] = {}
@@ -113,19 +112,14 @@ if __name__ == '__main__':
                 store_results_ranking['random'].append(ranking_random)
 
     prefix = create_prefix_from_list([experiment, U, m, trials, S, ratio])
-    prefix = os.path.join('figures', prefix)
-    put_plot_rank(Bs, store_results_algo['test'])
-    #plot_stat(prefix+'test_algo.pdf', 'Bins', 'algo')
+    
+    store_for_plotting(
+        data={'x': Bs, 'data': store_results_algo['test']}, title=prefix+'_hypothesis_algo')
+    store_for_plotting(
+        data={'x': Bs, 'data': store_results_algo['S']}, title=prefix+'_S_algo')
+    label_dict = {'algo': r'$\mathcal{B}^*_k$',
+                  'random': r'random  $\mathcal{B}_k$'}
+    store_for_plotting(
+        data={'x': Bs, 'data': store_results_ranking, 'label_dict': label_dict}, title=prefix+'_ranking')
 
-    #put_plot_rank(Bs, store_results_random['test'])
-    #plot_stat(prefix+'test_random.pdf', 'Bins', 'random')
-
-    put_on_plot(Bs, store_results_algo['S'])
-    plot_stat(prefix+'S_algo.pdf', 'Bins', 'algo')
-
-    put_on_plot(Bs, store_results_random['S'])
-    plot_stat(prefix+'S_random.pdf', 'Bins', 'random')
-
-    label_dict = {'algo' : r'$\mathcal{B}^*_k$','random': r'random  $\mathcal{B}_k$' }
-    put_on_plot(Bs, store_results_ranking, label_dict)
-    plot_stat(prefix+'ranking.pdf', r'granularity level $k$', r'Kendall rank correlation coefficient')
+   
