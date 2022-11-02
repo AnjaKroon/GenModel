@@ -1,3 +1,4 @@
+from matplotlib.ticker import MaxNLocator
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
@@ -42,7 +43,8 @@ def plot_stat(title, xlabel, ylabel):
 
     SMALL_SIZE = 5
     matplotlib.rcParams.update({'font.size': 14})
-
+    
+    
     '''
     plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
     plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
@@ -56,7 +58,9 @@ def plot_stat(title, xlabel, ylabel):
     # idea to break this up here....
     # essentially invoke part 1 multiple times and then invoke part 2 as below
     plt.legend()
+    plt.xticks([4,5,6,7,8], ["4","5","6","7","8"])
     plt.xlabel(xlabel)
+    
     plt.ylabel(ylabel)
     plt.tight_layout()
     plt.savefig(title)
@@ -86,7 +90,5 @@ def put_on_plot(x, dict_y, label_dict=None):
             print(val)
             plt.plot(x, val, color=color, label=key)
 
-
     # idea to break this up here....
     # essentially invoke part 1 multiple times and then invoke part 2 as below
-

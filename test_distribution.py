@@ -126,4 +126,4 @@ if __name__ == '__main__':
 
     label_dict = {'algo' : r'$\mathcal{B}^*_k$','random': r'random  $\mathcal{B}_k$' }
     put_on_plot(Bs, store_results_ranking, label_dict)
-    plot_stat(prefix+'ranking.pdf', 'Bins', r'Kendall rank correlation coefficient')
+    plot_stat(prefix+'ranking.pdf', r'granularity level $k$', r'Kendall rank correlation coefficient')

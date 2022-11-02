@@ -9,11 +9,11 @@ if find_executable('latex'):
 
 
 # set width of bar
-barWidth = 0.05
+barWidth = 0.07
 fig = plt.subplots(figsize=(12, 8))
 font = {'family': 'normal',
         'weight': 'normal',
-        'size': 20}
+        'size': 22}
 
 
 matplotlib.rc('font', **font)
@@ -63,11 +63,11 @@ plt.bar(br10, t10, color='r', width=barWidth,
         edgecolor='grey')
 
 # Adding Xticks
-plt.ylabel(r'granularity level $k$', fontsize=20)
+plt.ylabel(r'granularity level $k$', fontsize=24)
 plt.yticks([i for i in range(3,7)],
-           [r'3',r'4',r'5',r'6'], fontsize=20)
+           [r'3',r'4',r'5',r'6'], fontsize=24)
 plt.xticks([r + 4*barWidth for r in range(len(br10))],
-           [r'CNF', r'ARGMAX', r'CDM', r'ground truth'], fontsize=20)
+           [r'CNF', r'ARGMAX', r'CDM', r'ground truth'], fontsize=24)
 
-# plt.show()
+plt.tight_layout()
 plt.savefig('rank.pdf')
