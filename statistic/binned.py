@@ -104,15 +104,12 @@ def split(list_a, chunk_size):
         yield list_a[i:i + chunk_size]
 
 
-def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
-    is_optimized = type(list(ground_truth_p_dict.values())[0]) is dict
+def collecting_error(regions, q_dict):
     predefined_bins_with_error = {}
-    # be default, there is always the null space as well
-    flat_regions = find_flat_regions(ground_truth_p_dict, is_optimized)
-    num_pos_flat_regions = 0
-    zero_error_regions = 0
-    region_index = 0
-    for s_flat, indices in flat_regions.items():
+    regions_that_should_be_cut = 0  # regions that have positive and negative p_x - q_x
+    regions_that_should_not_be_cut = 0  # regions that only have pos. or neg p_x - q_x
+    s = 0
+    for s_flat, indices in regions.items():
         list_errors_index = []
         for index in indices:
             if index in q_dict:
@@ -143,38 +140,62 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
         cut_error = cumul_neg_error + cumul_pos_error - \
             np.abs((cumul_pos_error-cumul_neg_error))
         # now we know how much error is contained in a split
-        predefined_bins_with_error[region_index] = {
+        predefined_bins_with_error[s] = {
             'cut_error': cut_error, 'pos_indices': indices_pos_bin, 'neg_indices': indices_neg_bin}
         if cut_error == 0:
-            zero_error_regions += 1
+            regions_that_should_not_be_cut += 1
         else:
-            num_pos_flat_regions += 1  # increment the flat region index
-        region_index += 1
-    # find which bin have the more potential error if cut
-    if zero_error_regions > 1:
+            regions_that_should_be_cut += 1  # increment the flat region index
+        s += 1
+    return predefined_bins_with_error, regions_that_should_be_cut, regions_that_should_not_be_cut
+
+
+def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
+    is_optimized = type(list(ground_truth_p_dict.values())[0]) is dict
+
+    # 1 : find the S partitioning. By default, the zero space is "assumed" but not computed here.
+    regions = find_flat_regions(ground_truth_p_dict, is_optimized)
+
+    # 2 : Find each optimal split in each S regions. If the error is all pos or neg, there is no optimal split.
+
+    # find B* for k = 2s
+    # predefined_bins_with_error = {0 : {'cut_error':0.xx, 'pos_indices': [2,3,6..],'neg_indices': [1,4,7..]},
+    #                               1 : {...}}
+    predefined_bins_with_error, regions_that_could_be_cut, regions_that_should_not_be_cut = collecting_error(
+        regions, q_dict)
+
+    if regions_that_should_not_be_cut > 1:  # some regions dont have an optimal split
         print('Warning, we got zero error regions')
+
+    # 3 : Sort the S regions by max to min to give B* for a specific k.
     sorted_s_by_potential_cut_error = sorted(list(predefined_bins_with_error.keys()),
                                              key=lambda x: predefined_bins_with_error[x]['cut_error'])
     sorted_s_by_potential_cut_error.reverse()  # highest to lowest
-    num_region_that_can_be_cut = (num_pos_flat_regions-zero_error_regions)
-    mapping_bin_to_index = {}
+    num_region_that_can_be_cut = (
+        regions_that_could_be_cut-regions_that_should_not_be_cut)
 
-    # now we need to cut the predefined bins in the number of wanted bins B
-    if B < num_pos_flat_regions+1:  # NOT EXACT SOL
+    S = regions_that_could_be_cut + regions_that_should_not_be_cut + 1
+    max_B = 2*regions_that_could_be_cut + 1 + regions_that_should_not_be_cut
+    # 4 : Return B* : mapping_bin_to_index is {index_bin: [all x], ...}
+    mapping_bin_to_index = {}
+    if B < S:  # NOT EXACT SOL
         raise NotImplemented
-    # easiest scenario, we just return all flat regions
-    elif B == num_pos_flat_regions+zero_error_regions+1:
-        for region_to_left_uncut in range(num_pos_flat_regions+zero_error_regions):
+    # easiest scenario k=S, we just return all flat regions without cutting
+    elif B == S:
+        
+        for region_to_left_uncut in range(S-1):# S-1 because the zero region is implied
             dict_pos_neg = predefined_bins_with_error[region_to_left_uncut]
+            # combining all x from the region
             indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
                 dict_pos_neg['neg_indices']
             mapping_bin_to_index[region_to_left_uncut] = indices_of_the_whole_region
 
-    elif B > (num_pos_flat_regions+1) and B <= (2*num_region_that_can_be_cut + 1 + zero_error_regions):
+    elif B > S and B <= max_B:
         bin_ind = 0
-        how_many_flat_region_we_should_cut = B - num_pos_flat_regions - 1
-        list_of_remaining_regions = list(range(num_pos_flat_regions))
-        for i in range(how_many_flat_region_we_should_cut):
+        num_region_have_to_cut = math.floor(
+            (B - regions_that_should_not_be_cut - 1)/2)
+        list_of_remaining_regions = list(range(regions_that_could_be_cut))
+        for i in range(num_region_have_to_cut):
             # by default, the zero error will be at the end so we can leave them in
             region_to_cut = sorted_s_by_potential_cut_error[i]
             list_of_remaining_regions.remove(region_to_cut)
@@ -189,8 +210,9 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
             mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
             bin_ind += 1
     # B>= 2s, we randomly cut the bins, nothing else to be done. The error will be flat at this point.
-    elif num_region_that_can_be_cut > 0:
-        num_random_cut = B - 2*num_region_that_can_be_cut - 1 - zero_error_regions
+    elif B > max_B and num_region_that_can_be_cut > 0:
+        num_random_cut = B - 2*num_region_that_can_be_cut - \
+            1 - regions_that_should_not_be_cut
         random.seed(2)
 
         bin_with_cut = random.choices(
@@ -203,7 +225,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
             else:
                 cuts_per_bin[c] = 1
         bin_ind = 0
-        list_of_remaining_regions = list(range(num_pos_flat_regions))
+        list_of_remaining_regions = list(range(regions_that_could_be_cut))
         for i in range(num_region_that_can_be_cut):
             region_to_cut = sorted_s_by_potential_cut_error[i]
             list_of_remaining_regions.remove(region_to_cut)
@@ -236,10 +258,10 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
             mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
             bin_ind += 1
     else:
-        num_random_cut = B - 1 - zero_error_regions
+        num_random_cut = B - 1 - regions_that_should_not_be_cut
         random.seed(2)
         bin_with_cut = random.choices(
-            list(range(zero_error_regions)), k=num_random_cut)
+            list(range(regions_that_should_not_be_cut)), k=num_random_cut)
 
         cuts_per_bin = {}
         for c in bin_with_cut:
@@ -249,7 +271,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
                 cuts_per_bin[c] = 1
         bin_ind = 0
 
-        for region_to_cut in list(range(zero_error_regions)):
+        for region_to_cut in list(range(regions_that_should_not_be_cut)):
             if region_to_cut in cuts_per_bin:
                 num_cuts = cuts_per_bin[region_to_cut]
                 dict_pos_neg = predefined_bins_with_error[region_to_cut]

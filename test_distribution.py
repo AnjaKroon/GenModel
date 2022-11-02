@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
-    experiment = "SYNTH"  # either SYNTH or GEN
+    experiment = "GEN"  # either SYNTH or GEN
     test_epsilon = 0.18
     delta = 0.05
     if experiment == "SYNTH":  # if we generate q ourselves
@@ -41,7 +41,7 @@ if __name__ == '__main__':
         list_M = [10000]
         S = 2
         ratio = 3
-        trials = 10
+        trials = 2
 
     Bs = list(range(S+1, 2*(S+1)+1))
     list_of_binning_algo = ['algo', 'random']
@@ -63,7 +63,7 @@ if __name__ == '__main__':
                 list_of_samples = load_samples(
                     list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio)
             else:
-                dict_of_samples, ground_truth_p = load_generative_model_samples()
+                dict_of_samples, ground_truth_p = load_generative_model_samples(num_files=trials)
                 list_of_samples = [val for _, val in dict_of_samples.items()]
                 list_of_title_q = [key for key, _ in dict_of_samples.items()]
 
