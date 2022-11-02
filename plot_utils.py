@@ -92,3 +92,36 @@ def put_on_plot(x, dict_y, label_dict=None):
 
     # idea to break this up here....
     # essentially invoke part 1 multiple times and then invoke part 2 as below
+
+
+def put_plot_rank(x, dict_y, label_dict=None):
+    # set width of bar
+    barWidth = 0.2
+    position = np.arange(len(list(dict_y.keys())))
+    who_passed = [1 for _ in position]
+    for j, B in enumerate(x):
+        color = get_color(j)
+        position = [i + barWidth for i in position]
+        fraction_test_passed = list([1 - np.mean(val[j])
+                                    for val in dict_y.values()])
+        who_passes = []
+        for k, previously in enumerate(who_passed):
+            if fraction_test_passed[k] > previously:
+                who_passes.append(previously)
+            else:
+                who_passes.append(fraction_test_passed[k])
+
+        plt.bar(position, who_passes, color=color, width=barWidth,
+                edgecolor='grey', label=r'k='+str(B))
+        who_passed = who_passes
+    plt.xticks([r + barWidth for r in range(len(list(dict_y.keys())))],
+               list(dict_y.keys()), fontsize=18)
+    import matplotlib.font_manager as font_manager
+    # Adding Xticks
+    plt.xlabel('Generative models', fontsize=18)
+    plt.ylabel('Percentage of trials that passed', fontsize=18)
+
+    font = font_manager.FontProperties(style='normal', size=18)
+    plt.legend(prop=font)
+    plt.tight_layout()
+    plt.savefig('ranking.pdf')

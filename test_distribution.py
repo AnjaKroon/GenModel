@@ -1,7 +1,7 @@
 import math
 import os
 from tqdm import tqdm
-from plot_utils import plot_stat, put_on_plot
+from plot_utils import plot_stat, put_on_plot, put_plot_rank
 from sampling.discrete import makeUniProbArr, prob_array_to_dict
 from file_helper import create_prefix_from_list, load_samples
 from sampling.loading_samples import load_generative_model_samples
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
-    experiment = "SYNTH"  # either SYNTH or GEN
+    experiment = "GEN"  # either SYNTH or GEN
     test_epsilon = 0.18
     delta = 0.05
     if experiment == "SYNTH":  # if we generate q ourselves
@@ -41,6 +41,8 @@ if __name__ == '__main__':
         list_U = [power_base**power_base]
         list_M = [10000]
         S = 2
+        ratio = 3
+        trials = 10
 
     Bs = list(range(S+1, 2*(S+1)+1))
     list_of_binning_algo = ['algo', 'random']
@@ -112,11 +114,11 @@ if __name__ == '__main__':
 
     prefix = create_prefix_from_list([experiment, U, m, trials, S, ratio])
     prefix = os.path.join('figures', prefix)
-    put_on_plot(Bs, store_results_algo['test'])
-    plot_stat(prefix+'test_algo.pdf', 'Bins', 'algo')
+    put_plot_rank(Bs, store_results_algo['test'])
+    #plot_stat(prefix+'test_algo.pdf', 'Bins', 'algo')
 
-    put_on_plot(Bs, store_results_random['test'])
-    plot_stat(prefix+'test_random.pdf', 'Bins', 'random')
+    #put_plot_rank(Bs, store_results_random['test'])
+    #plot_stat(prefix+'test_random.pdf', 'Bins', 'random')
 
     put_on_plot(Bs, store_results_algo['S'])
     plot_stat(prefix+'S_algo.pdf', 'Bins', 'algo')
