@@ -1,16 +1,8 @@
-#from discrete import makeUniProbArr, errFunct, genValArr, sampleSpecificProbDist
-#from gen_S import empirical_dist, genSstat
-#from plot_utils import plot_S_stat
-#from sampling.poisson import poisson_empirical_dist
-from decimal import ROUND_DOWN
-from re import L
-import sys
 import numpy as np
 import random
 import math
-
 from sampling.discrete import find_interval
-
+random.seed(2)
 # return the dict of a binned pmf, with predined binning mapping_from_index_to_bin
 
 
@@ -171,8 +163,6 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
     sorted_s_by_potential_cut_error = sorted(list(predefined_bins_with_error.keys()),
                                              key=lambda x: predefined_bins_with_error[x]['cut_error'])
     sorted_s_by_potential_cut_error.reverse()  # highest to lowest
-    num_region_that_can_be_cut = (
-        regions_that_could_be_cut-regions_that_should_not_be_cut)
 
     S = regions_that_could_be_cut + regions_that_should_not_be_cut + 1
     max_B = 2*regions_that_could_be_cut + 1 + regions_that_should_not_be_cut
@@ -182,21 +172,20 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
         raise NotImplemented
     # easiest scenario k=S, we just return all flat regions without cutting
     elif B == S:
-        
-        for region_to_left_uncut in range(S-1):# S-1 because the zero region is implied
-            dict_pos_neg = predefined_bins_with_error[region_to_left_uncut]
-            # combining all x from the region
-            indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
-                dict_pos_neg['neg_indices']
-            mapping_bin_to_index[region_to_left_uncut] = indices_of_the_whole_region
 
-    elif B > S and B <= max_B:
+        # S-1 because the zero region is implied
+        for bin_ind, region_indices in enumerate(regions.values()):
+            mapping_bin_to_index[bin_ind] = region_indices
+
+    elif B > S:
         bin_ind = 0
-        num_region_have_to_cut = math.floor(
-            (B - regions_that_should_not_be_cut - 1)/2)
+        if B <= max_B:
+            num_regions_have_to_cut = math.floor(
+                (max_B - regions_that_should_not_be_cut - 1)/2)
+        else:  # if we have more cuts than predefined regions (B > max_B), we start randomly cutting
+            num_regions_have_to_cut = regions_that_could_be_cut
         list_of_remaining_regions = list(range(regions_that_could_be_cut))
-        for i in range(num_region_have_to_cut):
-            # by default, the zero error will be at the end so we can leave them in
+        for i in range(num_regions_have_to_cut):
             region_to_cut = sorted_s_by_potential_cut_error[i]
             list_of_remaining_regions.remove(region_to_cut)
             mapping_bin_to_index[bin_ind] = predefined_bins_with_error[region_to_cut]['pos_indices']
@@ -209,85 +198,26 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
                 dict_pos_neg['neg_indices']
             mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
             bin_ind += 1
-    # B>= 2s, we randomly cut the bins, nothing else to be done. The error will be flat at this point.
-    elif B > max_B and num_region_that_can_be_cut > 0:
-        num_random_cut = B - 2*num_region_that_can_be_cut - \
-            1 - regions_that_should_not_be_cut
-        random.seed(2)
-
-        bin_with_cut = random.choices(
-            list(range(num_region_that_can_be_cut*2)), k=num_random_cut)
-
-        cuts_per_bin = {}
-        for c in bin_with_cut:
-            if c in cuts_per_bin:
-                cuts_per_bin[c] += 1
-            else:
-                cuts_per_bin[c] = 1
-        bin_ind = 0
-        list_of_remaining_regions = list(range(regions_that_could_be_cut))
-        for i in range(num_region_that_can_be_cut):
-            region_to_cut = sorted_s_by_potential_cut_error[i]
-            list_of_remaining_regions.remove(region_to_cut)
-            pos_indices_region_i = predefined_bins_with_error[region_to_cut]['pos_indices']
-            pos_ind = i*2
-            cuts_per_this_region = 0
-            if pos_ind in cuts_per_bin:
-                cuts_per_this_region = cuts_per_bin[pos_ind]
-
-            chunks_of_pos = split(pos_indices_region_i, math.ceil(
-                len(pos_indices_region_i)/(1+cuts_per_this_region)))
-            for chunk_indices in chunks_of_pos:
-                mapping_bin_to_index[bin_ind] = chunk_indices
-                bin_ind += 1
-
-            neg_indices_region_i = predefined_bins_with_error[region_to_cut]['neg_indices']
-            neg_ind = i*2+1
-            cuts_per_this_region = 0
-            if neg_ind in cuts_per_bin:
-                cuts_per_this_region = cuts_per_bin[neg_ind]
-            chunks_of_neg = split(neg_indices_region_i, math.ceil(
-                len(neg_indices_region_i)/(1+cuts_per_this_region)))
-            for chunk_indices in chunks_of_neg:
-                mapping_bin_to_index[bin_ind] = chunk_indices
-                bin_ind += 1
-        for region_to_left_uncut in list_of_remaining_regions:
-            dict_pos_neg = predefined_bins_with_error[region_to_left_uncut]
-            indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
-                dict_pos_neg['neg_indices']
-            mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
-            bin_ind += 1
-    else:
-        num_random_cut = B - 1 - regions_that_should_not_be_cut
-        random.seed(2)
-        bin_with_cut = random.choices(
-            list(range(regions_that_should_not_be_cut)), k=num_random_cut)
-
-        cuts_per_bin = {}
-        for c in bin_with_cut:
-            if c in cuts_per_bin:
-                cuts_per_bin[c] += 1
-            else:
-                cuts_per_bin[c] = 1
-        bin_ind = 0
-
-        for region_to_cut in list(range(regions_that_should_not_be_cut)):
-            if region_to_cut in cuts_per_bin:
-                num_cuts = cuts_per_bin[region_to_cut]
-                dict_pos_neg = predefined_bins_with_error[region_to_cut]
-                indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
-                    dict_pos_neg['neg_indices']
-                chunks = split(indices_of_the_whole_region, math.ceil(
-                    len(indices_of_the_whole_region)/(1+num_cuts)))
-                for chunk_indices in chunks:
-                    mapping_bin_to_index[bin_ind] = chunk_indices
+        if B > max_B:  # if we have more cuts than predefined regions (B > max_B), we start randomly cutting
+            num_random_cut = B - max_B
+            num_random_cute_candidate = len(mapping_bin_to_index)
+            bin_with_random_cut = random.choices(
+                list(range(num_random_cute_candidate)), k=num_random_cut)
+            random_cuts_per_bin = np.histogram(
+                bin_with_random_cut, bins=list(range(num_random_cut+1)))[0]
+            
+            for bin_id_to_cut, num_random_cuts in enumerate(random_cuts_per_bin):
+                indices_to_split = mapping_bin_to_index[bin_id_to_cut]
+                chunk_size = int(len(indices_to_split)/(num_random_cuts+1))
+                # first, we replace the bin by a small chunk of the indices:
+                mapping_bin_to_index[bin_id_to_cut] = indices_to_split[:chunk_size] 
+                # then we create news bins with all the chunks
+                chunk_id = 1
+                for chunk_id in range(1, num_random_cuts):
+                    mapping_bin_to_index[bin_ind] = indices_to_split[chunk_id*chunk_size:(chunk_id+1)*chunk_size]
                     bin_ind += 1
-            else:
-                dict_pos_neg = predefined_bins_with_error[region_to_cut]
-                indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
-                    dict_pos_neg['neg_indices']
-                mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
-                bin_ind += 1
+                mapping_bin_to_index[bin_ind] = indices_to_split[chunk_id*chunk_size:]
+       
 
     new_histo_p = {}
     for bin_index, all_index in mapping_bin_to_index.items():
@@ -342,19 +272,13 @@ def transform_samples(b_p, histo_p, p_samples, U, B):
 
 
 if __name__ == '__main__':
-    sample_histo = {1: 0.15, 2: 0.15, 3: 0.1, 4: 0.05,
-                    5: 0.1, 6: 0.1, 7: 0.05, 8: 0.1, 9: 0.1, 10: 0.1}
-    sample_b = {1: 0.33, 2: 0.33, 3: 0.33}
-    p_samples = [1, 2, 3, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 4, 5, 6, 7, 8, 9, 10]
-
+    ground_truth_p_dict = {0: 0.2, 1: 0.2, 2: 0.2,
+                           3: 0.1, 4: 0.1, 5: 0.1, 6: 0.1, 7: 0, 8: 0, 9: 0}
+    q_dict = {0: 0.25, 1: 0.25, 2: 0.1,
+              3: 0.1, 4: 0.1, 5: 0.1, 6: 0.1, 7: 0, 8: 0, 9: 0}
     U = 10
     B = 3
-
-    b_p = p_to_bp_random(sample_histo, U, B)  # works
-    print(b_p)
-    print('probability sum to : ', sum(b_p.values()))
-    b_out = transform_samples(
-        b_p, sample_histo, p_samples, U, B)  # returns new samples
+    p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B)
 
     # the question is how to get the relevant things in
     # need some sort of histo for the transform_samples -- there should be an array of the poissonized samples

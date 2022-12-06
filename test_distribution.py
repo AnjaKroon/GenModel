@@ -31,12 +31,14 @@ if __name__ == '__main__':
         ratio = 2
         distribution_type = 'STAIRS'  # STAIRS
 
-        list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]
-        list_of_title_q = [
-            'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
+        #list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]
+        list_of_espilon_q = [init_e]
+        # list_of_title_q = [
+        #     'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
+        list_of_title_q = [ 'slightly tempered']
     else:  # if we take q as the generative models we have, we load the samples.
         print('You are running the generative model experiment...')
-        power_base = 6
+        power_base = 10
         list_U = [power_base**power_base]
         list_M = [10000]
         S = 2
@@ -63,7 +65,7 @@ if __name__ == '__main__':
                 list_of_samples = load_samples(
                     list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio)
             else:
-                dict_of_samples, ground_truth_p = load_generative_model_samples(num_files=trials)
+                dict_of_samples, ground_truth_p = load_generative_model_samples(power_base,num_files=trials)
                 list_of_samples = [val for _, val in dict_of_samples.items()]
                 list_of_title_q = [key for key, _ in dict_of_samples.items()]
 

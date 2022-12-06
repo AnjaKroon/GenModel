@@ -1,4 +1,5 @@
 {
     "python.linting.pylintEnabled": false,
-    "python.linting.enabled": false
+    "python.linting.enabled": false,
+    "python.pythonPath": "/home/floregol/miniconda3/bin/python"
 }

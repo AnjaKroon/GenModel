@@ -43,7 +43,7 @@ def stair_mapping(incoming_X_arr):
     return histo
 
 
-def make_stair_prob(U, posU, ratio, S, optim_threshold=7**7):
+def make_stair_prob(U, posU, ratio, S, optim_threshold=6**6):
     # From my understanding
     # Take U * posU to get the amount of U that will have a stair function
     # S is the total amount of steps thus (U*posU)/S is the amount of U that each step will take
@@ -73,7 +73,7 @@ def make_stair_prob(U, posU, ratio, S, optim_threshold=7**7):
     current_dist = 0
     current_step = 0
     stair_histo = {}
-    if U <= 7**7:
+    if U <= optim_threshold:
         for i, size_stair in enumerate(U_per_stairs):
             current_dist = p_each_stair[i]
             for _ in range(size_stair):
@@ -118,23 +118,23 @@ def samples_to_histo(samples):
 
 
 # by default, it is 6
-def build_ground_truth_dict():
+def build_ground_truth_dict(power_base=6):
     # return a dict with all permutation as keys, and the value are the ground truth pmf either (3/(2**6)) or (1/(2**6))
     # create 2D array with all permutations as keys
     # 6*5*4*3*2*1 = 720
 
-    c = list(permutations(range(6), 6))
+    c = list(permutations(range(power_base), power_base))
     # decided to make this a np array to match file type coming in from pickle.py
     c = np.array(c)
     # print(c)
     ground_truth_dict = {}
     for item in c:
-        if item[0] < item[5]:
+        if item[0] < item[power_base-1]:
             ground_truth_dict.update(
-                {str(item): 3/(2*(6*5*4*3*2*1))})
-        elif item[0] > item[5]:
+                {str(item): 3/(2*(math.factorial(power_base)))})
+        elif item[0] > item[power_base-1]:
             ground_truth_dict.update(
-                {str(item): 1/(2*(6*5*4*3*2*1))})
+                {str(item): 1/(2*(math.factorial(power_base)))})
         else:
             ground_truth_dict.update({str(item): 0})
 
