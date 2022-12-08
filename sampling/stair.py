@@ -6,6 +6,7 @@ from itertools import permutations
 from file_helper import read_pickle_file
 from statistic.generate_statistics import genSstat
 
+
 def stair_mapping(incoming_X_arr):
     # takes an incoming arr of x's
     # R.V. X = x where x = [1,2,3,4,5,6]
@@ -187,12 +188,18 @@ def get_converting_dict():
     return converting_dict
 
 
-def convert_key_sequence_to_int(histo_dict, KEY_CONVERTING_DICT):
-
+def convert_key_sequence_to_int(histo_dict, KEY_CONVERTING_DICT=None):
     converted_dict = {}
-    for key, val in histo_dict.items():
-        if key in KEY_CONVERTING_DICT:
-            converted_dict[KEY_CONVERTING_DICT[key]] = val
+    i = 0
+    if KEY_CONVERTING_DICT is None:
+        for key, val in histo_dict.items():
+            converted_dict[i] = val
+            i += 1
+    else:
+
+        for key, val in histo_dict.items():
+            if key in KEY_CONVERTING_DICT:
+                converted_dict[KEY_CONVERTING_DICT[key]] = val
     return converted_dict
 
 
