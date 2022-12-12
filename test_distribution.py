@@ -85,33 +85,33 @@ if __name__ == '__main__':
                 for i, all_samples_list in enumerate(list_of_samples):
                     list_binned_algo = binning_on_samples(
                         'algo', all_samples_list, ground_truth_p, U, B)
-                    list_binned_random = binning_on_samples(
-                        'random', all_samples_list, ground_truth_p, U, B)
+                    # list_binned_random = binning_on_samples(
+                    #     'random', all_samples_list, ground_truth_p, U, B)
                     # run statistical test
                     test_algo = [reject_if_bad_test(
                         trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_algo]
-                    test_random = [reject_if_bad_test(
-                        trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_random]
+                    # test_random = [reject_if_bad_test(
+                    #     trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_random]
                     # compute S reults
                     S_algo = [genSstat(trial['p'], trial['q'])
                               for trial in list_binned_algo]
-                    S_random = [genSstat(trial['p'], trial['q'])
-                                for trial in list_binned_random]
+                    # S_random = [genSstat(trial['p'], trial['q'])
+                    #             for trial in list_binned_random]
 
                     q_name = list_of_title_q[i]
 
                     store_results_algo['test'][q_name].append(test_algo)
-                    store_results_random['test'][q_name].append(test_random)
+                    #store_results_random['test'][q_name].append(test_random)
                     store_results_algo['S'][q_name].append(S_algo)
-                    store_results_random['S'][q_name].append(S_random)
+                    #store_results_random['S'][q_name].append(S_random)
                 # compute correct correct with S
                 ranking_algo = get_ranking_results(
                     [store_results_algo['S'][q_name][-1] for q_name in list_of_title_q])
-                ranking_random = get_ranking_results(
-                    [store_results_random['S'][q_name][-1] for q_name in list_of_title_q])
+                # ranking_random = get_ranking_results(
+                #     [store_results_random['S'][q_name][-1] for q_name in list_of_title_q])
 
                 store_results_ranking['algo'].append(ranking_algo)
-                store_results_ranking['random'].append(ranking_random)
+                #store_results_ranking['random'].append(ranking_random)
 
     prefix = create_prefix_from_list([experiment, U, m, trials, S, ratio])
     

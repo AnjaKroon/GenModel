@@ -1,8 +1,10 @@
+from cmath import exp
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 import math
 from itertools import permutations
+
 from file_helper import read_pickle_file
 from statistic.generate_statistics import genSstat
 
@@ -188,18 +190,28 @@ def get_converting_dict():
     return converting_dict
 
 
-def convert_key_sequence_to_int(histo_dict, KEY_CONVERTING_DICT=None):
+def convert_key_sequence_to_int(power_base, histo_dict, fun_key):
     converted_dict = {}
-    i = 0
-    if KEY_CONVERTING_DICT is None:
-        for key, val in histo_dict.items():
-            converted_dict[i] = val
-            i += 1
-    else:
+    for key, val in histo_dict.items():
+        try:
+            tokens=key.replace(
+                '[ ', '').replace(
+                ']', '').replace('[', '').split(' ')
+            token = []
+            for x in tokens:
+                try:
+                    x_int = int(x)
+                    token.append(x_int)
+                except:
+                    pass
+        except:
+            print('problem with', key)
+        try: 
+            ind = fun_key(token, power_base)
+            converted_dict[ind] = val
+        except:
+            print('problem with', token)
 
-        for key, val in histo_dict.items():
-            if key in KEY_CONVERTING_DICT:
-                converted_dict[KEY_CONVERTING_DICT[key]] = val
     return converted_dict
 
 
