@@ -195,7 +195,7 @@ def convert_key_sequence_to_int(power_base, histo_dict, fun_key):
     converted_dict = {}
     for key, val in histo_dict.items():
         try:
-            tokens=key.replace(
+            tokens = key.replace(
                 '[ ', '').replace(
                 ']', '').replace('[', '').split(' ')
             token = []
@@ -209,9 +209,12 @@ def convert_key_sequence_to_int(power_base, histo_dict, fun_key):
                     pass
         except:
             print('problem with', key)
-        try: 
+        try:
             ind = fun_key(token, power_base)
-            converted_dict[ind] = val
+            if ind in converted_dict:  # this can happen by random chance but highly unlikely
+                converted_dict[ind] += val
+            else:
+                converted_dict[ind] = val
         except:
             print('problem with', token)
 
