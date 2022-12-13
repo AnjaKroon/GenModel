@@ -193,6 +193,7 @@ def get_converting_dict():
 
 def convert_key_sequence_to_int(power_base, histo_dict, fun_key):
     converted_dict = {}
+    zero_space = 0
     for key, val in histo_dict.items():
         try:
             tokens = key.replace(
@@ -204,6 +205,7 @@ def convert_key_sequence_to_int(power_base, histo_dict, fun_key):
                     x_int = int(x)
                     if x_int not in range(power_base):
                         x_int = random.randint(power_base)
+                    
                     token.append(x_int)
                 except:
                     pass

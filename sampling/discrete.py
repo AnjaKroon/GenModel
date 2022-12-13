@@ -315,8 +315,7 @@ def scalabale_sample_distribution(U, prob_optimized_dict, m):
         interval_of_region = prob_optimized_dict[region]['interval']
         in_region_samples = random.choices(
             range(interval_of_region[0], interval_of_region[1]), k=m_in_region)
-        offset = np.sum(size_each_regions[:region])
-        samples[index_with_region] = in_region_samples + offset
+        samples[index_with_region] = in_region_samples 
     return samples
 
 
