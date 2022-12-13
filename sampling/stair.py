@@ -1,5 +1,6 @@
 from cmath import exp
 import itertools
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 import math
@@ -201,6 +202,8 @@ def convert_key_sequence_to_int(power_base, histo_dict, fun_key):
             for x in tokens:
                 try:
                     x_int = int(x)
+                    if x_int not in range(power_base):
+                        x_int = random.randint(power_base)
                     token.append(x_int)
                 except:
                     pass

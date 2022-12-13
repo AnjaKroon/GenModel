@@ -16,8 +16,9 @@ if __name__ == '__main__':
     np.random.seed(3)
     random.seed(3)
     experiment = "GEN"  # either SYNTH or GEN
-    test_epsilon = 0.18
+    test_epsilon = 0.20
     delta = 0.05
+    compute_random = False
     if experiment == "SYNTH":  # if we generate q ourselves
         print('You are running the synthetic experiment...')
 
@@ -35,7 +36,7 @@ if __name__ == '__main__':
         list_of_espilon_q = [init_e]
         # list_of_title_q = [
         #     'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
-        list_of_title_q = [ 'slightly tempered']
+        list_of_title_q = ['slightly tempered']
     else:  # if we take q as the generative models we have, we load the samples.
         print('You are running the generative model experiment...')
         power_base = 10
@@ -48,73 +49,79 @@ if __name__ == '__main__':
     Bs = list(range(S+1, 2*(S+1)+1))
     list_of_binning_algo = ['algo', 'random']
 
-    for m in list_M:
-        print("for this round m is ", m)
-        for U in list_U:
-            print("and U is ", U)
-            if experiment == "SYNTH":
-                if distribution_type == 'UNIFORM':
-                    ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
-
-                elif distribution_type == 'STAIRS':
-                    ground_truth_p = make_stair_prob(
-                        U, posU=(math.factorial(power_base)/U), ratio=ratio,  S=S)
-
-                else:
-                    raise NotImplemented
-                list_of_samples = load_samples(
-                    list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio)
-            else:
-                dict_of_samples, ground_truth_p = load_generative_model_samples(power_base,num_files=trials)
-                list_of_samples = [val for _, val in dict_of_samples.items()]
-                list_of_title_q = [key for key, _ in dict_of_samples.items()]
-
-            store_results_algo = {}
-            store_results_random = {}
-            store_results_ranking = {'algo': [], 'random': []}
-            metrics = ['S', 'test']
-            for metric in metrics:
-                store_results_algo[metric] = {}
-                store_results_random[metric] = {}
-                for title in list_of_title_q:
-                    store_results_algo[metric][title] = []
-                    store_results_random[metric][title] = []
-
-            for B in tqdm(Bs):  # For each bin granularity
-
-                for i, all_samples_list in enumerate(list_of_samples):
-                    list_binned_algo = binning_on_samples(
-                        'algo', all_samples_list, ground_truth_p, U, B)
-                    # list_binned_random = binning_on_samples(
-                    #     'random', all_samples_list, ground_truth_p, U, B)
-                    # run statistical test
-                    test_algo = [reject_if_bad_test(
-                        trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_algo]
-                    # test_random = [reject_if_bad_test(
-                    #     trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_random]
-                    # compute S reults
-                    S_algo = [genSstat(trial['p'], trial['q'])
-                              for trial in list_binned_algo]
-                    # S_random = [genSstat(trial['p'], trial['q'])
-                    #             for trial in list_binned_random]
-
-                    q_name = list_of_title_q[i]
-
-                    store_results_algo['test'][q_name].append(test_algo)
-                    #store_results_random['test'][q_name].append(test_random)
-                    store_results_algo['S'][q_name].append(S_algo)
-                    #store_results_random['S'][q_name].append(S_random)
-                # compute correct correct with S
-                ranking_algo = get_ranking_results(
-                    [store_results_algo['S'][q_name][-1] for q_name in list_of_title_q])
-                # ranking_random = get_ranking_results(
-                #     [store_results_random['S'][q_name][-1] for q_name in list_of_title_q])
-
-                store_results_ranking['algo'].append(ranking_algo)
-                #store_results_ranking['random'].append(ranking_random)
-
+    m = list_M[0]
+    print("for this round m is ", m)
+    U = list_U[0]
+    print("and U is ", U)
     prefix = create_prefix_from_list([experiment, U, m, trials, S, ratio])
-    
+    if experiment == "SYNTH":
+        if distribution_type == 'UNIFORM':
+            ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
+
+        elif distribution_type == 'STAIRS':
+            ground_truth_p = make_stair_prob(
+                U, posU=(math.factorial(power_base)/U), ratio=ratio,  S=S)
+
+        else:
+            raise NotImplemented
+        list_of_samples = load_samples(
+            list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio)
+    else:
+        dict_of_samples, ground_truth_p = load_generative_model_samples(
+            power_base, num_files=trials)
+        list_of_samples = [val for _, val in dict_of_samples.items()]
+        list_of_title_q = [key for key, _ in dict_of_samples.items()]
+
+    store_results_algo = {}
+    store_results_random = {}
+    store_results_ranking = {'algo': [], 'random': []}
+    metrics = ['S', 'test', 'binning']
+    for metric in metrics:
+        store_results_algo[metric] = {}
+        store_results_random[metric] = {}
+        for title in list_of_title_q:
+            store_results_algo[metric][title] = []
+            store_results_random[metric][title] = []
+
+    for B in tqdm(Bs):  # For each bin granularity
+
+        for i, all_samples_list in enumerate(list_of_samples):
+            list_binned_algo = binning_on_samples(
+                'algo', all_samples_list, ground_truth_p, U, B)
+            # run statistical test
+            test_algo = [reject_if_bad_test(
+                trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_algo]
+
+            # compute S reults
+            S_algo = [genSstat(trial['p'], trial['q'])
+                      for trial in list_binned_algo]
+            if compute_random:
+                list_binned_random = binning_on_samples(
+                    'random', all_samples_list, ground_truth_p, U, B)
+                test_random = [reject_if_bad_test(
+                    trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_random]
+                S_random = [genSstat(trial['p'], trial['q'])
+                            for trial in list_binned_random]
+
+            q_name = list_of_title_q[i]
+
+            store_results_algo['test'][q_name].append(test_algo)
+            store_results_algo['S'][q_name].append(S_algo)
+            store_results_algo['binning'][q_name].append(list_binned_algo)
+            if compute_random:
+                store_results_random['test'][q_name].append(
+                    test_random)
+                store_results_random['S'][q_name].append(S_random)
+        # compute correct correct with S
+        ranking_algo = get_ranking_results(
+            [store_results_algo['S'][q_name][-1] for q_name in list_of_title_q])
+        store_results_ranking['algo'].append(ranking_algo)
+        if compute_random:
+            ranking_random = get_ranking_results(
+                [store_results_random['S'][q_name][-1] for q_name in list_of_title_q])
+            store_results_ranking['random'].append(ranking_random)
+    store_for_plotting(
+        data={'x': Bs, 'data': store_results_algo['binning']}, title=prefix+'_binning_algo')
     store_for_plotting(
         data={'x': Bs, 'data': store_results_algo['test']}, title=prefix+'_hypothesis_algo')
     store_for_plotting(
@@ -123,5 +130,3 @@ if __name__ == '__main__':
                   'random': r'random  $\mathcal{B}_k$'}
     store_for_plotting(
         data={'x': Bs, 'data': store_results_ranking, 'label_dict': label_dict}, title=prefix+'_ranking')
-
-   
