@@ -180,8 +180,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
     elif B > S:
         bin_ind = 0
         if B <= max_B:
-            num_regions_have_to_cut = math.floor(
-                (max_B - regions_that_should_not_be_cut - 1)/2)
+            num_regions_have_to_cut = math.floor(B-S)
         else:  # if we have more cuts than predefined regions (B > max_B), we start randomly cutting
             num_regions_have_to_cut = regions_that_could_be_cut
         list_of_remaining_regions = list(range(regions_that_could_be_cut))

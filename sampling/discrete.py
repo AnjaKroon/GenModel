@@ -153,7 +153,7 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
 
     e_added = e_per_section/bins_added  # error amount to add per element
     e_removed = e_per_section/bins_removed  # error amount to subtract per element
-
+    
     if not is_optimized:
 
         """
@@ -193,7 +193,7 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
         np.testing.assert_allclose(should_be_one, 1)
         return array
     else:
-
+        print('STILL BUGGY todo fix')
         """
         modification in the positive space
         """
@@ -264,6 +264,9 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
         modification in the null/zero space
         """
         assert e_added not in new_tempered_dict  # hoping
+        mass_in_each_part = [(val['interval'][1] - val['interval'][0]) * val['p']
+                             for key, val in new_tempered_dict.items()]
+        should_be_one = np.sum(mass_in_each_part)
         new_tempered_dict[j] = {'interval': (
             U_pos, U_pos+bins_added_in_null), 'p': e_added}
         # We just add in order in the null space

@@ -24,19 +24,19 @@ if __name__ == '__main__':
 
         power_base = 6
         list_U = [power_base**power_base]
-        list_M = [1000]
+        list_M = [10000]
         init_e = 0.1
         init_b = 30
-        trials = 50
+        trials = 2
         S = 3
         ratio = 2
         distribution_type = 'STAIRS'  # STAIRS
 
         #list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]
-        list_of_espilon_q = [init_e]
+        list_of_espilon_q = [0]
         # list_of_title_q = [
         #     'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
-        list_of_title_q = ['slightly tempered']
+        list_of_title_q = ['no temper (uniform)']
     else:  # if we take q as the generative models we have, we load the samples.
         print('You are running the generative model experiment...')
         power_base = 10
