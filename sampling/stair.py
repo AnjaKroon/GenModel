@@ -219,6 +219,7 @@ def convert_key_sequence_to_int(power_base, histo_dict, fun_key):
                 converted_dict[ind] = val
         except:
             print('problem with', token)
+            ind = fun_key(token, power_base)
 
     return converted_dict
 

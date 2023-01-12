@@ -136,32 +136,33 @@ def put_plot_rank(filepath, x, dict_y, label_dict=None):
     plt.close()
 
 
+if __name__=='__main__':
 
-path_dir = 'results'
-list_files = load_all_files(path_dir)
-print(list_files)
+    path_dir = 'results'
+    list_files = load_all_files(path_dir)
+    print(list_files)
 
-for file in list_files:
-    file_name = file.split('.')[0]
-   
-    print(file_name)
-    with open(os.path.join(path_dir, file), 'rb') as f:  # load the data
-            data = pk.load(f)
-    tokens = file.split('_')
-    prefix = tokens[:6]
-    type_file = tokens[6:]
-    type_file = type_file[:-1] + [type_file[-1].split('.')[0]]
+    for file in list_files:
+        file_name = file.split('.')[0]
+    
+        print(file_name)
+        with open(os.path.join(path_dir, file), 'rb') as f:  # load the data
+                data = pk.load(f)
+        tokens = file.split('_')
+        prefix = tokens[:6]
+        type_file = tokens[6:]
+        type_file = type_file[:-1] + [type_file[-1].split('.')[0]]
 
-    if type_file[0] == 'ranking':
-        put_on_plot(data['x'], data['data'], data['label_dict'])
-        plot_stat(os.path.join('figures',file_name+'.pdf'), r'granularity level $k$', r'Kendall rank correlation coefficient')
+        if type_file[0] == 'ranking':
+            put_on_plot(data['x'], data['data'], data['label_dict'])
+            plot_stat(os.path.join('figures',file_name+'.pdf'), r'granularity level $k$', r'Kendall rank correlation coefficient')
 
-    elif type_file[0] == 'S':
-        put_on_plot(data['x'], data['data'])
-        plot_stat(os.path.join('figures',file_name+'.pdf'), 'Bins', 'algo')
-    elif type_file[0] == 'hypothesis':
-        put_plot_rank(os.path.join('figures',file_name+'.pdf'), data['x'], data['data'])
-        plot_stat(os.path.join('figures',file_name+'.pdf'), 'Bins', 'algo')
-        
-   
+        elif type_file[0] == 'S':
+            put_on_plot(data['x'], data['data'])
+            plot_stat(os.path.join('figures',file_name+'.pdf'), 'Bins', 'algo')
+        elif type_file[0] == 'hypothesis':
+            put_plot_rank(os.path.join('figures',file_name+'.pdf'), data['x'], data['data'])
+            plot_stat(os.path.join('figures',file_name+'.pdf'), 'Bins', 'algo')
+            
+    
 

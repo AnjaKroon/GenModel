@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
         power_base = 6
         list_U = [power_base**power_base]
-        list_M = [10000]
+        list_M = [100]
         init_e = 0.1
         init_b = 30
         trials = 2
@@ -39,12 +39,12 @@ if __name__ == '__main__':
         list_of_title_q = ['no temper (uniform)']
     else:  # if we take q as the generative models we have, we load the samples.
         print('You are running the generative model experiment...')
-        power_base = 10
+        power_base = 6
         list_U = [power_base**power_base]
         list_M = [10000]
         S = 2
         ratio = 3
-        trials = 2
+        trials = 10
 
     Bs = list(range(S+1, 2*(S+1)+1))
     list_of_binning_algo = ['algo', 'random']

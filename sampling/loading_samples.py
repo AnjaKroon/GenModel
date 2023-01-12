@@ -4,7 +4,6 @@ import os
 from file_helper import read_pickle_file
 from sampling.stair import convert_key_sequence_to_int, make_stair_prob, samples_to_histo
 from statistic.generate_statistics import generate_samples_scalable
-import itertools
 import numpy as np
 import math
 
@@ -110,7 +109,7 @@ def count_likely_before(sequence, base):
     # then all likely that starts with same number
     num_likely_at = (base-start-1) * math.factorial(base-2)
 
-    for i in range(1, base):
+    for i in range(1, base-1):
         begining_sequence = sequence[:i]
         begining_s = to_permutation(begining_sequence, base)
         if begining_s is not None:
@@ -172,7 +171,7 @@ def load_generative_model_samples(power_base, num_files=10, m=10000):
     ground_truth_dict = make_stair_prob(
         U, posU=(math.factorial(power_base)/U), ratio=ratio,  S=S)
     ground_truth_samples_list = generate_samples_scalable(
-        ground_truth_dict, 2, U, m, tempered=False, e=0, b=100)
+        ground_truth_dict, num_files, U, m, tempered=False, e=0, b=100)
     zero_space = 0
     for key, val in ground_truth_samples_list[0].items():
         if key > math.factorial(power_base):
@@ -184,18 +183,20 @@ def load_generative_model_samples(power_base, num_files=10, m=10000):
     list_models = os.listdir(base_path)
     samples_dict = {}
     
-    # for model in list_models:
-    #     samples = []
-    #     model_path = os.path.join(base_path, model)
-    #     date_model = os.listdir(model_path)[0]
-    #     model_path = os.path.join(model_path, date_model)
-    #     model_path = os.path.join(model_path, 'figure')
-    #     for file_name_pickle in pickle_files:
-    #         samples_from_file = read_pickle_file(file_name_pickle, model_path)
-    #         empirical_dict = samples_to_histo(samples_from_file)
-    #         empirical_dict = convert_key_sequence_to_int(
-    #             power_base, empirical_dict, sequence_to_id)
-    #         samples.append(empirical_dict)
-    #     samples_dict[model] = samples
+    for model in list_models:
+        samples = []
+        model_path = os.path.join(base_path, model)
+        list_models_date = os.listdir(model_path)
+        list_models_date.sort()
+        date_model = list_models_date[-1]
+        model_path = os.path.join(model_path, date_model)
+        model_path = os.path.join(model_path, 'figure')
+        for file_name_pickle in pickle_files:
+            samples_from_file = read_pickle_file(file_name_pickle, model_path)
+            empirical_dict = samples_to_histo(samples_from_file)
+            empirical_dict = convert_key_sequence_to_int(
+                power_base, empirical_dict, sequence_to_id)
+            samples.append(empirical_dict)
+        samples_dict[model] = samples
     samples_dict['ground truth'] = ground_truth_samples_list
     return samples_dict, ground_truth_dict
