@@ -9,12 +9,6 @@ Original file is located at
 # Based on the Alaa 2022 Code
 """
 
-from google.colab import drive
-drive.mount('/content/gdrive')
-
-!wget https://github.com/vanderschaarlab/evaluating-generative-models/archive/refs/heads/main.zip
-!unzip /content/main.zip > /dev/null
-
 # Commented out IPython magic to ensure Python compatibility.
 # %%writefile requirements.txt
 # 
@@ -27,11 +21,8 @@ drive.mount('/content/gdrive')
 # theano
 # torch==1.7.1
 
-!pip install -r requirements.txt
-
 # Commented out IPython magic to ensure Python compatibility.
 # %cd evaluating-generative-models-main
-!pwd
 
 """# Function Imports"""
 
