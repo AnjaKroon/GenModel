@@ -124,59 +124,28 @@ Take pickle data from gen model and use metrics to compare generated data to sta
 def get_100_pickle():
   # pulls 100sample.pk file in and puts into np array
   # shape: (100000, 6) <class 'numpy.ndarray'>
-  
   infile = open('100sample.pk','rb')
   hund_pickle_samples = pkl.load(infile)
-
-  print(hund_pickle_samples)
-  print(hund_pickle_samples.shape)
-  print(type(hund_pickle_samples))
 
   return hund_pickle_samples
 
 def get_1_pickle():
     # pulls 100sample.pk file in and puts into np array
     # shape: (100000, 6) <class 'numpy.ndarray'>
-    print("getting 1sample.pk")
-
     infile = open('1sample.pk','rb')
     one_pickle_sample = pkl.load(infile)
-
-    print(one_pickle_sample)
-    print(one_pickle_sample.shape)
-    print(type(one_pickle_sample))
 
     return one_pickle_sample
 
 def make_arr_small(X):
-    return X[:50,:]
+    return X[:50000,:]
 
 def get_stair():
   # placeholder, returns dummy array
   # shape: (100000, 6) <class 'numpy.ndarray'>
-
-  test = np.ones((100000, 6))
-  
-  print(test)
-  print(test.shape)
-  print(type(test))
+  test = np.ones((100000, 6), int)
 
   return test
-
-get_100_pickle()
-get_stair()
-
-# 100 sample results is a histogram, not the "ground truth"
-# hund_results_file = open('100sample_result.pk','rb')
-# hund_results = pkl.load(hund_results_file)
-# print(hund_results)
-# print(type(hund_results))
-
-# Need something to compare it to here
-# Some of the samples are "likely"
-# Some of the samples are "rare"
-# Maybe sort them into "likely and rare" categories and then compare metrics to the stair case?
-
 
 """# Calling Compute Metrics"""
 
@@ -208,18 +177,11 @@ def translation_test(d=64, n=1000, step_size=0.1):
 def call_compute_metrics(n,d):
     X = np.random.randn(n,d) # returns samples from normal dist, 
     Y = np.random.randn(n,d)
-    print(X)
-    
-    print(X.shape)
-    # print(Y.shape)
     
     model = None
     res_, model = compute_metrics(X,Y, model=model)
     
     return res_
-
-# result = call_compute_metrics(n=10000, d=64)
-# print(result)
 
 def compare(X,Y):
     model = None
@@ -227,5 +189,9 @@ def compare(X,Y):
     
     return res_
 
-result = compare(make_arr_small(get_1_pickle()),make_arr_small(get_stair()))
+small_one = make_arr_small(get_100_pickle())
+print(small_one.shape)
+small_stair = make_arr_small(get_stair())
+print(small_stair.shape)
+result = compare(small_one,  small_stair)
 print(result)
