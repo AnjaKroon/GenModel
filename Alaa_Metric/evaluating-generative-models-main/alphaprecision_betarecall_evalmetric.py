@@ -9,21 +9,6 @@ Original file is located at
 # Based on the Alaa 2022 Code
 """
 
-# Commented out IPython magic to ensure Python compatibility.
-# %%writefile requirements.txt
-# 
-# keras==2.4.3
-# scikit-learn==0.23.2
-# pillow==8.1.0
-# pandas==1.2.0
-# matplotlib==3.3.2
-# tqdm==4.55.1
-# theano
-# torch==1.7.1
-
-# Commented out IPython magic to ensure Python compatibility.
-# %cd evaluating-generative-models-main
-
 """# Function Imports"""
 
 from metrics.prdc import compute_prdc
@@ -149,6 +134,23 @@ def get_100_pickle():
 
   return hund_pickle_samples
 
+def get_1_pickle():
+    # pulls 100sample.pk file in and puts into np array
+    # shape: (100000, 6) <class 'numpy.ndarray'>
+    print("getting 1sample.pk")
+
+    infile = open('1sample.pk','rb')
+    one_pickle_sample = pkl.load(infile)
+
+    print(one_pickle_sample)
+    print(one_pickle_sample.shape)
+    print(type(one_pickle_sample))
+
+    return one_pickle_sample
+
+def make_arr_small(X):
+    return X[:50,:]
+
 def get_stair():
   # placeholder, returns dummy array
   # shape: (100000, 6) <class 'numpy.ndarray'>
@@ -175,8 +177,6 @@ get_stair()
 # Some of the samples are "rare"
 # Maybe sort them into "likely and rare" categories and then compare metrics to the stair case?
 
-from google.colab import drive
-drive.mount('/content/drive')
 
 """# Calling Compute Metrics"""
 
@@ -205,9 +205,6 @@ def translation_test(d=64, n=1000, step_size=0.1):
 
     plot_all(mus, res, r'$\mu$')
 
-
-translation_test(n=10000, d=64)
-
 def call_compute_metrics(n,d):
     X = np.random.randn(n,d) # returns samples from normal dist, 
     Y = np.random.randn(n,d)
@@ -221,8 +218,8 @@ def call_compute_metrics(n,d):
     
     return res_
 
-result = call_compute_metrics(n=10000, d=64)
-print(result)
+# result = call_compute_metrics(n=10000, d=64)
+# print(result)
 
 def compare(X,Y):
     model = None
@@ -230,4 +227,5 @@ def compare(X,Y):
     
     return res_
 
-result = compare(get_100_pickle(),get_stair())
+result = compare(make_arr_small(get_1_pickle()),make_arr_small(get_stair()))
+print(result)
