@@ -175,23 +175,29 @@ def translation_test(d=64, n=1000, step_size=0.1):
     plot_all(mus, res, r'$\mu$')
 
 def call_compute_metrics(n,d):
+    print("Now demonstrating example with distributions which are similar.")
     X = np.random.randn(n,d) # returns samples from normal dist, 
     Y = np.random.randn(n,d)
     
     model = None
     res_, model = compute_metrics(X,Y, model=model)
-    
+    print(res_)
     return res_
 
 def compare(X,Y):
+    print("Comparing with test arrays, to ensure methods work locally")
+    print("will not return favorable results as origional distribution (the stair array) not correctly chosen in comparison")
     model = None
     res_, model = compute_metrics(X,Y, model=model)
-    print(res_, model)
+    print(res_)
     return res_
 
+# unsure what to make the "stair function here" so just filled with ones
 small_one = make_arr_small(get_100_pickle())
 print(small_one.shape)
 small_stair = make_arr_small(get_stair())
 print(small_stair.shape)
 result = compare(small_one,  small_stair)
 # print(result)
+
+given_ex_result = call_compute_metrics(1000, 64)
