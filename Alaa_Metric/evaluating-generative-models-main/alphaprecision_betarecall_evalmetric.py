@@ -138,7 +138,7 @@ def get_1_pickle():
     return one_pickle_sample
 
 def make_arr_small(X):
-    return X[:50000,:]
+    return X[:20000,:]
 
 def get_stair():
   # placeholder, returns dummy array
@@ -186,7 +186,7 @@ def call_compute_metrics(n,d):
 def compare(X,Y):
     model = None
     res_, model = compute_metrics(X,Y, model=model)
-    
+    print(res_, model)
     return res_
 
 small_one = make_arr_small(get_100_pickle())
@@ -194,4 +194,4 @@ print(small_one.shape)
 small_stair = make_arr_small(get_stair())
 print(small_stair.shape)
 result = compare(small_one,  small_stair)
-print(result)
+# print(result)
