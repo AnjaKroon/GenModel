@@ -175,7 +175,8 @@ def translation_test(d=64, n=1000, step_size=0.1):
     plot_all(mus, res, r'$\mu$')
 
 def call_compute_metrics(n,d):
-    print("Now demonstrating example with distributions which are similar.")
+    print("* Now demonstrating example with distributions which are similar.")
+    print("* Will produce favorable results as the distributions are close enough")
     X = np.random.randn(n,d) # returns samples from normal dist, 
     Y = np.random.randn(n,d)
     
@@ -185,19 +186,27 @@ def call_compute_metrics(n,d):
     return res_
 
 def compare(X,Y):
-    print("Comparing with test arrays, to ensure methods work locally")
-    print("will not return favorable results as origional distribution (the stair array) not correctly chosen in comparison")
+    print("* Comparing with test arrays, to ensure methods work locally")
+    print("* Will not return favorable results as origional distribution (the stair array) not correctly chosen in comparison")
     model = None
     res_, model = compute_metrics(X,Y, model=model)
     print(res_)
     return res_
-
+print("----------------------------------------------------------")
+print("Terminology Used in Results:")
+print("Precision - classical def, supposedly same as Sajjadi 2018")
+print("Recall - classical def, supposedly same as Sajjadi 2018")
+print("Density - rebranded alpha precision in Alaa paper")
+print("Coverage - rebranded beta recall in Alaa paper")
+print("DPA/DCB - not used in the paper")
+print("Mean Auth - authentication score, used in Alaa paper")
+print("----------------------------------------------------------")
 # unsure what to make the "stair function here" so just filled with ones
 small_one = make_arr_small(get_100_pickle())
-print(small_one.shape)
+# print(small_one.shape)
 small_stair = make_arr_small(get_stair())
-print(small_stair.shape)
+# print(small_stair.shape)
 result = compare(small_one,  small_stair)
 # print(result)
-
+print("----------------------------------------------------------")
 given_ex_result = call_compute_metrics(1000, 64)
