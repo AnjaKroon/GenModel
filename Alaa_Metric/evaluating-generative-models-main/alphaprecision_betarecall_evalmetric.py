@@ -24,6 +24,7 @@ import pandas as pd
 
 from representations.OneClass import * 
 from metrics.evaluation import *
+from random import shuffle
 
 nearest_k = 5
 params  = dict({"rep_dim": None, 
@@ -140,10 +141,21 @@ def get_1_pickle():
 def make_arr_small(X):
     return X[:10000,:]
 
-def get_stair():
+def get_train():
     infile = open('train.pk','rb')
     one_pickle_sample = pkl.load(infile)
     return one_pickle_sample
+
+def get_random_input():
+    rand_input = np.array
+    output = np.array([[0,1,2,3,4,5]])
+    for i in range(10000):
+        rand_input = np.random.permutation([0,1,2,3,4,5])
+        # print(rand_input)
+        output = np.append(output, [rand_input], axis=0)
+    output = output[1:]
+    print(output.shape)
+    return output
 
 """# Calling Compute Metrics"""
 
@@ -188,7 +200,7 @@ def compare(X,Y, distance=None):
     print("* Will not return favorable results as origional distribution (the stair array) not correctly chosen in comparison")
     model = None
     res_, model = compute_metrics(X,Y, model=model, distance=distance)
-    print(res_)
+    # print(res_)
     return res_
 print("----------------------------------------------------------")
 print("Terminology Used in Results:")
@@ -199,14 +211,22 @@ print("Coverage - rebranded beta recall in Alaa paper")
 print("DPA/DCB - not used in the paper")
 print("Mean Auth - authentication score, used in Alaa paper")
 print("----------------------------------------------------------")
-# unsure what to make the "stair function here" so just filled with ones
-small_one = make_arr_small(get_100_pickle())
 
-print(small_one.shape)
-m = small_one.shape[0]
-small_stair = make_arr_small(get_stair())
-print(small_stair.shape)
-result = compare(small_one,  small_stair, distance='hamilton')
+small_train = make_arr_small(get_train())
+print(small_train.shape)
+print(small_train)
+
+small_output = make_arr_small(get_100_pickle())
+print(small_output.shape)
+print(small_output)
+m = small_output.shape[0]
+
+
+# put code here to get_random_input()
+returns = get_random_input()
+print(returns)
+
+result = compare(small_output,  small_train, distance='hamilton')
 print(result)
 print("----------------------------------------------------------")
 given_ex_result = call_compute_metrics(1000, 64)
