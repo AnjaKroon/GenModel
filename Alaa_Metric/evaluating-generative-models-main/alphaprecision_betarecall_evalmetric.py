@@ -196,8 +196,6 @@ def call_compute_metrics(n,d):
     return res_
 
 def compare(X,Y, distance=None):
-    print("* Comparing with test arrays, to ensure methods work locally")
-    print("* Will not return favorable results as origional distribution (the stair array) not correctly chosen in comparison")
     model = None
     res_, model = compute_metrics(X,Y, model=model, distance=distance)
     # print(res_)
@@ -210,23 +208,29 @@ print("Density - rebranded alpha precision in Alaa paper")
 print("Coverage - rebranded beta recall in Alaa paper")
 print("DPA/DCB - not used in the paper")
 print("Mean Auth - authentication score, used in Alaa paper")
-print("----------------------------------------------------------")
 
+print("----------------------------------------------------------")
 small_train = make_arr_small(get_train())
 print(small_train.shape)
-print(small_train)
+# print(small_train)
 
 small_output = make_arr_small(get_100_pickle())
 print(small_output.shape)
-print(small_output)
+# print(small_output)
 m = small_output.shape[0]
 
+train_vs_output = compare(small_train, small_output, distance='hamilton')
+print("For the Training Data Comparison")
+print(train_vs_output)
 
-# put code here to get_random_input()
-returns = get_random_input()
-print(returns)
-
-result = compare(small_output,  small_train, distance='hamilton')
-print(result)
 print("----------------------------------------------------------")
-given_ex_result = call_compute_metrics(1000, 64)
+random_input = get_random_input()
+print(random_input.shape)
+print(small_output.shape)
+# print(random_input)
+random_vs_output = compare(random_input, small_output, distance='hamilton')
+print("For the Random Comparison")
+print(random_vs_output)
+
+print("----------------------------------------------------------")
+# given_ex_result = call_compute_metrics(1000, 64)
