@@ -65,7 +65,7 @@ if __name__ == '__main__':
             list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio)
     else:
         dict_of_samples, ground_truth_p = load_generative_model_samples(
-            power_base, num_files=trials)
+            power_base, num_files=2)
         list_of_samples = [val for _, val in dict_of_samples.items()]
         list_of_title_q = [key for key, _ in dict_of_samples.items()]
 

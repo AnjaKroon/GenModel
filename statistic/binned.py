@@ -157,11 +157,9 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
         regions, q_dict)
 
     # force random cuts
-    regions_that_should_not_be_cut = regions_that_should_not_be_cut + \
-        regions_that_could_be_cut
+    
     regions_that_could_be_cut = 0
-    if regions_that_should_not_be_cut > 1:  # some regions dont have an optimal split
-        print('Warning, we got zero error regions')
+    
 
     # 3 : Sort the S regions by max to min to give B* for a specific k.
     sorted_s_by_potential_cut_error = sorted(list(predefined_bins_with_error.keys()),
