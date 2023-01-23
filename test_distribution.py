@@ -1,4 +1,3 @@
-
 from file_helper import create_prefix_from_list, load_samples, store_for_plotting
 from sampling.loading_samples import load_generative_model_samples
 from sampling.stair import make_stair_prob
@@ -25,10 +24,10 @@ if __name__ == '__main__':
 
         power_base = 6
         U = power_base**power_base
-        m = 1000
+        m = 10000
         init_e = 0.1
-        init_b = 30
-        trials = 2
+        init_b = 10
+        trials = 10
         S = 3
         ratio = 2
         distribution_type = 'STAIRS'  # STAIRS
@@ -65,7 +64,7 @@ if __name__ == '__main__':
             list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio)
     else:
         dict_of_samples, ground_truth_p = load_generative_model_samples(
-            power_base, num_files=trials)
+            power_base, num_files=2)
         list_of_samples = [val for _, val in dict_of_samples.items()]
         list_of_title_q = [key for key, _ in dict_of_samples.items()]
 
@@ -81,7 +80,7 @@ if __name__ == '__main__':
         for title in list_of_title_q:
             store_results_algo[metric][title] = []
             store_results_random[metric][title] = []
-
+    start_time = time()
     for B in tqdm(Bs):  # For each bin granularity
 
         for i, all_samples_list in enumerate(list_of_samples):
@@ -119,6 +118,8 @@ if __name__ == '__main__':
             ranking_random = get_ranking_results(
                 [store_results_random['S'][q_name][-1] for q_name in list_of_title_q])
             store_results_ranking['random'].append(ranking_random)
+    end_time = time()
+    print((end_time-start_time)/trials)
     store_for_plotting(
         data={'x': Bs, 'data': store_results_algo['binning']}, title=prefix+'_binning_algo')
     store_for_plotting(
