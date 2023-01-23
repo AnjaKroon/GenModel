@@ -11,11 +11,11 @@ Original file is located at
 
 """# Function Imports"""
 
+import math
 from metrics.prdc import compute_prdc
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-import tensorflow as tf
 import pickle as pkl
 import numpy as np
 import io
@@ -66,10 +66,10 @@ def plot_all(x, res, x_axis):
         plt.show()
 
 
-def compute_metrics(X,Y, nearest_k = 5, model = None):
+def compute_metrics(X,Y, nearest_k = 5, model = None, distance=None):
     # print(type(X))
     # print(type(Y))
-    results = compute_prdc(X,Y, nearest_k)
+    results = compute_prdc(X,Y, nearest_k, distance)
     if model is None:
         #these are fairly arbitrarily chosen
         params["input_dim"] = X.shape[1]
@@ -138,14 +138,12 @@ def get_1_pickle():
     return one_pickle_sample
 
 def make_arr_small(X):
-    return X[:20000,:]
+    return X[:10000,:]
 
 def get_stair():
-  # placeholder, returns dummy array
-  # shape: (100000, 6) <class 'numpy.ndarray'>
-  test = np.ones((100000, 6), int)
-
-  return test
+    infile = open('train.pk','rb')
+    one_pickle_sample = pkl.load(infile)
+    return one_pickle_sample
 
 """# Calling Compute Metrics"""
 
@@ -185,11 +183,11 @@ def call_compute_metrics(n,d):
     print(res_)
     return res_
 
-def compare(X,Y):
+def compare(X,Y, distance=None):
     print("* Comparing with test arrays, to ensure methods work locally")
     print("* Will not return favorable results as origional distribution (the stair array) not correctly chosen in comparison")
     model = None
-    res_, model = compute_metrics(X,Y, model=model)
+    res_, model = compute_metrics(X,Y, model=model, distance=distance)
     print(res_)
     return res_
 print("----------------------------------------------------------")
@@ -203,10 +201,12 @@ print("Mean Auth - authentication score, used in Alaa paper")
 print("----------------------------------------------------------")
 # unsure what to make the "stair function here" so just filled with ones
 small_one = make_arr_small(get_100_pickle())
-# print(small_one.shape)
+
+print(small_one.shape)
+m = small_one.shape[0]
 small_stair = make_arr_small(get_stair())
-# print(small_stair.shape)
-result = compare(small_one,  small_stair)
-# print(result)
+print(small_stair.shape)
+result = compare(small_one,  small_stair, distance='hamilton')
+print(result)
 print("----------------------------------------------------------")
 given_ex_result = call_compute_metrics(1000, 64)

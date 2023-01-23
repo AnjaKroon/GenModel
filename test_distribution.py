@@ -1,14 +1,14 @@
-import math
-import os
-from tqdm import tqdm
-from sampling.discrete import makeUniProbArr, prob_array_to_dict
+
 from file_helper import create_prefix_from_list, load_samples, store_for_plotting
 from sampling.loading_samples import load_generative_model_samples
 from sampling.stair import make_stair_prob
+from sampling.discrete import makeUniProbArr, prob_array_to_dict
 from statistic.binning_algo import binning_on_samples
+from statistic.generate_statistics import genSstat, get_ranking_results, reject_if_bad_test
 import numpy as np
 import random
-from statistic.generate_statistics import genSstat, get_ranking_results, reject_if_bad_test
+import math
+from tqdm import tqdm
 
 
 if __name__ == '__main__':
@@ -16,43 +16,40 @@ if __name__ == '__main__':
     np.random.seed(3)
     random.seed(3)
     experiment = "GEN"  # either SYNTH or GEN
-    test_epsilon = 0.20
+    test_epsilon = 0.1
     delta = 0.05
     compute_random = False
+    list_of_binning_algo = ['algo']
     if experiment == "SYNTH":  # if we generate q ourselves
         print('You are running the synthetic experiment...')
 
         power_base = 6
-        list_U = [power_base**power_base]
-        list_M = [100]
+        U = power_base**power_base
+        m = 1000
         init_e = 0.1
         init_b = 30
         trials = 2
         S = 3
         ratio = 2
         distribution_type = 'STAIRS'  # STAIRS
+        list_of_espilon_q = [0, init_e, init_e*2, init_e*3]
+        list_of_title_q = [
+            'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
 
-        #list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]
-        list_of_espilon_q = [0]
-        # list_of_title_q = [
-        #     'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
-        list_of_title_q = ['no temper (uniform)']
     else:  # if we take q as the generative models we have, we load the samples.
         print('You are running the generative model experiment...')
         power_base = 6
-        list_U = [power_base**power_base]
-        list_M = [10000]
+        U = power_base**power_base
+        m = 10000
         S = 2
         ratio = 3
         trials = 10
 
     Bs = list(range(S+1, 2*(S+1)+1))
-    list_of_binning_algo = ['algo', 'random']
 
-    m = list_M[0]
     print("for this round m is ", m)
-    U = list_U[0]
     print("and U is ", U)
+
     prefix = create_prefix_from_list([experiment, U, m, trials, S, ratio])
     if experiment == "SYNTH":
         if distribution_type == 'UNIFORM':
@@ -74,7 +71,9 @@ if __name__ == '__main__':
 
     store_results_algo = {}
     store_results_random = {}
-    store_results_ranking = {'algo': [], 'random': []}
+    store_results_ranking = {}
+    for algo in list_of_binning_algo:
+        store_results_ranking[algo] = []
     metrics = ['S', 'test', 'binning']
     for metric in metrics:
         store_results_algo[metric] = {}

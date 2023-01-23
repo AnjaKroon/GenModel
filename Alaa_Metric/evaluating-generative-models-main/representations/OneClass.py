@@ -113,10 +113,10 @@ class OneClassLayer(BaseNet):
         self.epochs         = params['epochs']
         self.warm_up_epochs = params['warm_up_epochs']
         self.weight_decay   = params['weight_decay']
-        if torch.cuda.is_available():
-            self.device     = torch.device('cuda') # Make this an option
-        else:
-            self.device     = torch.device('cpu')
+        # if torch.cuda.is_available():
+        #     self.device     = torch.device('cuda') # Make this an option
+        # else:
+        self.device     = torch.device('cpu')
         # set up the network
         
         self.model          = build_network(network_name="feedforward", params=params).to(self.device)
