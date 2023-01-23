@@ -216,12 +216,14 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
 
             for bin_id_to_cut, num_random_cuts in enumerate(random_cuts_per_bin):
                 if num_random_cuts>0:
+                    if num_random_cuts>1:
+                        print('problem')
                     indices_to_split = mapping_bin_to_index[bin_id_to_cut]
                     chunk_size = int(len(indices_to_split)/(num_random_cuts+1))
                     # first, we replace the bin by a small chunk of the indices:
                     mapping_bin_to_index[bin_id_to_cut] = indices_to_split[:chunk_size]
                     # then we create news bins with all the chunks
-                    chunk_id = 1
+                    chunk_id = 0
                     
                     bin_ind += 1
                     for chunk_id in range(1, num_random_cuts):
@@ -229,7 +231,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
                                                                         chunk_size: (chunk_id+1)*chunk_size]
                         bin_ind += 1
                     
-                    mapping_bin_to_index[bin_ind] = indices_to_split[chunk_id*chunk_size:]
+                    mapping_bin_to_index[bin_ind] = indices_to_split[(chunk_id+1)*chunk_size:]
 
     new_histo_p = {}
     for bin_index, all_index in mapping_bin_to_index.items():

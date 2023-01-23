@@ -115,36 +115,29 @@ def list_samples_to_array(U, list_samples):
 
 
 def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
-    K = int(np.log2(1/delta))
-    all_trial = []
-    sub_m = int(m/K)
-    U = len(prob_array)
+    
+    term_1 = max(prob_array)**2 * (320/3)/ epsilon**4
+    numerator = term_1 + np.sqrt(term_1**2 + 4**4 * delta * max(prob_array)/epsilon**4)
+    minimum_m = numerator / delta
+    print('required m', int(minimum_m/2))
     # recover histrogram
     q_samples = [int(m*p) for p in q_emp_array]
-    # separate the big samples in smaller subset of samples
-    list_of_q_samples = [[x for _ in range(num_x)]
-                         for x, num_x in enumerate(q_samples)]
-    flatten_list__samples = [
-        item for sublist in list_of_q_samples for item in sublist]
-    random.shuffle(flatten_list__samples)
-
-    for k in range(K):
-        list_of_q_subset_samples = flatten_list__samples[k*sub_m:(k+1)*sub_m]
-        q_subset_samples = list_samples_to_array(U, list_of_q_subset_samples)
-        should_be_sub_m = np.sum(q_subset_samples)
-        num_collisions = compute_self_collisions(q_subset_samples)
-        q_2_estimate = num_collisions
-        p_2_coll = (sub_m-1)*sub_m/2 * np.sum([p**2 for p in prob_array])
-        s_pq = sub_m * np.sum([prob_array[i] * num_samples_per_x for i,
-                               num_samples_per_x in enumerate(q_subset_samples)])
-        r = 2*sub_m/(sub_m-1)*(q_2_estimate+p_2_coll)
-        s = 2*s_pq
-        diff = r-s
-        boundary_val = 3*sub_m**2*epsilon**2/4
-        reject = r-s > boundary_val
-        all_trial.append(reject)
-
-    return np.mean(all_trial) > 0.5  # reject if majority rejects
+    cp = (m*(m-1)/2) * np.sum([p**2 for p in prob_array])
+    cq = compute_self_collisions(q_samples)
+    expected_self_col = np.sum([q_samples[i] * prob_array[i]
+                       for i in range(len(q_samples))])
+    w = 2 * m * expected_self_col
+    
+    y = 2*m/(m-1) * (cp+cq)
+    A = y - w
+   
+    if A < m**2* epsilon**2/4:
+        test_state = 1
+    elif A > 3* m**2* epsilon**2/4:
+        test_state = 0
+    else:
+        test_state = 0.5
+    return test_state
 
 
 def get_chi_square(trials, U, m, tempered, e, b, B):

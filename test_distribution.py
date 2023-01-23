@@ -1,3 +1,4 @@
+from time import time
 import math
 import os
 from tqdm import tqdm
@@ -16,27 +17,28 @@ if __name__ == '__main__':
     np.random.seed(3)
     random.seed(3)
     experiment = "GEN"  # either SYNTH or GEN
-    test_epsilon = 0.20
-    delta = 0.05
+    test_epsilon = 0.15
+    delta = 0.1
     compute_random = False
     if experiment == "SYNTH":  # if we generate q ourselves
         print('You are running the synthetic experiment...')
 
         power_base = 6
         list_U = [power_base**power_base]
-        list_M = [100]
+        list_M = [100000]
         init_e = 0.1
-        init_b = 30
-        trials = 2
+        init_b = 10
+        trials = 10
         S = 3
         ratio = 2
         distribution_type = 'STAIRS'  # STAIRS
 
-        #list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]
-        list_of_espilon_q = [0]
+        list_of_espilon_q = [0, init_e*2]
+        #list_of_espilon_q = [0]
         # list_of_title_q = [
         #     'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
-        list_of_title_q = ['no temper (uniform)']
+        list_of_title_q = [ 'no temper (uniform)',  'heavily tempered']
+        #list_of_title_q = ['no temper (uniform)']
     else:  # if we take q as the generative models we have, we load the samples.
         print('You are running the generative model experiment...')
         power_base = 6
@@ -82,7 +84,7 @@ if __name__ == '__main__':
         for title in list_of_title_q:
             store_results_algo[metric][title] = []
             store_results_random[metric][title] = []
-
+    start_time = time()
     for B in tqdm(Bs):  # For each bin granularity
 
         for i, all_samples_list in enumerate(list_of_samples):
@@ -120,6 +122,8 @@ if __name__ == '__main__':
             ranking_random = get_ranking_results(
                 [store_results_random['S'][q_name][-1] for q_name in list_of_title_q])
             store_results_ranking['random'].append(ranking_random)
+    end_time = time()
+    print((end_time-start_time)/trials)
     store_for_plotting(
         data={'x': Bs, 'data': store_results_algo['binning']}, title=prefix+'_binning_algo')
     store_for_plotting(

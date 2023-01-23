@@ -68,8 +68,8 @@ def plot_stat(title, xlabel, ylabel):
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.tight_layout()
-    plt.savefig(title)
-    plt.close()
+    # plt.savefig(title)
+    # plt.close()
 
 
 
@@ -132,8 +132,8 @@ def put_plot_rank(filepath, x, dict_y, label_dict=None):
     font = font_manager.FontProperties(style='normal', size=18)
     plt.legend(prop=font)
     plt.tight_layout()
-    plt.show()
-    plt.close()
+    # plt.show()
+    # plt.close()
 
 
 if __name__=='__main__':
