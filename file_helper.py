@@ -64,6 +64,7 @@ def create_prefix_from_list(list_name):
 def load_samples(list_of_espilon_q, b, ground_truth_p, trials, U, m, S, ratio):
     # obtain the samples
     list_of_samples = []
+    list_of_pmf_q = []
     directory_samples_file = 'samples_storing'
     for e in list_of_espilon_q:
         sample_file = create_prefix_from_list(
@@ -72,17 +73,23 @@ def load_samples(list_of_espilon_q, b, ground_truth_p, trials, U, m, S, ratio):
 
         def generating_samples_func():
             if e == 0:
-                samples = generate_samples_scalable(
+                samples_and_pmf = generate_samples_scalable(
                     ground_truth_p, trials, U, m, tempered=False, e=0, b=100)
-            else:
-                samples = generate_samples_scalable(
-                    ground_truth_p, trials, U, m, tempered=True, e=e, b=b)
-            return samples
 
-        samples = read_file_else_store(
+            else:
+                samples_and_pmf = generate_samples_scalable(
+                    ground_truth_p, trials, U, m, tempered=True, e=e, b=b)
+
+            return samples_and_pmf
+        #generating_samples_func()
+        samples_and_pmf = read_file_else_store(
             sample_file_path, generating_samples_func)
+        samples = samples_and_pmf['all_trials_emp']
+        pmf_q = samples_and_pmf['q']
         list_of_samples.append(samples)
-    return list_of_samples
+        list_of_pmf_q.append(pmf_q)
+    
+    return list_of_samples, list_of_pmf_q
 
 
 if __name__ == '__main__':

@@ -43,6 +43,7 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
         prob_array = prob_dict_to_array(ground_truth_p, U)
         if tempered:
             prob_array = errFunct(U, prob_array, e, b)
+        q = prob_array
         for _ in range(trials):
 
             new_samples = sampleSpecificProbDist(
@@ -54,13 +55,14 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
         prob_optimized_dict = ground_truth_p
         if tempered:
             prob_optimized_dict = errFunct(U, ground_truth_p, e, b)
+        q = prob_optimized_dict
         for _ in range(trials):
 
             new_samples = scalabale_sample_distribution(
                 U, prob_optimized_dict, m)
             p_emp_dict = empirical_dist_no_zero(m, new_samples)
             all_trials_p_emp.append(p_emp_dict)
-    return all_trials_p_emp
+    return {'all_trials_emp': all_trials_p_emp, 'q': q}
 
 
 def generate_samples_and_compute_stat(trials, U, m, tempered, e, b, B, stat_func, with_poisson=True):
@@ -115,29 +117,33 @@ def list_samples_to_array(U, list_samples):
 
 
 def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
-    
-    term_1 = max(prob_array)**2 * (320/3)/ epsilon**4
-    numerator = term_1 + np.sqrt(term_1**2 + 4**4 * delta * max(prob_array)/epsilon**4)
+    q_emp_array = np.array(q_emp_array)
+    q_emp_array[q_emp_array < 1e-14] = 0
+    max_prob_array = max(prob_array)
+    C = 1.1
+    term_1 = max_prob_array**2 * (2*C + 3)/(3*epsilon**4)
+    term_sqrt = np.sqrt(term_1**2 + 4**4 * delta * 2 *
+                        C * max_prob_array/epsilon**4)
+    numerator = term_1 + term_sqrt
     minimum_m = numerator / delta
-    print('required m', int(minimum_m/2))
+
     # recover histrogram
     q_samples = [int(m*p) for p in q_emp_array]
     cp = (m*(m-1)/2) * np.sum([p**2 for p in prob_array])
     cq = compute_self_collisions(q_samples)
     expected_self_col = np.sum([q_samples[i] * prob_array[i]
-                       for i in range(len(q_samples))])
+                                for i in range(len(q_samples))])
     w = 2 * m * expected_self_col
-    
+
     y = 2*m/(m-1) * (cp+cq)
     A = y - w
-   
-    if A < m**2* epsilon**2/4:
+
+    if A < m**2 * epsilon**2/4:
         test_state = 1
-    elif A > 3* m**2* epsilon**2/4:
-        test_state = 0
     else:
-        test_state = 0.5
-    return test_state
+        test_state = 0
+    A = max(A, 0)
+    return test_state, np.sqrt(A)/m, minimum_m
 
 
 def get_chi_square(trials, U, m, tempered, e, b, B):

@@ -171,7 +171,7 @@ def load_generative_model_samples(power_base, num_files=10, m=10000):
     ground_truth_dict = make_stair_prob(
         U, posU=(math.factorial(power_base)/U), ratio=ratio,  S=S)
     ground_truth_samples_list = generate_samples_scalable(
-        ground_truth_dict, num_files, U, m, tempered=False, e=0, b=100)
+        ground_truth_dict, num_files, U, m, tempered=False, e=0, b=100)['all_trials_emp']
     zero_space = 0
     for key, val in ground_truth_samples_list[0].items():
         if key > math.factorial(power_base):

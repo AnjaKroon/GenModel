@@ -1,3 +1,4 @@
+from sklearn.covariance import log_likelihood
 from file_helper import create_prefix_from_list, load_samples, store_for_plotting
 from sampling.loading_samples import load_generative_model_samples
 from sampling.stair import make_stair_prob
@@ -14,7 +15,7 @@ if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
-    experiment = "GEN"  # either SYNTH or GEN
+    experiment = "SYNTH"  # either SYNTH or GEN
     test_epsilon = 0.1
     delta = 0.05
     compute_random = False
@@ -24,14 +25,14 @@ if __name__ == '__main__':
 
         power_base = 6
         U = power_base**power_base
-        m = 10000
-        init_e = 0.1
-        init_b = 10
+        m = 100000
+        init_e = 0.05
+        init_b = 100
         trials = 10
         S = 3
         ratio = 2
         distribution_type = 'STAIRS'  # STAIRS
-        list_of_espilon_q = [0, init_e, init_e*2, init_e*3]
+        list_of_espilon_q = [0, init_e, init_e*2, init_e*4]
         list_of_title_q = [
             'no temper (uniform)', 'slightly tempered', 'medium tempered', 'heavily tempered']
 
@@ -60,8 +61,24 @@ if __name__ == '__main__':
 
         else:
             raise NotImplemented
-        list_of_samples = load_samples(
+        list_of_samples, list_of_pmf_q = load_samples(
             list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio)
+        print('computing exact log likelihood...')
+        all_samples_list = list_of_samples[0]
+        log_likelihoods = []
+        for i, q_name in enumerate(list_of_title_q):
+            pmf = list_of_pmf_q[i]
+            q_name = list_of_title_q[i]
+
+            for trial in all_samples_list:
+                log_likelihood = 0
+                for key, val in trial.items():
+                    log_p = np.log(pmf[key])
+                    num_int = int(val * m)
+                    log_likelihood += log_p * num_int
+                log_likelihoods.append(log_likelihood/m)
+            print(q_name, 'log likelihood m=', m, ':', np.mean(
+                log_likelihoods), 'std', np.std(log_likelihoods))
     else:
         dict_of_samples, ground_truth_p = load_generative_model_samples(
             power_base, num_files=2)
@@ -80,7 +97,7 @@ if __name__ == '__main__':
         for title in list_of_title_q:
             store_results_algo[metric][title] = []
             store_results_random[metric][title] = []
-    start_time = time()
+
     for B in tqdm(Bs):  # For each bin granularity
 
         for i, all_samples_list in enumerate(list_of_samples):
@@ -88,7 +105,7 @@ if __name__ == '__main__':
                 'algo', all_samples_list, ground_truth_p, U, B)
             # run statistical test
             test_algo = [reject_if_bad_test(
-                trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_algo]
+                trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta)[0] for trial in list_binned_algo]
 
             # compute S reults
             S_algo = [genSstat(trial['p'], trial['q'])
@@ -118,8 +135,7 @@ if __name__ == '__main__':
             ranking_random = get_ranking_results(
                 [store_results_random['S'][q_name][-1] for q_name in list_of_title_q])
             store_results_ranking['random'].append(ranking_random)
-    end_time = time()
-    print((end_time-start_time)/trials)
+
     store_for_plotting(
         data={'x': Bs, 'data': store_results_algo['binning']}, title=prefix+'_binning_algo')
     store_for_plotting(

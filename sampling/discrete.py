@@ -153,7 +153,9 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
 
     e_added = e_per_section/bins_added  # error amount to add per element
     e_removed = e_per_section/bins_removed  # error amount to subtract per element
-    
+    print('Total tv error should be ', e, ' it is ', e_added*bins_added+e_removed* bins_removed)
+    print('Total l2^2 error is ', (e_added**2) *bins_added+(e_removed**2)* bins_removed)
+    print('Total l2 error is ', np.sqrt((e_added**2) *bins_added+(e_removed**2)* bins_removed))
     if not is_optimized:
 
         """
