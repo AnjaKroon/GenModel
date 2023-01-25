@@ -34,6 +34,17 @@ def get_ranking_results(all_models_list_stats):
 # this return a list of empirical distribution dict, one for each trial
 # TODO large scale poisson.
 
+def get_pmf_val(key, pmf):
+    is_optimized = pmf is dict
+    if not is_optimized:  # the space is small enough to follow normal sampling procedure
+        return pmf[key]
+    else:
+        all_intervals = list(pmf.values())
+
+        for interval in all_intervals:
+            if key >= interval['interval'][0] and key < interval['interval'][1]:
+                return interval['p']
+
 
 def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
     all_trials_p_emp = []
@@ -117,6 +128,7 @@ def list_samples_to_array(U, list_samples):
 
 
 def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
+    U = len(prob_array)
     q_emp_array = np.array(q_emp_array)
     q_emp_array[q_emp_array < 1e-14] = 0
     max_prob_array = max(prob_array)
@@ -126,7 +138,7 @@ def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
                         C * max_prob_array/epsilon**4)
     numerator = term_1 + term_sqrt
     minimum_m = numerator / delta
-
+    #print('epsilon',epsilon,'m',minimum_m, 'delta',delta)
     # recover histrogram
     q_samples = [int(m*p) for p in q_emp_array]
     cp = (m*(m-1)/2) * np.sum([p**2 for p in prob_array])
@@ -137,13 +149,15 @@ def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
 
     y = 2*m/(m-1) * (cp+cq)
     A = y - w
-
-    if A < m**2 * epsilon**2/4:
+    A = max(A, 0)
+    B = np.sqrt(A)/m
+    test_stat =  epsilon/(2 * np.sqrt(U))
+    if B > test_stat:
         test_state = 1
     else:
         test_state = 0
-    A = max(A, 0)
-    return test_state, np.sqrt(A)/m, minimum_m
+    
+    return test_state, B, minimum_m
 
 
 def get_chi_square(trials, U, m, tempered, e, b, B):

@@ -110,7 +110,7 @@ def put_plot_rank(filepath, x, dict_y, label_dict=None):
     for j, B in enumerate(x):
         color = get_color(j)
         position = [i + barWidth for i in position]
-        fraction_test_passed = list([1 - np.mean(val[j])
+        fraction_test_passed = list([ np.mean(val[j])
                                     for val in dict_y.values()])
         who_passes = []
         for k, previously in enumerate(who_passed):

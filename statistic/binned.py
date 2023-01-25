@@ -214,8 +214,8 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
 
             for bin_id_to_cut, num_random_cuts in enumerate(random_cuts_per_bin):
                 if num_random_cuts>0:
-                    if num_random_cuts>1:
-                        print('problem')
+                    #if num_random_cuts>1:
+                        #print('problem')
                     indices_to_split = mapping_bin_to_index[bin_id_to_cut]
                     chunk_size = int(len(indices_to_split)/(num_random_cuts+1))
                     # first, we replace the bin by a small chunk of the indices:

@@ -1,10 +1,11 @@
+import scipy
 from sklearn.covariance import log_likelihood
 from file_helper import create_prefix_from_list, load_samples, store_for_plotting
 from sampling.loading_samples import load_generative_model_samples
 from sampling.stair import make_stair_prob
 from sampling.discrete import makeUniProbArr, prob_array_to_dict
 from statistic.binning_algo import binning_on_samples
-from statistic.generate_statistics import genSstat, get_ranking_results, reject_if_bad_test
+from statistic.generate_statistics import genSstat, get_pmf_val, get_ranking_results, reject_if_bad_test
 import numpy as np
 import random
 import math
@@ -16,7 +17,7 @@ if __name__ == '__main__':
     np.random.seed(3)
     random.seed(3)
     experiment = "SYNTH"  # either SYNTH or GEN
-    test_epsilon = 0.1
+    test_epsilon = 0.07
     delta = 0.05
     compute_random = False
     list_of_binning_algo = ['algo']
@@ -25,9 +26,9 @@ if __name__ == '__main__':
 
         power_base = 6
         U = power_base**power_base
-        m = 100000
+        m = 10000
         init_e = 0.05
-        init_b = 100
+        init_b = 50
         trials = 10
         S = 3
         ratio = 2
@@ -65,32 +66,38 @@ if __name__ == '__main__':
             list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio)
         print('computing exact log likelihood...')
         all_samples_list = list_of_samples[0]
-        log_likelihoods = []
+        all_log_likelihoods = []
         for i, q_name in enumerate(list_of_title_q):
+            log_likelihoods = []
             pmf = list_of_pmf_q[i]
             q_name = list_of_title_q[i]
 
             for trial in all_samples_list:
                 log_likelihood = 0
                 for key, val in trial.items():
-                    log_p = np.log(pmf[key])
+                    p_key = get_pmf_val(key, pmf)
+                    log_p = np.log(p_key)
                     num_int = int(val * m)
                     log_likelihood += log_p * num_int
-                log_likelihoods.append(log_likelihood/m)
+                log_likelihoods.append(-log_likelihood/m)
             print(q_name, 'log likelihood m=', m, ':', np.mean(
                 log_likelihoods), 'std', np.std(log_likelihoods))
+            all_log_likelihoods.append(log_likelihoods)
+        print(all_log_likelihoods[0])
+        print(all_log_likelihoods[1])
+        print(scipy.stats.wilcoxon(all_log_likelihoods[0], all_log_likelihoods[2]))
     else:
         dict_of_samples, ground_truth_p = load_generative_model_samples(
             power_base, num_files=2)
         list_of_samples = [val for _, val in dict_of_samples.items()]
         list_of_title_q = [key for key, _ in dict_of_samples.items()]
-
+   
     store_results_algo = {}
     store_results_random = {}
     store_results_ranking = {}
     for algo in list_of_binning_algo:
         store_results_ranking[algo] = []
-    metrics = ['S', 'test', 'binning']
+    metrics = ['S', 'test', 'binning', 'A']
     for metric in metrics:
         store_results_algo[metric] = {}
         store_results_random[metric] = {}
@@ -104,9 +111,11 @@ if __name__ == '__main__':
             list_binned_algo = binning_on_samples(
                 'algo', all_samples_list, ground_truth_p, U, B)
             # run statistical test
-            test_algo = [reject_if_bad_test(
-                trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta)[0] for trial in list_binned_algo]
-
+            results = [reject_if_bad_test(
+                trial['p'], trial['q'], m, epsilon=test_epsilon, delta=delta) for trial in list_binned_algo]
+            test_algo = [i[0] for i in results]
+            A = [i[1] for i in results]
+            
             # compute S reults
             S_algo = [genSstat(trial['p'], trial['q'])
                       for trial in list_binned_algo]
@@ -119,8 +128,9 @@ if __name__ == '__main__':
                             for trial in list_binned_random]
 
             q_name = list_of_title_q[i]
-
+            
             store_results_algo['test'][q_name].append(test_algo)
+            store_results_algo['A'][q_name].append(A)
             store_results_algo['S'][q_name].append(S_algo)
             store_results_algo['binning'][q_name].append(list_binned_algo)
             if compute_random:
