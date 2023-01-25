@@ -122,12 +122,53 @@ def compute_metrics(X,Y, nearest_k = 5, model = None, distance=None):
 Take pickle data from gen model and use metrics to compare generated data to stair distribution.
 """
 
+def comparing_all_gen_models():
+    small_random = make_arr_small(get_random_input())
+    small_train_input = make_arr_small(get_train())
+
+    argmaxAR_input = open('data/100sample_Data/100sample_argmaxAR.pk','rb')
+    argmaxAR = make_arr_small(pkl.load(argmaxAR_input))
+
+    CDM_input = open('data/100sample_Data/100sample_CDM.pk','rb')
+    CDM = make_arr_small(pkl.load(CDM_input))
+
+    CNF_input = open('data/100sample_Data/100sample_CNF.pk','rb')
+    CNF = make_arr_small(pkl.load(CNF_input))
+    
+    FCDM_input = open('data/100sample_Data/100sample_FCDM.pk','rb')
+    FCDM = make_arr_small(pkl.load(FCDM_input))
+
+    print("Experiment 1: Ground Truth vs Random Output")
+    print(small_train_input.shape, small_random.shape)
+    print(compare(small_train_input, small_random, distance='hamilton'))
+
+    print("Experiment 2: Ground Truth vs argmaxAR Output")
+    print(compare(small_train_input, argmaxAR, distance='hamilton'))
+
+    print("Experiment 3: Ground Truth vs CDM Output")
+    print(compare(small_train_input, CDM, distance='hamilton'))
+
+    #print("Experiment 4: Random Input vs CDM Output")
+    #print(compare(small_random_input, CDM, distance='hamilton'))
+
+    print("Experiment 4: Ground Truth vs CNF Output")
+    print(compare(small_train_input, CNF, distance='hamilton'))
+
+    #print("Experiment 6: Random Input vs CNF Output")
+    #print(compare(small_random_input, CNF, distance='hamilton'))
+
+    print("Experiment 5: Ground Truth vs FCDM Output")
+    print(compare(small_train_input, FCDM, distance='hamilton'))
+
+    #print("Experiment 8: Random Input vs FCDM Output")
+    #print(compare(small_random_input, FCDM, distance='hamilton'))
+    return 
+
 def get_100_pickle():
   # pulls 100sample.pk file in and puts into np array
   # shape: (100000, 6) <class 'numpy.ndarray'>
   infile = open('100sample.pk','rb')
   hund_pickle_samples = pkl.load(infile)
-
   return hund_pickle_samples
 
 def get_1_pickle():
@@ -141,6 +182,9 @@ def get_1_pickle():
 def make_arr_small(X):
     return X[:10000,:]
 
+def make_arr_medium(X):
+    return X[:20000,:]
+
 def get_train():
     infile = open('train.pk','rb')
     one_pickle_sample = pkl.load(infile)
@@ -149,12 +193,12 @@ def get_train():
 def get_random_input():
     rand_input = np.array
     output = np.array([[0,1,2,3,4,5]])
-    for i in range(10000):
+    for i in range(20000):
         rand_input = np.random.permutation([0,1,2,3,4,5])
         # print(rand_input)
         output = np.append(output, [rand_input], axis=0)
     output = output[1:]
-    print(output.shape)
+    # print(output.shape)
     return output
 
 """# Calling Compute Metrics"""
@@ -209,28 +253,35 @@ print("Coverage - rebranded beta recall in Alaa paper")
 print("DPA/DCB - not used in the paper")
 print("Mean Auth - authentication score, used in Alaa paper")
 
-print("----------------------------------------------------------")
-small_train = make_arr_small(get_train())
-print(small_train.shape)
+# print("----------------------------------------------------------")
+# small_train = make_arr_small(get_train())
+#print("small train input", small_train.shape)
 # print(small_train)
 
-small_output = make_arr_small(get_100_pickle())
-print(small_output.shape)
+#small_output = make_arr_small(get_100_pickle())
+#print("small output", small_output.shape)
 # print(small_output)
-m = small_output.shape[0]
+#m = small_output.shape[0]
 
-train_vs_output = compare(small_train, small_output, distance='hamilton')
-print("For the Training Data Comparison")
-print(train_vs_output)
+#train_vs_output = compare(small_train, small_output, distance='hamilton')
+#print("For the Training Data Comparison")
+#print(train_vs_output)
 
-print("----------------------------------------------------------")
-random_input = get_random_input()
-print(random_input.shape)
-print(small_output.shape)
+# # print("----------------------------------------------------------")
+# random_input = get_random_input()
+# small_output = make_arr_medium(get_100_pickle())
+#print("random train input", random_input.shape)
+#print("small output", small_output.shape)
+# print("medium output", small_output.shape)
 # print(random_input)
-random_vs_output = compare(random_input, small_output, distance='hamilton')
-print("For the Random Comparison")
-print(random_vs_output)
+# print("For the Random Comparison")
+# random_vs_output = compare(random_input, small_output, distance='hamilton')
+# print(random_vs_output)
+
+# print("----------------------------------------------------------")
+# given_ex_result = call_compute_metrics(1000, 64)
 
 print("----------------------------------------------------------")
-# given_ex_result = call_compute_metrics(1000, 64)
+comparing_all_gen_models()
+
+
