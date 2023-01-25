@@ -164,7 +164,7 @@ def sequence_to_id(sequence, base):
     return seq_id
 
 
-def load_generative_model_samples(power_base, num_files=10, m=10000):
+def load_generative_model_samples(power_base, num_files=10, m=10000, using_max = False):
     U = power_base**power_base
     S = 2
     ratio = 3
@@ -176,11 +176,12 @@ def load_generative_model_samples(power_base, num_files=10, m=10000):
     for key, val in ground_truth_samples_list[0].items():
         if key > math.factorial(power_base):
             zero_space +=1
-    # pickle_files = ['0sample.pk', '1sample.pk', '2sample.pk', '3sample.pk',
-    #                 '4sample.pk', '5sample.pk', '6sample.pk', '7sample.pk', '8sample.pk', '9sample.pk']
+    pickle_files = ['0sample.pk', '1sample.pk', '2sample.pk', '3sample.pk',
+                    '4sample.pk', '5sample.pk', '6sample.pk', '7sample.pk', '8sample.pk', '9sample.pk']
     
-    #pickle_files = pickle_files[:num_files]
-    pickle_files = ['100sample.pk']
+    pickle_files = pickle_files[:num_files]
+    if using_max:
+        pickle_files = ['100sample.pk']
     base_path = 'S_%d_K_%d' % (power_base, power_base)
     list_models = os.listdir(base_path)
     samples_dict = {}

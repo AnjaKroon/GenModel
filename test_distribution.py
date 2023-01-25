@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
-    experiment = "SYNTH"  # either SYNTH or GEN
+    experiment = "GEN"  # either SYNTH or GEN
     test_epsilon = 0.07
     delta = 0.05
     compute_random = False
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         print(scipy.stats.wilcoxon(all_log_likelihoods[0], all_log_likelihoods[2]))
     else:
         dict_of_samples, ground_truth_p = load_generative_model_samples(
-            power_base, num_files=2)
+            power_base, num_files=10)
         list_of_samples = [val for _, val in dict_of_samples.items()]
         list_of_title_q = [key for key, _ in dict_of_samples.items()]
    
