@@ -166,8 +166,8 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
                                              key=lambda x: predefined_bins_with_error[x]['cut_error'])
     sorted_s_by_potential_cut_error.reverse()  # highest to lowest
 
-    S = regions_that_could_be_cut + regions_that_should_not_be_cut + 1
-    max_B = 2*regions_that_could_be_cut + 1 + regions_that_should_not_be_cut
+    S = len(regions) + 1
+    
     # 4 : Return B* : mapping_bin_to_index is {index_bin: [all x], ...}
     mapping_bin_to_index = {}
     if B < S:  # NOT EXACT SOL
@@ -181,55 +181,37 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
 
     elif B > S:
         bin_ind = 0
-        if B <= max_B:
-            num_regions_have_to_cut = math.floor(B-S)
-        # if we have more cuts than predefined regions (B > max_B), we start randomly cutting
-        else:
-            num_regions_have_to_cut = regions_that_could_be_cut
-        list_of_remaining_regions = list(range(regions_that_could_be_cut))
-        for i in range(num_regions_have_to_cut):
-            region_to_cut = sorted_s_by_potential_cut_error[i]
-            list_of_remaining_regions.remove(region_to_cut)
-            mapping_bin_to_index[bin_ind] = predefined_bins_with_error[region_to_cut]['pos_indices']
-            bin_ind += 1
-            mapping_bin_to_index[bin_ind] = predefined_bins_with_error[region_to_cut]['neg_indices']
-            bin_ind += 1
-        for region_to_left_uncut in list_of_remaining_regions:
-            dict_pos_neg = predefined_bins_with_error[region_to_left_uncut]
-            indices_of_the_whole_region = dict_pos_neg['pos_indices'] + \
-                dict_pos_neg['neg_indices']
-            mapping_bin_to_index[bin_ind] = indices_of_the_whole_region
-            bin_ind += 1
-        # if we have more cuts than predefined regions (B > max_B), we start randomly cutting
-        if B > max_B:
-            for bin_ind, region_indices in enumerate(regions.values()):
+        num_random_cut = math.floor(B-S)
+        
+        for bin_ind, region_indices in enumerate(regions.values()):
                 mapping_bin_to_index[bin_ind] = region_indices
-            num_random_cut = B - max_B
-            num_random_cute_candidate = len(mapping_bin_to_index)
-            bin_with_random_cut = random.choices(
-                list(range(num_random_cute_candidate)), k=num_random_cut)
-            bins = [s-0.1 for s in range(num_random_cute_candidate+1)]
-            random_cuts_per_bin = np.histogram(
-                bin_with_random_cut, bins=bins)[0]
-
-            for bin_id_to_cut, num_random_cuts in enumerate(random_cuts_per_bin):
-                if num_random_cuts>0:
-                    #if num_random_cuts>1:
-                        #print('problem')
-                    indices_to_split = mapping_bin_to_index[bin_id_to_cut]
-                    chunk_size = int(len(indices_to_split)/(num_random_cuts+1))
-                    # first, we replace the bin by a small chunk of the indices:
-                    mapping_bin_to_index[bin_id_to_cut] = indices_to_split[:chunk_size]
-                    # then we create news bins with all the chunks
-                    chunk_id = 0
-                    
+        
+        num_random_cute_candidate = len(mapping_bin_to_index)
+        random_cuts_per_bin = [0 for _ in range(num_random_cute_candidate)]
+        
+        random.seed(1) # this is to keep randomnes
+        for _ in range(num_random_cut):
+            index = random.randint(0, num_random_cute_candidate-1)
+            random_cuts_per_bin[index]+=1
+        print(random_cuts_per_bin)
+        for bin_id_to_cut, num_random_cuts in enumerate(random_cuts_per_bin):
+            if num_random_cuts>0:
+                #if num_random_cuts>1:
+                    #print('problem')
+                indices_to_split = mapping_bin_to_index[bin_id_to_cut]
+                chunk_size = int(len(indices_to_split)/(num_random_cuts+1))
+                # first, we replace the bin by a small chunk of the indices:
+                mapping_bin_to_index[bin_id_to_cut] = indices_to_split[:chunk_size]
+                # then we create news bins with all the chunks
+                chunk_id = 0
+                
+                bin_ind += 1
+                for chunk_id in range(1, num_random_cuts):
+                    mapping_bin_to_index[bin_ind] = indices_to_split[chunk_id *
+                                                                    chunk_size: (chunk_id+1)*chunk_size]
                     bin_ind += 1
-                    for chunk_id in range(1, num_random_cuts):
-                        mapping_bin_to_index[bin_ind] = indices_to_split[chunk_id *
-                                                                        chunk_size: (chunk_id+1)*chunk_size]
-                        bin_ind += 1
-                    
-                    mapping_bin_to_index[bin_ind] = indices_to_split[(chunk_id+1)*chunk_size:]
+                
+                mapping_bin_to_index[bin_ind] = indices_to_split[(chunk_id+1)*chunk_size:]
 
     new_histo_p = {}
     for bin_index, all_index in mapping_bin_to_index.items():
