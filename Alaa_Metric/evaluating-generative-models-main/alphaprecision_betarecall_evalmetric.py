@@ -68,9 +68,29 @@ def plot_all(x, res, x_axis):
 
 
 def compute_metrics(X,Y, nearest_k = 5, model = None, distance=None):
-    # print(type(X))
-    # print(type(Y))
-    results = compute_prdc(X,Y, nearest_k, distance)
+    def get_category_bias():
+        all_cats = []
+        for row in range(Y.shape[0]):       # for each row in each array
+            cat = 0                         # set category bias to 0
+            permutation = False
+            empty_list = []
+            for each in Y[row, :]:
+                if each not in empty_list: empty_list.append(each)
+            if len(empty_list) == 6: permutation = True
+            if Y[row, 0] > Y[row, -1] and permutation == True:
+                cat = 1
+            elif Y[row, 0] < Y[row, -1] and permutation == True:
+                cat = 2
+            if permutation == False: cat = 3
+            # print(cat)
+            all_cats.append(cat)
+        return all_cats
+    
+    all_biases = get_category_bias()
+    print(len(all_biases))
+        
+
+    results = compute_prdc(X,Y, all_biases, nearest_k, distance)
     if model is None:
         #these are fairly arbitrarily chosen
         params["input_dim"] = X.shape[1]
