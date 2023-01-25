@@ -23,7 +23,7 @@ def to_one_hot(x, max_val):
     return b
 
 
-def compute_pairwise_distance(data_x, all_biases, data_y=None, distance=None):
+def compute_pairwise_distance(data_x, data_y=None, all_biases=None, distance=None):
     """
     Args:
         data_x: numpy.ndarray([N, feature_dim], dtype=np.float32)
@@ -44,9 +44,9 @@ def compute_pairwise_distance(data_x, all_biases, data_y=None, distance=None):
         one_hot_data_y = to_one_hot(data_y,max_val)
         dists = sklearn.metrics.pairwise.manhattan_distances(
             one_hot_data_x, one_hot_data_y)
-        print(len(dists))
+        # print(len(dists))
         dists = dists + all_biases             
-        print(len(dists))
+        # print(len(dists))
     return dists
 
 
@@ -72,12 +72,12 @@ def compute_nearest_neighbour_distances(input_features, nearest_k, distance):
     Returns:
         Distances to kth nearest neighbours.
     """
-    distances = compute_pairwise_distance(input_features, distance=distance, all_biases=None)
+    distances = compute_pairwise_distance(input_features, all_biases=None, distance=distance)
     radii = get_kth_value(distances, k=nearest_k + 1, axis=-1)
     return radii
 
 
-def compute_prdc(real_features, fake_features, all_biases, nearest_k=5, distance=None):
+def compute_prdc(real_features, fake_features, all_biases=None, nearest_k=5, distance=None):
     """
     Computes precision, recall, density, and coverage given two manifolds.
     Args:
@@ -93,7 +93,7 @@ def compute_prdc(real_features, fake_features, all_biases, nearest_k=5, distance
     fake_nearest_neighbour_distances = compute_nearest_neighbour_distances(
         fake_features, nearest_k, distance=distance)
     distance_real_fake = compute_pairwise_distance(
-        real_features, fake_features, all_biases, distance=distance)
+        real_features, fake_features, all_biases=all_biases, distance=distance)
 
     precision = (
         distance_real_fake <

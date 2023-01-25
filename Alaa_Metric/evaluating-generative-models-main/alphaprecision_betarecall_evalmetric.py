@@ -68,7 +68,6 @@ def plot_all(x, res, x_axis):
 
 
 def compute_metrics(X,Y, nearest_k = 5, model = None, distance=None):
-    
     def get_category_bias():
         all_cats = []
         for row in range(Y.shape[0]):       # for each row in each array
