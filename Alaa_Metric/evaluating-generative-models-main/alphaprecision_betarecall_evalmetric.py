@@ -70,30 +70,32 @@ def plot_all(x, res, x_axis):
 def compute_metrics(X,Y, nearest_k = 5, model = None, distance=None):
     
     def get_category_bias():
-        for row in range(X.shape[0]):       # for each row in each array
+        all_cats = []
+        for row in range(Y.shape[0]):       # for each row in each array
             cat = 0                         # set category bias to 0
             permutation = False
             summation = 0
-            # print(X.shape[1])
             # need to add check to see if permutation
-            print(X[row, :])
+            # print(Y[row, :])
             empty_list = []
-            for each in X[row, :]:
+            for each in Y[row, :]:
                 if each not in empty_list: empty_list.append(each)
             if len(empty_list) == 6: permutation = True
-            if permutation == False: print("permu false")       # issue: always a permutation? bc never triggering
-            if X[row, 0] > X[row, -1] and permutation == True:
+            # if permutation == True: print('permu True')    
+            if Y[row, 0] > Y[row, -1] and permutation == True:
                 cat = 1
-            elif X[row, 0] < X[row, -1] and permutation == True:
+            elif Y[row, 0] < Y[row, -1] and permutation == True:
                 cat = 2
             if permutation == False: cat = 3
-            # print(cat)
-        return cat
-
-    get_category_bias()
+            print(cat)
+            all_cats.append(cat)
+        return all_cats
+    
+    all_biases = get_category_bias()
+    print(len(all_biases))
         
 
-    results = compute_prdc(X,Y, nearest_k, distance)
+    results = compute_prdc(X,Y, all_biases, nearest_k, distance)
     if model is None:
         #these are fairly arbitrarily chosen
         params["input_dim"] = X.shape[1]
