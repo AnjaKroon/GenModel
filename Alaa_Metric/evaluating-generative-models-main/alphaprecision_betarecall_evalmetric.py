@@ -68,8 +68,31 @@ def plot_all(x, res, x_axis):
 
 
 def compute_metrics(X,Y, nearest_k = 5, model = None, distance=None):
-    # print(type(X))
-    # print(type(Y))
+    
+    def get_category_bias():
+        for row in range(X.shape[0]):       # for each row in each array
+            cat = 0                         # set category bias to 0
+            permutation = False
+            summation = 0
+            # print(X.shape[1])
+            # need to add check to see if permutation
+            print(X[row, :])
+            empty_list = []
+            for each in X[row, :]:
+                if each not in empty_list: empty_list.append(each)
+            if len(empty_list) == 6: permutation = True
+            if permutation == False: print("permu false")       # issue: always a permutation? bc never triggering
+            if X[row, 0] > X[row, -1] and permutation == True:
+                cat = 1
+            elif X[row, 0] < X[row, -1] and permutation == True:
+                cat = 2
+            if permutation == False: cat = 3
+            # print(cat)
+        return cat
+
+    get_category_bias()
+        
+
     results = compute_prdc(X,Y, nearest_k, distance)
     if model is None:
         #these are fairly arbitrarily chosen
