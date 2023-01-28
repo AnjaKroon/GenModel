@@ -99,13 +99,15 @@ def compute_prdc(real_features, fake_features, X_bias, Y_bias, nearest_k=5, dist
     print("compute_prdc")
     print(X_bias[:10])
     print(Y_bias[:10])
+    X_bias_prdc = X_bias.copy()
+    Y_bias_prdc = Y_bias.copy()
 
     real_nearest_neighbour_distances = compute_nearest_neighbour_distances(
         real_features, nearest_k, distance=distance)
     fake_nearest_neighbour_distances = compute_nearest_neighbour_distances(
         fake_features, nearest_k, distance=distance)
     distance_real_fake = compute_pairwise_distance(
-        real_features, fake_features, X_bias, Y_bias, distance=distance)
+        real_features, fake_features, X_bias_prdc, Y_bias_prdc, distance=distance)
 
     precision = (
         distance_real_fake <
