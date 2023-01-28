@@ -68,29 +68,32 @@ def plot_all(x, res, x_axis):
 
 
 def compute_metrics(X,Y, nearest_k = 5, model = None, distance=None):
-    def get_category_bias():
+    
+    def get_category_bias(Z):
         all_cats = []
-        for row in range(Y.shape[0]):       # for each row in each array
+        for row in range(Z.shape[0]):       # for each row in each array
             cat = 0                         # set category bias to 0
             permutation = False
             empty_list = []
-            for each in Y[row, :]:
+            for each in Z[row, :]:
                 if each not in empty_list: empty_list.append(each)
             if len(empty_list) == 6: permutation = True
-            if Y[row, 0] > Y[row, -1] and permutation == True:
+            if Z[row, 0] > Z[row, -1] and permutation == True:
                 cat = 1
-            elif Y[row, 0] < Y[row, -1] and permutation == True:
+            elif Z[row, 0] < Z[row, -1] and permutation == True:
                 cat = 2
-            if permutation == False: cat = 3
+            if permutation == False: cat = 4
             # print(cat)
             all_cats.append(cat)
         return all_cats
     
-    all_biases = get_category_bias()
-    print(len(all_biases))
-        
+    X_bias = get_category_bias(X)
+    print(X_bias[:10])
+    Y_bias = get_category_bias(Y)
+    print(Y_bias[:10])
+    
 
-    results = compute_prdc(X,Y, all_biases, nearest_k, distance)
+    results = compute_prdc(X,Y, X_bias, Y_bias, nearest_k, distance)
     if model is None:
         #these are fairly arbitrarily chosen
         params["input_dim"] = X.shape[1]
@@ -213,8 +216,9 @@ def get_train():
 def get_random_input():
     rand_input = np.array
     output = np.array([[0,1,2,3,4,5]])
-    for i in range(20000):
-        rand_input = np.random.permutation([0,1,2,3,4,5])
+    for i in range(50000):
+        # rand_input = np.random.permutation([0,1,2,3,4,5])
+        rand_input = np.random.choice(6, 6)
         # print(rand_input)
         output = np.append(output, [rand_input], axis=0)
     output = output[1:]
@@ -303,5 +307,8 @@ print("Mean Auth - authentication score, used in Alaa paper")
 
 print("----------------------------------------------------------")
 comparing_all_gen_models()
+
+# print("Testing get_random_input() function")
+# get_random_input()
 
 

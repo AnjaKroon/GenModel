@@ -23,7 +23,7 @@ def to_one_hot(x, max_val):
     return b
 
 
-def compute_pairwise_distance(data_x, data_y=None, all_biases=None, distance=None):
+def compute_pairwise_distance(data_x, data_y=None, X_bias=None, Y_bias=None, distance=None): 
     """
     Args:
         data_x: numpy.ndarray([N, feature_dim], dtype=np.float32)
@@ -31,8 +31,15 @@ def compute_pairwise_distance(data_x, data_y=None, all_biases=None, distance=Non
     Returns:
         numpy.ndarray([N, N], dtype=np.float32) of pairwise distances.
     """
-    if all_biases is None:
-        all_biases = np.zeros(len(data_x))
+    print("compute_pairwise_distance -- it's getting lost here")
+    print(X_bias)
+    print(Y_bias)
+
+
+    if X_bias is None:
+        X_bias = np.zeros(len(data_x))
+    if Y_bias is None:
+        Y_bias = np.zeros(len(data_x))
     if data_y is None:
         data_y = data_x
     if distance is None:
@@ -42,11 +49,13 @@ def compute_pairwise_distance(data_x, data_y=None, all_biases=None, distance=Non
         max_val = np.max([np.max(data_x), np.max(data_y)])
         one_hot_data_x = to_one_hot(data_x, max_val)
         one_hot_data_y = to_one_hot(data_y,max_val)
-        dists = sklearn.metrics.pairwise.manhattan_distances(
-            one_hot_data_x, one_hot_data_y)
-        # print(len(dists))
-        dists = dists + all_biases             
-        # print(len(dists))
+        # dists = sklearn.metrics.pairwise.manhattan_distances(one_hot_data_x, one_hot_data_y)
+        X_bias_loc = [X_bias.copy()]
+        Y_bias_loc = [Y_bias.copy()]
+        print(X_bias_loc)
+        print(Y_bias_loc)
+        dists = sklearn.metrics.pairwise.manhattan_distances(X_bias_loc, Y_bias_loc)
+        # print(dists.shape)
     return dists
 
 
@@ -72,12 +81,12 @@ def compute_nearest_neighbour_distances(input_features, nearest_k, distance):
     Returns:
         Distances to kth nearest neighbours.
     """
-    distances = compute_pairwise_distance(input_features, all_biases=None, distance=distance)
+    distances = compute_pairwise_distance(input_features, X_bias=None, Y_bias=None, distance=distance)
     radii = get_kth_value(distances, k=nearest_k + 1, axis=-1)
     return radii
 
 
-def compute_prdc(real_features, fake_features, all_biases=None, nearest_k=5, distance=None):
+def compute_prdc(real_features, fake_features, X_bias, Y_bias, nearest_k=5, distance=None):
     """
     Computes precision, recall, density, and coverage given two manifolds.
     Args:
@@ -87,13 +96,16 @@ def compute_prdc(real_features, fake_features, all_biases=None, nearest_k=5, dis
     Returns:
         dict of precision, recall, density, and coverage.
     """
+    print("compute_prdc")
+    print(X_bias[:10])
+    print(Y_bias[:10])
 
     real_nearest_neighbour_distances = compute_nearest_neighbour_distances(
         real_features, nearest_k, distance=distance)
     fake_nearest_neighbour_distances = compute_nearest_neighbour_distances(
         fake_features, nearest_k, distance=distance)
     distance_real_fake = compute_pairwise_distance(
-        real_features, fake_features, all_biases=all_biases, distance=distance)
+        real_features, fake_features, X_bias, Y_bias, distance=distance)
 
     precision = (
         distance_real_fake <
