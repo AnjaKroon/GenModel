@@ -60,9 +60,9 @@ def compute_pairwise_distance(data_x, data_y=None, distance=None):
         return all_cats
     
     X_bias = np.array(get_category_bias(data_x))
-    print(X_bias[:10])
+    #print(X_bias[:10])
     Y_bias = np.array(get_category_bias(data_y))
-    print(Y_bias[:10])
+    #print(Y_bias[:10])
 
     #X_bias = np.reshape(X_bias, (len(X_bias), 1))
     #Y_bias = np.reshape(Y_bias, (len(Y_bias), 1))
@@ -78,10 +78,9 @@ def compute_pairwise_distance(data_x, data_y=None, distance=None):
         one_hot_data_x = to_one_hot(data_x, max_val)
         one_hot_data_y = to_one_hot(data_y,max_val)
         # dists = sklearn.metrics.pairwise.manhattan_distances(one_hot_data_x, one_hot_data_y)
-        dists = sklearn.metrics.pairwise.manhattan_distances(X_bias, Y_bias)
-        print("distances")
-        print(dists.shape)
-        print(dists[:1])
+        dists_based_on_category = sklearn.metrics.pairwise.manhattan_distances(X_bias.reshape(-1,1), Y_bias.reshape(-1,1))
+        dists_based_on_number = sklearn.metrics.pairwise.manhattan_distances(data_x, data_y)
+        dists = dists_based_on_category + 0.001*dists_based_on_number
     return dists
 
 
