@@ -48,12 +48,6 @@ def stair_mapping(incoming_X_arr):
 
 
 def make_stair_prob(U, posU, ratio, S, optim_threshold=7**7):
-    # From my understanding
-    # Take U * posU to get the amount of U that will have a stair function
-    # S is the total amount of steps thus (U*posU)/S is the amount of U that each step will take
-    # ratio is highest pmf/lowest pmf -- representative of the amount of "y step" in between each stair
-    # pmf of each value for the whole U will have to sum to 1
-    # highest pmf / lowest pmf = ratio -- (?/common denom) / (?/common denom)
     U_with_stair = int(posU * U)
 
     # be careful to consider the case this may be fractional

@@ -35,7 +35,7 @@ def get_ranking_results(all_models_list_stats):
 # TODO large scale poisson.
 
 def get_pmf_val(key, pmf):
-    is_optimized = pmf is dict
+    is_optimized = type(pmf) is dict
     if not is_optimized:  # the space is small enough to follow normal sampling procedure
         return pmf[key]
     else:
@@ -53,7 +53,7 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
     if not is_optimized:  # the space is small enough to follow normal sampling procedure
         prob_array = prob_dict_to_array(ground_truth_p, U)
         if tempered:
-            prob_array = errFunct(U, prob_array, e, b)
+            prob_array = errFunct(U, prob_array, e, b, percent_to_modify_null=0)
         q = prob_array
         for _ in range(trials):
 
@@ -65,7 +65,7 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
     else:  # the space is too big
         prob_optimized_dict = ground_truth_p
         if tempered:
-            prob_optimized_dict = errFunct(U, ground_truth_p, e, b)
+            prob_optimized_dict = errFunct(U, ground_truth_p, e, b, percent_to_modify_null=0)
         q = prob_optimized_dict
         for _ in range(trials):
 

@@ -83,29 +83,31 @@ def makeUniProbArr(U):
     return prob_arr
 
 # basic binary search
+
+
 def find_in_sorted_intervals(query, sorted_intervals):
     #current_list_intervals = sorted_intervals
     current_list_index = range(len(sorted_intervals))
     while True:
         # check if we have tiny list
-        if len(current_list_index)==0:
+        if len(current_list_index) == 0:
             return -1
         else:
             half_lookup = int(len(current_list_index)/2)
             current_index = current_list_index[half_lookup]
             current_interval = sorted_intervals[current_index]
-        
+
             if current_interval[0] <= query and current_interval[1] > query:
                 return current_index
             elif current_interval[1] <= query:
                 current_list_index = current_list_index[half_lookup+1:]
-                
+
             else:
                 current_list_index = current_list_index[:half_lookup]
-        
-    
+
+
 def find_interval(query, intervals):
-    
+
     index_sorted = find_in_sorted_intervals(query, intervals)
     return index_sorted
 
@@ -114,6 +116,31 @@ def find_interval(query, intervals):
 # percent_to_modify
 # Returns: new probability distribution.
 # percent_to_modify_null is the percentage of error to be situaded in zero space
+
+
+def get_overap(interval_M, interval_remain):  # return remainder from 2
+    start_M = interval_M[0]
+    end_M = interval_M[1]
+    start_R = interval_remain[0]
+    end_R = interval_remain[1]
+    if end_R <= start_M or end_M <= start_R:  # no overlap
+        return None, [], []
+    elif start_M <= start_R:  # [0,..] [5,...]
+
+        new_interval = (start_R, end_M)
+        if end_M < end_R:
+            post_remain = (end_M, end_R)
+            return new_interval, [], [post_remain]
+        else:
+            return new_interval, [], []
+    else:  # start_M > start_R
+        new_interval = (start_M, end_R)
+        pre_remain = (start_R, start_M)
+        if end_M < end_R:
+            post_remain = (end_M, end_R)
+            return new_interval, [pre_remain],  [post_remain]
+        else:
+            return new_interval, [pre_remain], []
 
 
 def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
@@ -137,9 +164,9 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
         U_pos = np.sum(size_each_regions)  # count the positive space
     # works to modify probability dist. array, works for odd U
     # Tells us how many bins in the probability distribution we are changing
-    amt_to_modify_pos = U_pos*(percent_pos_space/100)
+    amt_to_modify_pos = U_pos*(percent_pos_space)
     # on the null space, we can only add error.
-    amt_to_modify_null = (U-U_pos) * (percent_to_modify_null/100)
+    amt_to_modify_null = (U-U_pos) * (percent_to_modify_null)
 
     # If |U_pos| is odd, due to truncation in division, the 'extra bin' will go on the subtraction half.
     half_point = amt_to_modify_pos//2
@@ -153,9 +180,12 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
 
     e_added = e_per_section/bins_added  # error amount to add per element
     e_removed = e_per_section/bins_removed  # error amount to subtract per element
-    print('Total tv error should be ', e, ' it is ', e_added*bins_added+e_removed* bins_removed)
-    print('Total l2^2 error is ', (e_added**2) *bins_added+(e_removed**2)* bins_removed)
-    print('Total l2 error is ', np.sqrt((e_added**2) *bins_added+(e_removed**2)* bins_removed))
+    print('Total tv error should be ', e, ' it is ',
+          e_added*bins_added+e_removed * bins_removed)
+    print('Total l2^2 error is ', (e_added**2) *
+          bins_added+(e_removed**2) * bins_removed)
+    print('Total l2 error is ', np.sqrt((e_added**2)
+          * bins_added+(e_removed**2) * bins_removed))
     if not is_optimized:
 
         """
@@ -195,62 +225,57 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
         np.testing.assert_allclose(should_be_one, 1)
         return array
     else:
-        print('STILL BUGGY todo fix')
+
         """
         modification in the positive space
         """
-        # This should be otimized u
-        shuffled_indices_pos = list(range(U_pos))
-        random.shuffle(shuffled_indices_pos)
-        print('Starting the tempering process...')
+
+        print('Starting the tempering process... Less randomized but way faster')
         new_inverse_tempered_dict = {}
-
-        def tempering(range, to_be_added):
-            for i in tqdm(range):
-                index_interval_to_cut = find_interval(i, intervals)
-                p_value_of_interval = prob_optimized_dict[index_interval_to_cut]['p']
-                new_p_value = p_value_of_interval + to_be_added
-                if new_p_value in new_inverse_tempered_dict:
-                    new_inverse_tempered_dict[new_p_value].append((i, i+1))
-                else:
-                    new_inverse_tempered_dict[new_p_value] = [(i, i+1)]
-                if p_value_of_interval in new_inverse_tempered_dict:
-                    cut_intervals = new_inverse_tempered_dict[p_value_of_interval].copy(
-                    )
-                    # this takes more and more time
-                    within_cut_index = find_interval(i, cut_intervals)
-                    cut_interval = cut_intervals[within_cut_index]
-
-                    del cut_intervals[within_cut_index]
-
-                    if cut_interval[0] < i:
-                        new_interval_1 = (cut_interval[0], i)
-                        cut_intervals.insert(within_cut_index, new_interval_1)
-                        within_cut_index =within_cut_index+1
-                    if i+1 < cut_interval[1]:
-                        new_interval_2 = (i+1, cut_interval[1])
-                        cut_intervals.insert(
-                            within_cut_index, new_interval_2)
-
-                    new_inverse_tempered_dict[p_value_of_interval] = cut_intervals
-                else:
-                    cut_interval = prob_optimized_dict[index_interval_to_cut]['interval'].copy(
-                    )
-                    cut_intervals = []
-                    if cut_interval[0] < i:
-                        new_interval_1 = (cut_interval[0], i)
-                        cut_intervals.append(new_interval_1)
-                    if i+1 < cut_interval[1]:
-                        new_interval_2 = (i+1, cut_interval[1])
-                        cut_intervals.append(new_interval_2)
-
-                    new_inverse_tempered_dict[p_value_of_interval] = cut_intervals
-
-        # positive tempering
-        tempering(shuffled_indices_pos[:bins_added_in_pos], e_added)
-        # negative tempering
-        tempering(
-            shuffled_indices_pos[bins_added_in_pos:bins_added_in_pos+bins_removed], -e_removed)
+        OPTION = 'SHARPER'
+        if OPTION == 'SHARPER':
+            untouched_intervals = list(range(len(intervals)))
+            # positive tempering
+            num_add_per_interval = int((len(intervals))/2)
+            num_to_modify_pre_interval = int(
+                bins_added_in_pos/num_add_per_interval)
+            for i in range(num_add_per_interval):
+                untouched_intervals.remove(i)
+                interval = intervals[i]
+                interval_to_modify = (
+                    interval[0], interval[0]+num_to_modify_pre_interval)
+                new_interval, _, interval_remains_post = get_overap(
+                    interval_to_modify, interval_remain=interval)
+                p_value_of_interval = prob_optimized_dict[i]['p']
+                new_p_value = p_value_of_interval + e_added
+                new_inverse_tempered_dict[new_p_value] = [new_interval]
+                new_inverse_tempered_dict[p_value_of_interval] = interval_remains_post
+            
+            # negative tempering
+            # positive tempering
+            num_remove_per_interval = int((len(intervals))/2)
+            num_to_modify_pre_interval = int(
+                bins_removed/num_remove_per_interval)
+            for i in range(num_add_per_interval):
+                reverse_index = len(intervals)-1-i
+                untouched_intervals.remove(reverse_index)
+                interval = intervals[reverse_index]
+                interval_to_modify = (
+                    interval[0], interval[0]+num_to_modify_pre_interval)
+                new_interval, _, interval_remains_post = get_overap(
+                    interval_to_modify, interval_remain=interval)
+                p_value_of_interval = prob_optimized_dict[reverse_index]['p']
+                new_p_value = p_value_of_interval - e_removed
+                new_inverse_tempered_dict[new_p_value] = [new_interval]
+                new_inverse_tempered_dict[p_value_of_interval] = interval_remains_post
+            for i in untouched_intervals:
+                p_value_of_interval = prob_optimized_dict[i]['p']
+                interval = intervals[i]
+                new_inverse_tempered_dict[p_value_of_interval] = [interval]
+        # elif OPTION == 'UNIFROM':
+            
+        
+        
 
         print('starting the inverting process...')
         # invert the dict
@@ -320,7 +345,7 @@ def scalabale_sample_distribution(U, prob_optimized_dict, m):
         interval_of_region = prob_optimized_dict[region]['interval']
         in_region_samples = random.choices(
             range(interval_of_region[0], interval_of_region[1]), k=m_in_region)
-        samples[index_with_region] = in_region_samples 
+        samples[index_with_region] = in_region_samples
     return samples
 
 

@@ -73,7 +73,7 @@ def plot_stat(title, xlabel, ylabel):
 
 
 
-# x = [1,2,3] dict_y = {label:[[3,3,2],[4,5,4],[5,5,5]]}
+# x = [1,2,3] dict_y = {1:[[3,3,2],[4,5,4],[5,5,5]]}
 def put_on_plot(x, dict_y, label_dict=None):
     for i, (key, val) in enumerate(dict_y.items()):
         if val:
