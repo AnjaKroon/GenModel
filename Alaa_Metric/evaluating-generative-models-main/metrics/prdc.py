@@ -23,7 +23,7 @@ def to_one_hot(x, max_val):
     return b
 
 
-def compute_pairwise_distance(data_x, data_y=None, X_bias=None, Y_bias=None, distance=None): 
+def compute_pairwise_distance(data_x, data_y=None, distance=None): 
     """
     Args:
         data_x: numpy.ndarray([N, feature_dim], dtype=np.float32)
@@ -31,17 +31,45 @@ def compute_pairwise_distance(data_x, data_y=None, X_bias=None, Y_bias=None, dis
     Returns:
         numpy.ndarray([N, N], dtype=np.float32) of pairwise distances.
     """
-    print("compute_pairwise_distance -- it's getting lost here")
-    print(X_bias)
-    print(Y_bias)
 
-
-    if X_bias is None:
-        X_bias = np.zeros(len(data_x))
-    if Y_bias is None:
-        Y_bias = np.zeros(len(data_x))
     if data_y is None:
         data_y = data_x
+
+    def get_category_bias(Z):
+        """
+        Args:
+            Z: numpy.ndarray([N, feature_dim], dtype=np.float32) )
+        Returns:
+            all_cats: numpy.ndarray(category)
+        """
+        all_cats = []
+        for row in range(Z.shape[0]):       # for each row in each array
+            cat = 0                         # set category bias to 0
+            permutation = False
+            empty_list = []
+            for each in Z[row, :]:
+                if each not in empty_list: empty_list.append(each)
+            if len(empty_list) == 6: permutation = True
+            if Z[row, 0] > Z[row, -1] and permutation == True:
+                cat = 1
+            elif Z[row, 0] < Z[row, -1] and permutation == True:
+                cat = 2
+            if permutation == False: cat = 4
+            # print(cat)
+            all_cats.append(cat)
+        return all_cats
+    
+    X_bias = np.array(get_category_bias(data_x))
+    print(X_bias[:10])
+    Y_bias = np.array(get_category_bias(data_y))
+    print(Y_bias[:10])
+
+    #X_bias = np.reshape(X_bias, (len(X_bias), 1))
+    #Y_bias = np.reshape(Y_bias, (len(Y_bias), 1))
+    #print(X_bias.shape)
+    #print(Y_bias.shape)
+
+    
     if distance is None:
         dists = sklearn.metrics.pairwise_distances(
             data_x, data_y, metric='euclidean', n_jobs=8)
@@ -50,12 +78,10 @@ def compute_pairwise_distance(data_x, data_y=None, X_bias=None, Y_bias=None, dis
         one_hot_data_x = to_one_hot(data_x, max_val)
         one_hot_data_y = to_one_hot(data_y,max_val)
         # dists = sklearn.metrics.pairwise.manhattan_distances(one_hot_data_x, one_hot_data_y)
-        X_bias_loc = [X_bias.copy()]
-        Y_bias_loc = [Y_bias.copy()]
-        print(X_bias_loc)
-        print(Y_bias_loc)
-        dists = sklearn.metrics.pairwise.manhattan_distances(X_bias_loc, Y_bias_loc)
-        # print(dists.shape)
+        dists = sklearn.metrics.pairwise.manhattan_distances(X_bias, Y_bias)
+        print("distances")
+        print(dists.shape)
+        print(dists[:1])
     return dists
 
 
@@ -81,12 +107,13 @@ def compute_nearest_neighbour_distances(input_features, nearest_k, distance):
     Returns:
         Distances to kth nearest neighbours.
     """
-    distances = compute_pairwise_distance(input_features, X_bias=None, Y_bias=None, distance=distance)
+
+    distances = compute_pairwise_distance(input_features, distance=distance)
     radii = get_kth_value(distances, k=nearest_k + 1, axis=-1)
     return radii
 
 
-def compute_prdc(real_features, fake_features, X_bias, Y_bias, nearest_k=5, distance=None):
+def compute_prdc(real_features, fake_features, nearest_k=5, distance=None):
     """
     Computes precision, recall, density, and coverage given two manifolds.
     Args:
@@ -96,18 +123,14 @@ def compute_prdc(real_features, fake_features, X_bias, Y_bias, nearest_k=5, dist
     Returns:
         dict of precision, recall, density, and coverage.
     """
-    print("compute_prdc")
-    print(X_bias[:10])
-    print(Y_bias[:10])
-    X_bias_prdc = X_bias.copy()
-    Y_bias_prdc = Y_bias.copy()
+    
 
     real_nearest_neighbour_distances = compute_nearest_neighbour_distances(
         real_features, nearest_k, distance=distance)
     fake_nearest_neighbour_distances = compute_nearest_neighbour_distances(
         fake_features, nearest_k, distance=distance)
     distance_real_fake = compute_pairwise_distance(
-        real_features, fake_features, X_bias_prdc, Y_bias_prdc, distance=distance)
+        real_features, fake_features, distance=distance)
 
     precision = (
         distance_real_fake <

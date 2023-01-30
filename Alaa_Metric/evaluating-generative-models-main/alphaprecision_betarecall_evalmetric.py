@@ -68,7 +68,7 @@ def plot_all(x, res, x_axis):
 
 
 def compute_metrics(X,Y, nearest_k = 5, model = None, distance=None):
-    
+    '''
     def get_category_bias(Z):
         all_cats = []
         for row in range(Z.shape[0]):       # for each row in each array
@@ -91,9 +91,11 @@ def compute_metrics(X,Y, nearest_k = 5, model = None, distance=None):
     print(X_bias[:10])
     Y_bias = get_category_bias(Y)
     print(Y_bias[:10])
+    '''
+
     
 
-    results = compute_prdc(X,Y, X_bias, Y_bias, nearest_k, distance)
+    results = compute_prdc(X,Y, nearest_k, distance)
     if model is None:
         #these are fairly arbitrarily chosen
         params["input_dim"] = X.shape[1]
