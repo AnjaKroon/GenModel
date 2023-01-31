@@ -45,9 +45,9 @@ def read_file_else_store(file_path, generating_func):
 # simple function to quickly generate name of files
 
 
-def create_prefix_from_list(list_name):
+def create_prefix_from_list(dict_name):
     list_word = []
-    for val in list_name:
+    for key, val in dict_name.items():
         try:
             if isinstance(val, int):
                 word = str(val)
@@ -55,7 +55,7 @@ def create_prefix_from_list(list_name):
                 word = "{:.2f}".format(val)
         except Exception:
             word = val
-        list_word.append(word)
+        list_word.append(key+':'+word)
     prefix_srt = '_'.join(list_word)
     return prefix_srt
 # this function will either load existing samples or generate new ones
@@ -68,7 +68,8 @@ def load_samples(list_of_espilon_q, b, ground_truth_p, trials, U, m, S, ratio):
     directory_samples_file = 'samples_storing'
     for e in list_of_espilon_q:
         sample_file = create_prefix_from_list(
-            [U, m, trials, b, e, S, ratio]) + '_samples.pk'
+            {'exp': 'SYNTH', 'U': U, 'm': m, 'trials': trials, 'S': S, 'ratio': ratio, 'b': b, 'e': e}) + '_samples.pk'
+
         sample_file_path = os.path.join(directory_samples_file, sample_file)
 
         def generating_samples_func():
@@ -81,14 +82,14 @@ def load_samples(list_of_espilon_q, b, ground_truth_p, trials, U, m, S, ratio):
                     ground_truth_p, trials, U, m, tempered=True, e=e, b=b)
 
             return samples_and_pmf
-        #generating_samples_func()
+        # generating_samples_func()
         samples_and_pmf = read_file_else_store(
             sample_file_path, generating_samples_func)
         samples = samples_and_pmf['all_trials_emp']
         pmf_q = samples_and_pmf['q']
         list_of_samples.append(samples)
         list_of_pmf_q.append(pmf_q)
-    
+
     return list_of_samples, list_of_pmf_q
 
 

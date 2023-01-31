@@ -272,7 +272,6 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
                 p_value_of_interval = prob_optimized_dict[i]['p']
                 interval = intervals[i]
                 new_inverse_tempered_dict[p_value_of_interval] = [interval]
-        # elif OPTION == 'UNIFROM':
             
         
         
