@@ -17,7 +17,7 @@ if __name__ == '__main__':
     np.random.seed(3)
     random.seed(3)
     experiment = "SYNTH"  # either SYNTH or GEN
-    TYPE = "ANOM" # sharp, flat, uniform, anom
+    TYPE = "FLAT" # sharp, flat, uniform, anom
     test_epsilon = 0.07
     delta = 0.05
     compute_random = False
@@ -25,10 +25,10 @@ if __name__ == '__main__':
     if experiment == "SYNTH":  # if we generate q ourselves
         print('You are running the synthetic experiment...')
 
-        power_base = 6
+        power_base = 10
         U = power_base**power_base
-        m = 10000
-        init_e = 0.05
+        m = 100000
+        init_e = 0.01
         init_b = 0.5
         trials = 5
         S = 2

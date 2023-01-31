@@ -139,6 +139,7 @@ def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
                         C * max_prob_array/epsilon**4)
     numerator = term_1 + term_sqrt
     minimum_m = numerator / delta
+    print(minimum_m)
     #print('epsilon',epsilon,'m',minimum_m, 'delta',delta)
     # recover histrogram
     q_samples = [int(m*p) for p in q_emp_array]
