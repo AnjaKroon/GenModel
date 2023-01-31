@@ -17,6 +17,7 @@ if __name__ == '__main__':
     np.random.seed(3)
     random.seed(3)
     experiment = "SYNTH"  # either SYNTH or GEN
+    TYPE = "ANOM" # sharp, flat, uniform, anom
     test_epsilon = 0.07
     delta = 0.05
     compute_random = False
@@ -24,7 +25,7 @@ if __name__ == '__main__':
     if experiment == "SYNTH":  # if we generate q ourselves
         print('You are running the synthetic experiment...')
 
-        power_base = 10
+        power_base = 6
         U = power_base**power_base
         m = 10000
         init_e = 0.05
@@ -65,7 +66,7 @@ if __name__ == '__main__':
         else:
             raise NotImplemented
         list_of_samples, list_of_pmf_q = load_samples(
-            list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio)
+            list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio, TYPE)
         print('computing exact log likelihood...')
         all_samples_list = list_of_samples[0]
         all_log_likelihoods = []
@@ -149,7 +150,7 @@ if __name__ == '__main__':
                 [store_results_random['S'][q_name][-1] for q_name in list_of_title_q])
             store_results_ranking['random'].append(ranking_random)
     prefix = create_prefix_from_list(
-        {'exp': experiment, 'U': U, 'm': m, 'trials': trials, 'S': S, 'ratio': ratio, 'b': init_b, 'e': init_e})
+        {'exp': experiment+TYPE, 'U': U, 'm': m, 'trials': trials, 'S': S, 'ratio': ratio, 'b': init_b, 'e': init_e})
     store_for_plotting(
         data={'x': Bs, 'data': store_results_algo['binning']}, title=prefix+'_binning_algo')
     store_for_plotting(

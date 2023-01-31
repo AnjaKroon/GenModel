@@ -46,14 +46,16 @@ def get_pmf_val(key, pmf):
                 return interval['p']
 
 
-def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
+def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b, TYPE):
     all_trials_p_emp = []
+    percent_to_modify_null = 0
+    print('PERCENT NULL', percent_to_modify_null)
     # first, check if the ground truth is given in the optimized format
     is_optimized = type(list(ground_truth_p.values())[0]) is dict
     if not is_optimized:  # the space is small enough to follow normal sampling procedure
         prob_array = prob_dict_to_array(ground_truth_p, U)
         if tempered:
-            prob_array = errFunct(U, prob_array, e, b, percent_to_modify_null=0)
+            prob_array = errFunct(U, prob_array, e, b, percent_to_modify_null, TYPE=TYPE)
         q = prob_array
         for _ in range(trials):
 
@@ -65,7 +67,7 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
     else:  # the space is too big
         prob_optimized_dict = ground_truth_p
         if tempered:
-            prob_optimized_dict = errFunct(U, ground_truth_p, e, b, percent_to_modify_null=0)
+            prob_optimized_dict = errFunct(U, ground_truth_p, e, b, percent_to_modify_null, TYPE=TYPE)
         q = prob_optimized_dict
         for _ in range(trials):
 

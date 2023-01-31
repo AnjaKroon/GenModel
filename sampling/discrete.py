@@ -1,5 +1,6 @@
 # The objective of this code is to create samples from a slightly skewed uniform probability distribution for discrete events.
 
+from math import remainder
 import sympy
 import random
 import sys
@@ -144,7 +145,7 @@ def get_overap(interval_M, interval_remain):  # return remainder from 2
             return new_interval, [pre_remain], []
 
 
-def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
+def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null, TYPE):
 
     is_optimized = not type(init_array) is list
     percent_pos_space = percent_to_modify-percent_to_modify_null
@@ -233,14 +234,23 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
 
         print('Starting the tempering process... Less randomized but way faster')
         new_inverse_tempered_dict = {}
-        OPTION = 'SHARPER'
-        if OPTION == 'SHARPER':
+
+        if TYPE == 'SHARP' or TYPE == 'FLAT':
             untouched_intervals = list(range(len(intervals)))
             # positive tempering
-            num_add_per_interval = int((len(intervals))/2)
-            num_to_modify_pre_interval = int(
-                bins_added_in_pos/num_add_per_interval)
-            for i in range(num_add_per_interval):
+            num_per_interval = int((len(intervals))/2)
+            if TYPE == 'SHARP':
+                num_to_modify_pre_interval = int(
+                    bins_added_in_pos/num_per_interval)
+                num_to_modify_post_interval = int(
+                    bins_removed/num_per_interval)
+            else:
+                num_to_modify_pre_interval = int(
+                    bins_removed/num_per_interval)
+                num_to_modify_post_interval = int(
+                    bins_added_in_pos/num_per_interval)
+
+            for i in range(num_per_interval):
                 untouched_intervals.remove(i)
                 interval = intervals[i]
                 interval_to_modify = (
@@ -248,32 +258,59 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
                 new_interval, _, interval_remains_post = get_overap(
                     interval_to_modify, interval_remain=interval)
                 p_value_of_interval = prob_optimized_dict[i]['p']
-                new_p_value = p_value_of_interval + e_added
+                if TYPE == 'SHARP':
+                    new_p_value = p_value_of_interval + e_added
+                else:
+                    new_p_value = p_value_of_interval - e_removed
                 new_inverse_tempered_dict[new_p_value] = [new_interval]
                 new_inverse_tempered_dict[p_value_of_interval] = interval_remains_post
 
-            # negative tempering
-            # positive tempering
-            num_remove_per_interval = int((len(intervals))/2)
-            num_to_modify_pre_interval = int(
-                bins_removed/num_remove_per_interval)
-            for i in range(num_add_per_interval):
+            for i in range(num_per_interval):
                 reverse_index = len(intervals)-1-i
                 untouched_intervals.remove(reverse_index)
                 interval = intervals[reverse_index]
                 interval_to_modify = (
-                    interval[0], interval[0]+num_to_modify_pre_interval)
+                    interval[0], interval[0]+num_to_modify_post_interval)
                 new_interval, _, interval_remains_post = get_overap(
                     interval_to_modify, interval_remain=interval)
                 p_value_of_interval = prob_optimized_dict[reverse_index]['p']
-                new_p_value = p_value_of_interval - e_removed
+                if TYPE == 'SHARP':
+                    new_p_value = p_value_of_interval - e_removed
+                else:
+                    new_p_value = p_value_of_interval + e_added
                 new_inverse_tempered_dict[new_p_value] = [new_interval]
                 new_inverse_tempered_dict[p_value_of_interval] = interval_remains_post
             for i in untouched_intervals:
                 p_value_of_interval = prob_optimized_dict[i]['p']
                 interval = intervals[i]
                 new_inverse_tempered_dict[p_value_of_interval] = [interval]
+        if TYPE == 'ANOM' or TYPE=='UNI':
+            # for each interval, divide it in two and add to the start, remove from lasts.
+            num_to_add_per_interval = bins_added_in_pos/len(intervals)
+            num_to_remove_per_interval = bins_removed/len(intervals)
+            remainder_add = bins_added_in_pos % len(intervals)
+            remainder_remove = bins_removed % len(intervals)
 
+            num_to_add_per_interval = int(num_to_add_per_interval)
+            num_to_remove_per_interval = int(num_to_remove_per_interval)
+            for i, interval in enumerate(intervals):
+                if i == len(intervals)-1: # last one, we add the remainder here
+                    num_to_add_per_interval = num_to_add_per_interval+ remainder_add
+                    num_to_remove_per_interval = num_to_remove_per_interval+ remainder_remove
+                p_value_of_interval = prob_optimized_dict[i]['p']
+                interval_to_add = (
+                    interval[0], interval[0]+num_to_add_per_interval)
+                new_interval_add, _, interval_remains_post = get_overap(
+                    interval_to_add, interval_remain=interval)
+                interval_to_remove = (interval[1]-num_to_remove_per_interval, interval[1])
+                new_interval_remove, interval_remains, _ = get_overap(
+                    interval_to_remove, interval_remain=interval_remains_post[0])
+                
+                
+                new_inverse_tempered_dict[p_value_of_interval+ e_added] = [new_interval_add]
+                new_inverse_tempered_dict[p_value_of_interval- e_removed] = [new_interval_remove]
+                new_inverse_tempered_dict[p_value_of_interval] = interval_remains
+                
         print('starting the inverting process...')
         # invert the dict
         new_tempered_dict = {}
@@ -339,7 +376,7 @@ def get_shuffled_index(i, base_b):
     index = (i+(1))*a % base
     off_set = np.sum(np.array(index_to_remove) < index)
     index = index - off_set
-    assert index< base_b
+    assert index < base_b
     return index
 
 
@@ -374,10 +411,11 @@ def scalabale_sample_distribution_with_shuffle(prob_optimized_dict, ground_truth
         size_base_region = base_interval[1] - base_interval[0]
         offset = interval_of_region[0] - base_interval[0]
         in_region_samples = random.choices(
-            range(offset, offset+size_region), k=m_in_region) 
+            range(offset, offset+size_region), k=m_in_region)
         print('shuffling process within the samples')
         base_offset = base_interval[0]
-        shuffled_index = [get_shuffled_index(s, base_b=size_base_region)+base_offset for s in in_region_samples]
+        shuffled_index = [get_shuffled_index(
+            s, base_b=size_base_region)+base_offset for s in in_region_samples]
 
         samples[index_with_region] = shuffled_index
     return samples

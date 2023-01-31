@@ -47,7 +47,7 @@ def stair_mapping(incoming_X_arr):
     return histo
 
 
-def make_stair_prob(U, posU, ratio, S, optim_threshold=7**7):
+def make_stair_prob(U, posU, ratio, S, optim_threshold=5**5):
     U_with_stair = int(posU * U)
 
     # be careful to consider the case this may be fractional

@@ -61,25 +61,25 @@ def create_prefix_from_list(dict_name):
 # this function will either load existing samples or generate new ones
 
 
-def load_samples(list_of_espilon_q, b, ground_truth_p, trials, U, m, S, ratio):
+def load_samples(list_of_espilon_q, b, ground_truth_p, trials, U, m, S, ratio, TYPE):
     # obtain the samples
     list_of_samples = []
     list_of_pmf_q = []
     directory_samples_file = 'samples_storing'
     for e in list_of_espilon_q:
         sample_file = create_prefix_from_list(
-            {'exp': 'SYNTH', 'U': U, 'm': m, 'trials': trials, 'S': S, 'ratio': ratio, 'b': b, 'e': e}) + '_samples.pk'
+            {'exp': 'SYNTH'+TYPE, 'U': U, 'm': m, 'trials': trials, 'S': S, 'ratio': ratio, 'b': b, 'e': e}) + '_samples.pk'
 
         sample_file_path = os.path.join(directory_samples_file, sample_file)
 
         def generating_samples_func():
             if e == 0:
                 samples_and_pmf = generate_samples_scalable(
-                    ground_truth_p, trials, U, m, tempered=False, e=0, b=100)
+                    ground_truth_p, trials, U, m, tempered=False, e=0, b=100, TYPE=TYPE)
 
             else:
                 samples_and_pmf = generate_samples_scalable(
-                    ground_truth_p, trials, U, m, tempered=True, e=e, b=b)
+                    ground_truth_p, trials, U, m, tempered=True, e=e, b=b, TYPE=TYPE)
 
             return samples_and_pmf
         # generating_samples_func()
