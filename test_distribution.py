@@ -24,13 +24,13 @@ if __name__ == '__main__':
     if experiment == "SYNTH":  # if we generate q ourselves
         print('You are running the synthetic experiment...')
 
-        power_base = 8
+        power_base = 10
         U = power_base**power_base
         m = 10000
         init_e = 0.05
         init_b = 0.5
-        trials = 10
-        S = 3
+        trials = 5
+        S = 2
         ratio = 2
         distribution_type = 'STAIRS'  # STAIRS
         list_of_espilon_q = [0, init_e, init_e*2, init_e*4]

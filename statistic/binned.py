@@ -96,50 +96,6 @@ def split(list_a, chunk_size):
         yield list_a[i:i + chunk_size]
 
 
-# def collecting_error(regions, q_dict):
-#     predefined_bins_with_error = {}
-#     regions_that_should_be_cut = 0  # regions that have positive and negative p_x - q_x
-#     regions_that_should_not_be_cut = 0  # regions that only have pos. or neg p_x - q_x
-#     s = 0
-#     for s_flat, indices in regions.items():
-#         list_errors_index = []
-#         for index in indices:
-#             if index in q_dict:
-#                 q_x = q_dict[index]
-#                 p_x = s_flat
-#                 error = p_x - q_x
-#                 list_errors_index.append((error, index))
-#             else:
-#                 q_x = 0
-#                 p_x = s_flat
-#                 error = p_x - q_x
-#                 list_errors_index.append((error, index))
-
-#         # we separate the positive from the negative error to find where the bin split would be
-#         cumul_pos_error = 0
-#         cumul_neg_error = 0
-#         # these lists will form the bins.
-#         indices_pos_bin = []  # this could stay empty
-#         indices_neg_bin = []  # this could stay empty
-#         for error, index in list_errors_index:
-#             if error > 0:
-#                 indices_pos_bin.append(index)
-#                 cumul_pos_error += error
-#             else:
-#                 indices_neg_bin.append(index)
-#                 cumul_neg_error += -error
-#         # the error that will be lost if we dont cut this bin
-#         cut_error = cumul_neg_error + cumul_pos_error - \
-#             np.abs((cumul_pos_error-cumul_neg_error))
-#         # now we know how much error is contained in a split
-#         predefined_bins_with_error[s] = {
-#             'cut_error': cut_error, 'pos_indices': indices_pos_bin, 'neg_indices': indices_neg_bin}
-#         if cut_error == 0:
-#             regions_that_should_not_be_cut += 1
-#         else:
-#             regions_that_should_be_cut += 1  # increment the flat region index
-#         s += 1
-#     return predefined_bins_with_error, regions_that_should_be_cut, regions_that_should_not_be_cut
 
 def get_summed_probabilities_of_interval(interval, histogram):
     is_optimized = type(list(histogram.values())[0]) is dict
@@ -192,7 +148,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
         for _ in range(num_random_cut):
             index = random.randint(0, num_random_cute_candidate-1)
             random_cuts_per_bin[index] += 1
-        print(random_cuts_per_bin)
+        
         for bin_id_to_cut, num_random_cuts in enumerate(random_cuts_per_bin):
             if num_random_cuts > 0:
                 # if num_random_cuts>1:
@@ -260,32 +216,6 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
         return new_histo_p, new_histo_q
 
 
-def transform_samples(b_p, histo_p, p_samples, U, B):
-    # define subdivisions
-    print("size of p_samples is ", len(p_samples))
-    amount_per_bin = math.floor(len(p_samples)/B)
-    amount_final_bin = amount_per_bin + (len(p_samples) % B)
-    # bins = B
-    new_samples = []
-    # for item in histo_p.items():
-    # if sample is from 0 to 33, add element [1] to new_samples
-    # if sample is from 34 to 66, add element [2] to new_samples
-    # if sample is from 67 to 100, add element [3] to new_samples
-    for i in range(1, B+1):
-        if i != B:
-            for amt in range(amount_per_bin):
-                new_samples.append(i)
-        if i == B:
-            for amt in range(amount_final_bin):
-                new_samples.append(i)
-
-    print(new_samples)
-
-    # for i amount of bins
-    # # i = 1 lets say
-    # if not last bin, let's add numbers, for the amount_per_bin
-    # if last bin, let's add numbers, for the amount_final_bin
-    return new_samples
 
 
 if __name__ == '__main__':

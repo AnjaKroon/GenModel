@@ -7,7 +7,7 @@ import scipy
 from tqdm import tqdm
 from sampling.poisson import poisson_empirical_dist
 from statistic.binned import p_to_bp_algo, p_to_bp_random, p_to_bp_with_index
-from sampling.discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist, scalabale_sample_distribution
+from sampling.discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist, scalabale_sample_distribution_with_shuffle
 import numpy as np
 
 # compute kendall tau ranking score
@@ -69,8 +69,7 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b):
         q = prob_optimized_dict
         for _ in range(trials):
 
-            new_samples = scalabale_sample_distribution(
-                U, prob_optimized_dict, m)
+            new_samples = scalabale_sample_distribution_with_shuffle(prob_optimized_dict,ground_truth_p, m)
             p_emp_dict = empirical_dist_no_zero(m, new_samples)
             all_trials_p_emp.append(p_emp_dict)
     return {'all_trials_emp': all_trials_p_emp, 'q': q}

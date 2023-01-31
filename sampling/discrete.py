@@ -1,5 +1,6 @@
 # The objective of this code is to create samples from a slightly skewed uniform probability distribution for discrete events.
 
+import sympy
 import random
 import sys
 import time
@@ -250,7 +251,7 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
                 new_p_value = p_value_of_interval + e_added
                 new_inverse_tempered_dict[new_p_value] = [new_interval]
                 new_inverse_tempered_dict[p_value_of_interval] = interval_remains_post
-            
+
             # negative tempering
             # positive tempering
             num_remove_per_interval = int((len(intervals))/2)
@@ -272,9 +273,6 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null=0.1):
                 p_value_of_interval = prob_optimized_dict[i]['p']
                 interval = intervals[i]
                 new_inverse_tempered_dict[p_value_of_interval] = [interval]
-            
-        
-        
 
         print('starting the inverting process...')
         # invert the dict
@@ -323,12 +321,41 @@ def sampleSpecificProbDist(value, probability, m):
     return new_samples
 
 
-def scalabale_sample_distribution(U, prob_optimized_dict, m):
+def search_for_prime(b):
+    current = b
+    no_prime_found = True
+    while no_prime_found:
+        if sympy.isprime(current):
+            return current
+        current += 1
+
+
+def get_shuffled_index(i, base_b):
+    a = 3
+    base = search_for_prime(base_b)
+
+    index_to_remove = [(i+(1))*a % base for i in range(base_b, base)]
+
+    index = (i+(1))*a % base
+    off_set = np.sum(np.array(index_to_remove) < index)
+    index = index - off_set
+    assert index< base_b
+    return index
+
+
+def scalabale_sample_distribution_with_shuffle(prob_optimized_dict, ground_truth_p, m):
     mass_in_each_part = [(val['interval'][1] - val['interval'][0]) * val['p']
                          for key, val in prob_optimized_dict.items()]
     should_be_one = np.sum(mass_in_each_part)
     size_each_regions = [(val['interval'][1] - val['interval'][0])
                          for _, val in prob_optimized_dict.items()]
+    regions_to_be_merges = {}
+    for key, val in prob_optimized_dict.items():
+        interval_to_place = val['interval']
+        for key_bigger, val in ground_truth_p.items():
+            bigger_int = val['interval']
+            if interval_to_place[0] >= bigger_int[0] and interval_to_place[1] <= bigger_int[1]:
+                regions_to_be_merges[key] = key_bigger
 
     regions = list(prob_optimized_dict.keys())
     # FIRST SAMPLING, which region to sample from
@@ -342,9 +369,17 @@ def scalabale_sample_distribution(U, prob_optimized_dict, m):
         index_with_region = index_with_regions[i]
         m_in_region = index_with_region.shape[0]
         interval_of_region = prob_optimized_dict[region]['interval']
+        size_region = interval_of_region[1] - interval_of_region[0]
+        base_interval = ground_truth_p[regions_to_be_merges[i]]['interval']
+        size_base_region = base_interval[1] - base_interval[0]
+        offset = interval_of_region[0] - base_interval[0]
         in_region_samples = random.choices(
-            range(interval_of_region[0], interval_of_region[1]), k=m_in_region)
-        samples[index_with_region] = in_region_samples
+            range(offset, offset+size_region), k=m_in_region) 
+        print('shuffling process within the samples')
+        base_offset = base_interval[0]
+        shuffled_index = [get_shuffled_index(s, base_b=size_base_region)+base_offset for s in in_region_samples]
+
+        samples[index_with_region] = shuffled_index
     return samples
 
 

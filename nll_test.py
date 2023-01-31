@@ -36,8 +36,8 @@ if __name__ == '__main__':
     S = 2
     ratio = 2
     distribution_type = 'STAIRS'  # STAIRS
-    list_of_espilon_q = [init_e, init_e*2]
-    list_of_title_q = ['slightly tempered', 'heavily tempered']
+    list_of_espilon_q = [0,init_e, init_e*2]
+    list_of_title_q = ['zero','slightly tempered', 'heavily tempered']
 
     if distribution_type == 'UNIFORM':
         ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
