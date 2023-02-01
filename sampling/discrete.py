@@ -287,7 +287,7 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null, TYPE):
         if TYPE == 'ANOM' or TYPE=='UNI' or TYPE=='TAIL':
             # for each interval, divide it in two and add to the start, remove from lasts.
             if TYPE =='TAIL':
-                intervals = intervals[2:]
+                intervals = intervals[1:]
             e_added_pos = e_added
             if TYPE=='ANOM':
                 bins_added = int(bins_added/4)
