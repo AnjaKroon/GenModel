@@ -1,13 +1,9 @@
 
 import math
-import random
 import sys
 import pandas as pd
 import scipy
-from tqdm import tqdm
-from sampling.poisson import poisson_empirical_dist
-from statistic.binned import p_to_bp_algo, p_to_bp_random, p_to_bp_with_index
-from sampling.discrete import makeUniProbArr, errFunct, genValArr, prob_array_to_dict, prob_dict_to_array, sampleSpecificProbDist, scalabale_sample_distribution_with_shuffle
+from sampling.discrete import  errFunct, genValArr, prob_dict_to_array, sampleSpecificProbDist, scalabale_sample_distribution_with_shuffle
 import numpy as np
 
 # compute kendall tau ranking score
@@ -46,9 +42,9 @@ def get_pmf_val(key, pmf):
                 return interval['p']
 
 
-def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b, TYPE):
-    all_trials_p_emp = []
-    percent_to_modify_null = 0
+def generate_samples_scalable(ground_truth_p, splits, U, m, tempered, e, b, TYPE):
+    splits_q_emp = []
+    percent_to_modify_null = 0.1
     print('PERCENT NULL', percent_to_modify_null)
     # first, check if the ground truth is given in the optimized format
     is_optimized = type(list(ground_truth_p.values())[0]) is dict
@@ -57,58 +53,26 @@ def generate_samples_scalable(ground_truth_p, trials, U, m, tempered, e, b, TYPE
         if tempered:
             prob_array = errFunct(U, prob_array, e, b, percent_to_modify_null, TYPE=TYPE)
         q = prob_array
-        for _ in range(trials):
+        for _ in range(splits):
 
             new_samples = sampleSpecificProbDist(
                 genValArr(U), prob_array, m)
 
             p_emp_dict = empirical_dist_no_zero(m, new_samples)
-            all_trials_p_emp.append(p_emp_dict)
+            splits_q_emp.append(p_emp_dict)
     else:  # the space is too big
         prob_optimized_dict = ground_truth_p
         if tempered:
             prob_optimized_dict = errFunct(U, ground_truth_p, e, b, percent_to_modify_null, TYPE=TYPE)
         q = prob_optimized_dict
-        for _ in range(trials):
+        for _ in range(splits):
 
             new_samples = scalabale_sample_distribution_with_shuffle(prob_optimized_dict,ground_truth_p, m)
             p_emp_dict = empirical_dist_no_zero(m, new_samples)
-            all_trials_p_emp.append(p_emp_dict)
-    return {'all_trials_emp': all_trials_p_emp, 'q': q}
+            splits_q_emp.append(p_emp_dict)
+    return {'splits_q_emp': splits_q_emp, 'q': q}
 
 
-def generate_samples_and_compute_stat(trials, U, m, tempered, e, b, B, stat_func, with_poisson=True):
-    uni_prob_arr = makeUniProbArr(U)
-    prob_array = uni_prob_arr
-    if tempered:
-        prob_array = errFunct(U, uni_prob_arr, e, b)
-
-    result_trials = []
-
-    uni_prob_hist, mapping_from_index_to_bin = p_to_bp_random(
-        prob_array_to_dict(uni_prob_arr), U, B)
-    uni_prob_array = prob_dict_to_array(uni_prob_hist, B)
-
-    prob_hist = p_to_bp_with_index(prob_array_to_dict(
-        prob_array), U, B, mapping_from_index_to_bin)
-    prob_array = prob_dict_to_array(prob_hist, B)
-
-    U = B
-
-    for _ in range(trials):
-        new_samples = sampleSpecificProbDist(genValArr(U), prob_array, m)
-        if with_poisson:
-            p_emp = poisson_empirical_dist(
-                U, m, new_samples, lambda m: sampleSpecificProbDist(genValArr(U), prob_array, m))
-
-        else:
-            p_emp = empirical_dist(
-                U, m, sampleSpecificProbDist(genValArr(U), prob_array, m))
-        p_emp_array = prob_dict_to_array(p_emp, U)
-        shoud_be_one = np.sum(p_emp_array)
-        stat = stat_func(uni_prob_array, p_emp_array)
-        result_trials.append(stat)
-    return result_trials
 
 
 def compute_self_collisions(q_samples):

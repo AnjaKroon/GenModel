@@ -35,37 +35,6 @@ def get_probability_at_element(j, histogram):
 # assign a bin at randoms to each element
 
 
-def p_to_bp_random(ground_truth_p_dict, U, B):
-
-    amount_per_bin = math.floor(U/B)  # 3
-    amount_final_bin = int(amount_per_bin + (U % B))  # 4
-
-    # shuffle the binning
-    mapping_from_index_to_bin = {}
-    mapping_bin_to_index = {}
-    shuffled_U = list(range(U))
-    random.shuffle(shuffled_U)
-    for i in range(B):
-        mapping_bin_to_index[i] = []
-        size_bin = amount_per_bin
-        if i == B-1:
-            size_bin = amount_final_bin
-        for j in range(size_bin):
-            index = i * amount_per_bin + j
-            shuffled_index = shuffled_U[index]
-            mapping_from_index_to_bin[shuffled_index] = i
-            mapping_bin_to_index[i].append(shuffled_index)
-    new_histo = {}
-
-    for bin_index, all_index in mapping_bin_to_index.items():
-        new_probability_for_bin = 0
-        for j in all_index:
-            new_probability_for_bin = new_probability_for_bin + \
-                get_probability_at_element(j, ground_truth_p_dict)
-        new_histo[bin_index] = new_probability_for_bin
-    return new_histo, mapping_from_index_to_bin
-
-
 def find_flat_regions(ground_truth_p_dict, is_optimized):
     if is_optimized:
         flat_regions = {}
@@ -113,7 +82,8 @@ def get_summed_probabilities_of_interval(interval, histogram):
     return summed_prob  # we always only have one prob per region
 
 
-def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
+def p_to_bp_algo(ground_truth_p_dict, q_dict, B, seed):
+    random.seed(seed)  # this is to keep randomnes
     is_optimized = type(list(ground_truth_p_dict.values())[0]) is dict
 
     # 1 : find the S partitioning. By default, the zero space is "assumed" but not computed here.
@@ -144,11 +114,11 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
         num_random_cute_candidate = len(mapping_bin_to_index)
         random_cuts_per_bin = [0 for _ in range(num_random_cute_candidate)]
 
-        random.seed(1)  # this is to keep randomnes
+        
         for _ in range(num_random_cut):
             index = random.randint(0, num_random_cute_candidate-1)
             random_cuts_per_bin[index] += 1
-        
+        print(random_cuts_per_bin)
         for bin_id_to_cut, num_random_cuts in enumerate(random_cuts_per_bin):
             if num_random_cuts > 0:
                 # if num_random_cuts>1:

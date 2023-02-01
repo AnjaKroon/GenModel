@@ -284,11 +284,22 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null, TYPE):
                 p_value_of_interval = prob_optimized_dict[i]['p']
                 interval = intervals[i]
                 new_inverse_tempered_dict[p_value_of_interval] = [interval]
-        if TYPE == 'ANOM' or TYPE=='UNI':
+        if TYPE == 'ANOM' or TYPE=='UNI' or TYPE=='TAIL':
             # for each interval, divide it in two and add to the start, remove from lasts.
-            num_to_add_per_interval = bins_added_in_pos/len(intervals)
+            if TYPE =='TAIL':
+                intervals = intervals[2:]
+            e_added_pos = e_added
+            if TYPE=='ANOM':
+                bins_added = int(bins_added/4)
+                e_in_zero = bins_added_in_null *e_added
+                e_added_pos = (e_per_section-e_in_zero)/bins_added 
+               
+                
+
+            num_to_add_per_interval = bins_added/len(intervals)
+            remainder_add = bins_added % len(intervals)
             num_to_remove_per_interval = bins_removed/len(intervals)
-            remainder_add = bins_added_in_pos % len(intervals)
+            
             remainder_remove = bins_removed % len(intervals)
 
             num_to_add_per_interval = int(num_to_add_per_interval)
@@ -307,7 +318,7 @@ def errFunct(U, init_array, e, percent_to_modify, percent_to_modify_null, TYPE):
                     interval_to_remove, interval_remain=interval_remains_post[0])
                 
                 
-                new_inverse_tempered_dict[p_value_of_interval+ e_added] = [new_interval_add]
+                new_inverse_tempered_dict[p_value_of_interval+ e_added_pos] = [new_interval_add]
                 new_inverse_tempered_dict[p_value_of_interval- e_removed] = [new_interval_remove]
                 new_inverse_tempered_dict[p_value_of_interval] = interval_remains
                 
@@ -405,19 +416,25 @@ def scalabale_sample_distribution_with_shuffle(prob_optimized_dict, ground_truth
     for i, region in enumerate(regions):
         index_with_region = index_with_regions[i]
         m_in_region = index_with_region.shape[0]
-        interval_of_region = prob_optimized_dict[region]['interval']
-        size_region = interval_of_region[1] - interval_of_region[0]
-        base_interval = ground_truth_p[regions_to_be_merges[i]]['interval']
-        size_base_region = base_interval[1] - base_interval[0]
-        offset = interval_of_region[0] - base_interval[0]
-        in_region_samples = random.choices(
-            range(offset, offset+size_region), k=m_in_region)
-        print('shuffling process within the samples')
-        base_offset = base_interval[0]
-        shuffled_index = [get_shuffled_index(
-            s, base_b=size_base_region)+base_offset for s in in_region_samples]
+        if m_in_region>0:
+            interval_of_region = prob_optimized_dict[region]['interval']
+            size_region = interval_of_region[1] - interval_of_region[0]
+            if i in regions_to_be_merges:
+                base_interval = ground_truth_p[regions_to_be_merges[i]]['interval']
+                size_base_region = base_interval[1] - base_interval[0]
+                offset = interval_of_region[0] - base_interval[0]
+                in_region_samples = random.choices(
+                    range(offset, offset+size_region), k=m_in_region)
+                print('shuffling process within the samples')
+                base_offset = base_interval[0]
+                shuffled_index = [get_shuffled_index(
+                    s, base_b=size_base_region)+base_offset for s in in_region_samples]
 
-        samples[index_with_region] = shuffled_index
+                samples[index_with_region] = shuffled_index
+            else: # zero space, no shuffling needed
+                in_region_samples = random.choices(
+                    range(interval_of_region[0], interval_of_region[1]), k=m_in_region)
+                samples[index_with_region] = in_region_samples
     return samples
 
 
