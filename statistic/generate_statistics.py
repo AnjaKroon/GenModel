@@ -126,18 +126,6 @@ def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
     return test_state, B, minimum_m
 
 
-def get_chi_square(trials, U, m, tempered, e, b, B):
-    result_trials = generate_samples_and_compute_stat(
-        trials, U, m, tempered, e, b, B, chi_square_stat)
-    return result_trials
-
-
-def get_S(trials, U, m, tempered, e, b, B, with_poisson):
-
-    result_trials = generate_samples_and_compute_stat(
-        trials, U, m, tempered, e, b, B, genSstat, with_poisson)
-
-    return result_trials
 
 
 def empirical_dist(incoming_U, incoming_m, incoming_arr_samples):

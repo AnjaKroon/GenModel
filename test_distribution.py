@@ -14,15 +14,14 @@ from tqdm import tqdm
 from table_helper import build_latex_table
 
 
-def compute_NLL(list_of_samples, list_of_title_q, store_results):
-    all_samples_list = list_of_samples[0]
+def compute_NLL(ground_truth_samples, list_of_pmf_q,list_of_title_q, store_results):
     all_log_likelihoods = []
     for i, q_name in enumerate(list_of_title_q):
         log_likelihoods = []
         pmf = list_of_pmf_q[i]
         q_name = list_of_title_q[i]
 
-        for trial in all_samples_list:
+        for trial in ground_truth_samples:
             log_likelihood = 0
             for key, val in trial.items():
                 p_key = get_pmf_val(key, pmf)
@@ -68,7 +67,7 @@ def perform_our_test(list_of_samples, list_of_title_q, S, trials, store_results)
                 consolidated_samples_baseline, trials, ground_truth_p, U, B)
             # run statistical test
             results = [reject_if_bad_test(
-                trial['p'], trial['q'], m_per_splits, epsilon=test_epsilon, delta=delta) for trial in list_binned]
+                trial['p'], trial['q'], splits*m_per_splits, epsilon=test_epsilon, delta=delta) for trial in list_binned]
             test = [i[0] for i in results]
             A = [i[1] for i in results]
 
@@ -101,9 +100,9 @@ if __name__ == '__main__':
         m_per_splits = 1000
         init_e = 0.05
         init_b = 0.3
-        splits = 2
-        S = 5
-        ratio = 1.2
+        splits = 5
+        S = 4
+        ratio = 5
         distribution_type = 'STAIRS'  # STAIRS
         list_of_espilon_q = [0, init_e, init_e*1.5, init_e*2]
         list_of_title_q = [TYPE+':q '+str(e) for e in list_of_espilon_q]
@@ -115,7 +114,7 @@ if __name__ == '__main__':
         m_per_splits = 10000
         S = 2
         ratio = 3
-        splits = 10
+        splits = 50
 
     print("for this round m is ", m_per_splits*splits)
     print("and U is ", U)
@@ -150,10 +149,11 @@ if __name__ == '__main__':
             power_base, num_files=10)
         list_of_samples = [val for _, val in dict_of_samples.items()]
         list_of_title_q = [key for key, _ in dict_of_samples.items()]
-    trials = splits
+    trials = 50
     perform_our_test(list_of_samples, list_of_title_q,
                      S, trials, store_results)
-    compute_NLL(list_of_samples, list_of_title_q, store_results)
+    ground_truth_samples = list_of_samples[0]
+    compute_NLL(ground_truth_samples, list_of_pmf_q, list_of_title_q, store_results)
 
     prefix = create_prefix_from_list(
         {'exp': experiment+TYPE, 'U': U, 'm_per_splits': m_per_splits, 'splits': splits, 'S': S, 'ratio': ratio, 'b': init_b, 'e': init_e})

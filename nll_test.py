@@ -23,7 +23,7 @@ if __name__ == '__main__':
     power_base = 10
     U = power_base**power_base
     Ms = [100000,  1000000]
-    TYPE = "FLAT" # sharp, flat, uniform, anom
+    TYPE = "TAIL" # sharp, flat, uniform, anom
     # power_base = 6
     # U = power_base**power_base
     # Ms = [10, 20,50,100]d
