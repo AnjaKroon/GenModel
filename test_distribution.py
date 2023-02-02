@@ -10,11 +10,11 @@ import numpy as np
 import random
 import math
 from tqdm import tqdm
-
+from Alaa_Metric.alphaprecision_betarecall_evalmetric import alaa_compare
 from table_helper import build_latex_table
 
 
-def compute_NLL(ground_truth_samples, list_of_pmf_q,list_of_title_q, store_results):
+def compute_NLL(ground_truth_samples, list_of_pmf_q, list_of_title_q, store_results):
     all_log_likelihoods = []
     for i, q_name in enumerate(list_of_title_q):
         log_likelihoods = []
@@ -58,7 +58,7 @@ def perform_our_test(list_of_samples, list_of_title_q, S, trials, store_results)
     for all_samples_list in list_of_samples:
         consolidated_samples.append(consolidate(all_samples_list))
 
-    Bs = list(range(S+1, 2*(S+1)+1))
+    Bs = list(range(S+2, 2*(S+1)+1))
     for B in tqdm(Bs):  # For each bin granularity
 
         for i, consolidated_samples_baseline in enumerate(consolidated_samples):
@@ -82,12 +82,16 @@ def perform_our_test(list_of_samples, list_of_title_q, S, trials, store_results)
             store_results['binning'][q_name][B] = list_binned
 
 
+def coverage_baselines(ground_truth_samples, list_of_pmf_q):
+    alaa_compare(ground_truth_samples, list_of_pmf_q, distance='hamilton')
+
+
 if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
     experiment = "SYNTH"  # either SYNTH or GEN
-    TYPE = "TAIL"  # sharp, flat, uniform, anom
+    TYPE = "TAIL"  # TAIL
     test_epsilon = 0.07
     delta = 0.05
     compute_random = False
@@ -97,10 +101,10 @@ if __name__ == '__main__':
 
         power_base = 10
         U = power_base**power_base
-        m_per_splits = 1000
+        m_per_splits = 10000
         init_e = 0.05
         init_b = 0.3
-        splits = 5
+        splits = 10
         S = 4
         ratio = 5
         distribution_type = 'STAIRS'  # STAIRS
@@ -153,8 +157,9 @@ if __name__ == '__main__':
     perform_our_test(list_of_samples, list_of_title_q,
                      S, trials, store_results)
     ground_truth_samples = list_of_samples[0]
-    compute_NLL(ground_truth_samples, list_of_pmf_q, list_of_title_q, store_results)
-
+    compute_NLL(ground_truth_samples, list_of_pmf_q,
+                list_of_title_q, store_results)
+    coverage_baselines(ground_truth_samples, list_of_pmf_q)
     prefix = create_prefix_from_list(
         {'exp': experiment+TYPE, 'U': U, 'm_per_splits': m_per_splits, 'splits': splits, 'S': S, 'ratio': ratio, 'b': init_b, 'e': init_e})
     rows = []
@@ -163,7 +168,8 @@ if __name__ == '__main__':
         for key, val in store_results['A'][q_name].items():
             values.append(np.mean(val))
         rows.append([q_name] + values)
-    top = [''] + ['nll'] + ['$B_'+str(B)+'$' for B in store_results['A'][q_name].keys()]
+    top = [''] + ['nll'] + \
+        ['$B_'+str(B)+'$' for B in store_results['A'][q_name].keys()]
     build_latex_table([top]+rows, caption=TYPE + ' m/Omega' +
                       str((m_per_splits*splits)/U) + ' S:'+str(S), label=prefix)
     store_for_plotting(

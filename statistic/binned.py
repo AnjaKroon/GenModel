@@ -118,7 +118,7 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict, B, seed):
         for _ in range(num_random_cut):
             index = random.randint(0, num_random_cute_candidate-1)
             random_cuts_per_bin[index] += 1
-        print(random_cuts_per_bin)
+       
         for bin_id_to_cut, num_random_cuts in enumerate(random_cuts_per_bin):
             if num_random_cuts > 0:
                 # if num_random_cuts>1:
