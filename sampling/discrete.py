@@ -148,29 +148,29 @@ def get_overap(interval_M, interval_remain):  # return remainder from 2
 def errFunct(U, prob_optimized_dict, e, percent_of_space_to_modify, percent_to_modify_null, TYPE):
 
     is_optimized = not type(prob_optimized_dict) is list
-    assert is_optimized # we only use the optimzed version
+    assert is_optimized  # we only use the optimzed version
 
     percent_pos_space = percent_of_space_to_modify-percent_to_modify_null
-    if TYPE =='TAIL':
-        assert percent_pos_space < 0.5 # if we only want to modify the tail, we cant mess the whole space
+    if TYPE == 'TAIL':
+        # if we only want to modify the tail, we cant mess the whole space
+        assert percent_pos_space < 0.5
     assert percent_pos_space >= 0
-    
+
     mass_in_each_part = [(val['interval'][1] - val['interval'][0]) * val['p']
-                            for _, val in prob_optimized_dict.items()]
+                         for _, val in prob_optimized_dict.items()]
     should_be_one = np.sum(mass_in_each_part)
     size_each_regions = [(val['interval'][1] - val['interval'][0])
-                            for _, val in prob_optimized_dict.items()]
+                         for _, val in prob_optimized_dict.items()]
     intervals = [val['interval'] for _, val in prob_optimized_dict.items()]
 
     U_pos = np.sum(size_each_regions)  # count the positive space
-    
-   
+
     e_per_section = e/2
     bins_added = int(U * percent_of_space_to_modify/2)
-    bins_removed = int(U* percent_of_space_to_modify/2)
-    bins_added_in_null =int(bins_added*percent_to_modify_null)
+    bins_removed = int(U * percent_of_space_to_modify/2)
+    bins_added_in_null = int(bins_added*percent_to_modify_null)
     bins_added_in_pos = bins_added - bins_added_in_null
-   
+
     e_added = e_per_section/bins_added  # error amount to add per element
     e_removed = e_per_section/bins_removed  # error amount to subtract per element
     print('Total tv error should be ', e, ' it is ',
@@ -231,40 +231,38 @@ def errFunct(U, prob_optimized_dict, e, percent_of_space_to_modify, percent_to_m
                 new_p_value = p_value_of_interval + e_added
             new_inverse_tempered_dict[new_p_value] = [new_interval]
             new_inverse_tempered_dict[p_value_of_interval] = interval_remains_post
-        
-    elif TYPE == 'ANOM' or TYPE=='UNI' or TYPE=='TAIL':
+
+    elif TYPE == 'ANOM' or TYPE == 'UNI' or TYPE == 'TAIL':
         # for each interval, divide it in two and add to the start, remove from lasts.
         intervals_modified = intervals
-        if TYPE =='TAIL':
+        if TYPE == 'TAIL':
             bins_added = int(bins_added/4)
-            coin = e*100%2
+            coin = e*100 % 2
             limit_tail_index = int(len(intervals)/2)
-            if coin==1:
+            if coin == 1:
                 intervals_modified = intervals[limit_tail_index:]
             else:
                 intervals_modified = intervals[:limit_tail_index]
                 limit_tail_index = 0
         e_added_pos = e_added
-        if TYPE=='ANOM':
+        if TYPE == 'ANOM':
             bins_added = int(bins_added/4)
-        e_in_zero = bins_added_in_null *e_added
-        e_added_pos = (e_per_section-e_in_zero)/bins_added 
-            
-            
+        e_in_zero = bins_added_in_null * e_added
+        e_added_pos = (e_per_section-e_in_zero)/bins_added
 
         num_to_add_per_interval = bins_added/len(intervals_modified)
         remainder_add = bins_added % len(intervals_modified)
         num_to_remove_per_interval = bins_removed/len(intervals_modified)
-        
+
         remainder_remove = bins_removed % len(intervals_modified)
 
         num_to_add_per_interval = int(num_to_add_per_interval)
         num_to_remove_per_interval = int(num_to_remove_per_interval)
         for i, interval in enumerate(intervals_modified):
-            if i == len(intervals_modified)-1: # last one, we add the remainder here
-                num_to_add_per_interval = num_to_add_per_interval+ remainder_add
-                num_to_remove_per_interval = num_to_remove_per_interval+ remainder_remove
-            if TYPE =='TAIL':
+            if i == len(intervals_modified)-1:  # last one, we add the remainder here
+                num_to_add_per_interval = num_to_add_per_interval + remainder_add
+                num_to_remove_per_interval = num_to_remove_per_interval + remainder_remove
+            if TYPE == 'TAIL':
                 i = i+limit_tail_index
             untouched_intervals.remove(i)
             p_value_of_interval = prob_optimized_dict[i]['p']
@@ -272,15 +270,17 @@ def errFunct(U, prob_optimized_dict, e, percent_of_space_to_modify, percent_to_m
                 interval[0], interval[0]+num_to_add_per_interval)
             new_interval_add, _, interval_remains_post = get_overap(
                 interval_to_add, interval_remain=interval)
-            interval_to_remove = (interval[1]-num_to_remove_per_interval, interval[1])
+            interval_to_remove = (
+                interval[1]-num_to_remove_per_interval, interval[1])
             new_interval_remove, interval_remains, _ = get_overap(
                 interval_to_remove, interval_remain=interval_remains_post[0])
-            
-            
-            new_inverse_tempered_dict[p_value_of_interval+ e_added_pos] = [new_interval_add]
-            new_inverse_tempered_dict[p_value_of_interval- e_removed] = [new_interval_remove]
+
+            new_inverse_tempered_dict[p_value_of_interval +
+                                      e_added_pos] = [new_interval_add]
+            new_inverse_tempered_dict[p_value_of_interval -
+                                      e_removed] = [new_interval_remove]
             new_inverse_tempered_dict[p_value_of_interval] = interval_remains
-                
+
     for i in untouched_intervals:
         p_value_of_interval = prob_optimized_dict[i]['p']
         interval = intervals[i]
@@ -295,22 +295,35 @@ def errFunct(U, prob_optimized_dict, e, percent_of_space_to_modify, percent_to_m
             new_tempered_dict[j] = {'interval': interval, 'p': key}
             j += 1
 
-    
-        
     """
     modification in the null/zero space
     """
     assert e_added not in new_tempered_dict  # hoping
     mass_in_each_part = [(val['interval'][1] - val['interval'][0]) * val['p']
-                            for key, val in new_tempered_dict.items()]
+                         for key, val in new_tempered_dict.items()]
     should_be_one = np.sum(mass_in_each_part)
     new_tempered_dict[j] = {'interval': (
         U_pos, U_pos+bins_added_in_null), 'p': e_added}
     # We just add in order in the null space
     mass_in_each_part = [(val['interval'][1] - val['interval'][0]) * val['p']
-                            for key, val in new_tempered_dict.items()]
+                         for key, val in new_tempered_dict.items()]
     should_be_one = np.sum(mass_in_each_part)
     np.testing.assert_allclose(should_be_one, 1)
+    print('final verif..')
+    error = 0
+    for key, val in new_tempered_dict.items():
+        size = val['interval'][1] - val['interval'][0]
+        start = val['interval'][0]
+        index_in_init_p = find_interval(
+            start, [val['interval'] for _, val in prob_optimized_dict.items()])
+
+        new_p = val['p']
+        old_p = 0
+        if index_in_init_p >= 0:
+            old_p = prob_optimized_dict[index_in_init_p]['p']
+
+        error += np.abs(new_p * size - old_p*size)
+    print('Total tv error should be ', e, ' it is ',error)
     return new_tempered_dict
 
 
@@ -381,7 +394,7 @@ def scalabale_sample_distribution_with_shuffle(prob_optimized_dict, ground_truth
     for i, region in enumerate(regions):
         index_with_region = index_with_regions[i]
         m_in_region = index_with_region.shape[0]
-        if m_in_region>0:
+        if m_in_region > 0:
             interval_of_region = prob_optimized_dict[region]['interval']
             size_region = interval_of_region[1] - interval_of_region[0]
             if i in regions_to_be_merges:
@@ -396,9 +409,8 @@ def scalabale_sample_distribution_with_shuffle(prob_optimized_dict, ground_truth
                     s, base_b=size_base_region)+base_offset for s in in_region_samples]
 
                 samples[index_with_region] = shuffled_index
-            else: # zero space, no shuffling needed
+            else:  # zero space, no shuffling needed
                 in_region_samples = random.choices(
                     range(interval_of_region[0], interval_of_region[1]), k=m_in_region)
                 samples[index_with_region] = in_region_samples
     return samples
-

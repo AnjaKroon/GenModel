@@ -3,7 +3,7 @@ import math
 import sys
 import pandas as pd
 import scipy
-from sampling.discrete import  errFunct, genValArr, prob_dict_to_array, sampleSpecificProbDist, scalabale_sample_distribution_with_shuffle
+from sampling.discrete import errFunct, genValArr, prob_dict_to_array, sampleSpecificProbDist, scalabale_sample_distribution_with_shuffle
 import numpy as np
 
 # compute kendall tau ranking score
@@ -51,7 +51,8 @@ def generate_samples_scalable(ground_truth_p, splits, U, m, tempered, e, b, TYPE
     if not is_optimized:  # the space is small enough to follow normal sampling procedure
         prob_array = prob_dict_to_array(ground_truth_p, U)
         if tempered:
-            prob_array = errFunct(U, prob_array, e, b, percent_to_modify_null, TYPE=TYPE)
+            prob_array = errFunct(U, prob_array, e, b,
+                                  percent_to_modify_null, TYPE=TYPE)
         q = prob_array
         for _ in range(splits):
 
@@ -63,16 +64,16 @@ def generate_samples_scalable(ground_truth_p, splits, U, m, tempered, e, b, TYPE
     else:  # the space is too big
         prob_optimized_dict = ground_truth_p
         if tempered:
-            prob_optimized_dict = errFunct(U, ground_truth_p, e, b, percent_to_modify_null, TYPE=TYPE)
+            prob_optimized_dict = errFunct(
+                U, ground_truth_p, e, b, percent_to_modify_null, TYPE=TYPE)
         q = prob_optimized_dict
         for _ in range(splits):
 
-            new_samples = scalabale_sample_distribution_with_shuffle(prob_optimized_dict,ground_truth_p, m)
+            new_samples = scalabale_sample_distribution_with_shuffle(
+                prob_optimized_dict, ground_truth_p, m)
             p_emp_dict = empirical_dist_no_zero(m, new_samples)
             splits_q_emp.append(p_emp_dict)
     return {'splits_q_emp': splits_q_emp, 'q': q}
-
-
 
 
 def compute_self_collisions(q_samples):
@@ -92,18 +93,36 @@ def list_samples_to_array(U, list_samples):
     return samples
 
 
-def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
+def compute_norm(p_array, q_array):
+    l2 = 0
+    l1 = 0
+    for i in range(len(p_array)):
+        l1_x = np.abs(p_array[i] - q_array[i])
+        l2_x = l1_x**2
+        l2 += l2_x
+        l1 += l1_x
+    l2 = np.sqrt(l2)
+    l1 = l1/2
+    return {'l1': l1, 'l2': l2}
+
+
+def old_reject_if_bad(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
     U = len(prob_array)
+
     q_emp_array = np.array(q_emp_array)
     q_emp_array[q_emp_array < 1e-14] = 0
     max_prob_array = max(prob_array)
     C = 1.1
-    term_1 = max_prob_array**2 * (2*C + 3)/(3*epsilon**4)
+
+    term_1 = max_prob_array**2 * 2*(C**2 + 3)/(3*epsilon**4)
     term_sqrt = np.sqrt(term_1**2 + 4**4 * delta * 2 *
                         C * max_prob_array/epsilon**4)
     numerator = term_1 + term_sqrt
     minimum_m = numerator / delta
-   
+    e_1 = 16 * m**2 * max_prob_array * 2 * C
+    e_2 = 16 * m**3 * max_prob_array**2 * (2*C**2+3)/3
+    e_for_m = ((e_1 + e_2) / (m**4 * delta))**0.25
+
     #print('epsilon',epsilon,'m',minimum_m, 'delta',delta)
     # recover histrogram
     q_samples = [int(m*p) for p in q_emp_array]
@@ -117,15 +136,28 @@ def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
     A = y - w
     A = max(A, 0)
     B = np.sqrt(A)/m
-    test_stat =  epsilon/(2 * np.sqrt(U))
+    test_stat = epsilon/(2 * np.sqrt(U))
     if B > test_stat:
         test_state = 1
     else:
         test_state = 0
-    
-    return test_state, B, minimum_m
+
+    return test_state, B, e_for_m/2
 
 
+def reject_if_bad_test(prob_array, q_emp_array, m, epsilon=0.05, delta=1/3):
+    U = len(prob_array)
+    empirical_dtv = 0
+    for x in range(U):
+        tv_x = np.abs(prob_array[x] - q_emp_array[x])
+        empirical_dtv += tv_x
+    empirical_dtv = empirical_dtv/2
+    e_test = max(np.sqrt(U/m), np.sqrt(2/m * np.log2(2/delta)))
+    if empirical_dtv <= e_test:
+        test_pass = True
+    else:
+        test_pass = False
+    return {'close_enough': test_pass, 'e_test':e_test,'emp_dtv':empirical_dtv }
 
 
 def empirical_dist(incoming_U, incoming_m, incoming_arr_samples):

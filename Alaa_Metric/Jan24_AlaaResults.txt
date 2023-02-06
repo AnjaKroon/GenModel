@@ -1,0 +1,36 @@
+Comments on using the Alaa Metric:
+
+----------------------------------------------------------
+(10000, 6)
+(10000, 6)
+For the Training Data Comparison
+{'precision': 0.0782, 'recall': 0.0881, 'density': 0.06442, 'coverage': 0.044, 'Dpa': 0.9172689672077782, 'Dcb': 0.9980803781510724, 'mean_aut': 0.0008}
+----------------------------------------------------------
+(10000, 6)
+(10000, 6)
+(10000, 6)
+For the Random Comparison
+{'precision': 0.0027, 'recall': 0.189, 'density': 0.00226, 'coverage': 0.0009, 'Dpa': 0.9069310295684585, 'Dcb': 0.9987186638435723, 'mean_aut': 0.0015}
+----------------------------------------------------------
+
+
+
+Discussion: problematic that recall and auth are higher 
+Next: let's see if this holds for the other types of generative models as well.
+
+Setup:
+Two experiments for each generative model:
+* Comparing samples from training as input, comparing output samples from a specific generative model
+* Comparing samples which are random as input, to the output samples from a specific generative model
+
+argmaxAR
+CDM
+CNF
+FCDM
+
+Take their 100 pickle files put them in the main folder and run sequentially for speedy results.
+
+
+
+
+

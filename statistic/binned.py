@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import math
-from sampling.discrete import find_interval
+from sampling.discrete import find_interval, get_overap
 random.seed(2)
 # return the dict of a binned pmf, with predined binning mapping_from_index_to_bin
 
@@ -65,24 +65,72 @@ def split(list_a, chunk_size):
         yield list_a[i:i + chunk_size]
 
 
+def get_overaps(sets_1, set_2):
+    reminder = sets_1
+    overlap = None
+    start_b = set_2[0]
+    end_b = set_2[1]
+    for set in sets_1:
+        if start_b >= set[0] and start_b < set[1]:  # {[ }
+            if end_b > set[1]:  # {[ }  ],  {  [ }  ]
+                overlap = [start_b, set[1]]
+                reminder.remove(set)
+                if start_b > set[0]:
+                    reminder.append([set[0], start_b])
+            else:  # {[   ]}  , {  [   ]  }  {[   ]  }  {  [   ]}
+                overlap = [start_b, end_b]
+                reminder.remove(set)
+                if end_b < set[1]:  # {[   ]  }
+                    reminder.append([end_b, set[1]])
+                if start_b > set[0]:  # {  [   ]}
+                    reminder.append([set[0], start_b])
+        elif start_b < set[0] and end_b > set[0]:  # [ { ]
+            if set[0] <= end_b:  # [ {   }]
+                overlap = [set[0], set[1]]
+                reminder.remove(set)
 
-def get_summed_probabilities_of_interval(interval, histogram):
+            else:  # [ { ] }
+                overlap = [set[0], end_b]
+                reminder.remove(set)
+                reminder.append([end_b, set[1]])
+
+    return overlap, reminder
+
+
+def get_summed_probabilities_of_interval(interval, histogram, is_exact_interval=False):
     is_optimized = type(list(histogram.values())[0]) is dict
     start = interval[0]
     end = interval[1]
-    if is_optimized:
+    if end < start:
+        print('problem')
+    if is_exact_interval:
         probability = get_probability_at_element(start, histogram)
         summed_prob = probability * (end-start)
     else:  # we have to go through all keys
-        summed_prob = 0
-        for key, val in histogram.items():
-            if key >= start and key < end:
-                summed_prob+=val
+        if is_optimized:
+            summed_prob = 0
+            remaining_intervals = [interval]
+            for key, val in histogram.items():
+                overlap, remaining_intervals = get_overaps(
+                    remaining_intervals, val['interval'])
+                if overlap is not None:
+                    size_interval = overlap[1] - overlap[0]
+                    if size_interval < 0:
+                        print('problem')
+                    summed_prob += size_interval*val['p']
+                if len(remaining_intervals) == 0:
+                    return summed_prob
+
+        else:
+            summed_prob = 0
+            for key, val in histogram.items():
+                if key >= start and key < end:
+                    summed_prob += val
 
     return summed_prob  # we always only have one prob per region
 
 
-def p_to_bp_algo(ground_truth_p_dict, q_dict, B, seed):
+def p_to_bp_algo(ground_truth_p_dict, q_dict, B, seed, pmf_q):
     random.seed(seed)  # this is to keep randomnes
     is_optimized = type(list(ground_truth_p_dict.values())[0]) is dict
 
@@ -114,11 +162,10 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict, B, seed):
         num_random_cute_candidate = len(mapping_bin_to_index)
         random_cuts_per_bin = [0 for _ in range(num_random_cute_candidate)]
 
-        
         for _ in range(num_random_cut):
             index = random.randint(0, num_random_cute_candidate-1)
             random_cuts_per_bin[index] += 1
-       
+
         for bin_id_to_cut, num_random_cuts in enumerate(random_cuts_per_bin):
             if num_random_cuts > 0:
                 # if num_random_cuts>1:
@@ -140,28 +187,39 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict, B, seed):
                     chunk_id+1)*chunk_size:]
 
     new_histo_p = {}
+    if pmf_q is not None:
+        new_histo_q = {}
     if is_optimized:
         for bin_index, all_index in mapping_bin_to_index.items():
-            interval = (all_index[0], all_index[-1])
+            interval = (all_index[0], all_index[-1]+1)
             new_probability_for_bin = get_summed_probabilities_of_interval(
-                interval, ground_truth_p_dict)
+                interval, ground_truth_p_dict, is_exact_interval=True)
 
             new_histo_p[bin_index] = new_probability_for_bin
+            if pmf_q is not None:
+                new_probability_for_bin = get_summed_probabilities_of_interval(
+                    interval, pmf_q)
+                new_histo_q[bin_index] = new_probability_for_bin
 
-        new_histo_q = {}
+        new_emp_histo_q = {}
 
         for bin_index, all_index in mapping_bin_to_index.items():
-            interval = (all_index[0], all_index[-1])
+            interval = (all_index[0], all_index[-1]+1)
             new_probability_for_bin = get_summed_probabilities_of_interval(
                 interval, q_dict)
-            new_histo_q[bin_index] = new_probability_for_bin
+            new_emp_histo_q[bin_index] = new_probability_for_bin
 
         # add the zero bin
-        new_histo_q[B-1] = 1 - np.sum(list(new_histo_q.values()))
+        new_emp_histo_q[B-1] = 1 - np.sum(list(new_emp_histo_q.values()))
         new_histo_p[B-1] = 0
-        return new_histo_p, new_histo_q
+        if pmf_q is not None:
+            new_histo_q[B-1] = 0
+            return {'new_histo_p': new_histo_p, 'new_emp_histo_q': new_emp_histo_q, 'new_histo_q': new_histo_q}
+        return {'new_histo_p': new_histo_p, 'new_emp_histo_q': new_emp_histo_q}
 
     else:
+        print('I abandonned this')
+        exit()
 
         for bin_index, all_index in mapping_bin_to_index.items():
             new_probability_for_bin = 0
@@ -171,21 +229,19 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict, B, seed):
 
             new_histo_p[bin_index] = new_probability_for_bin
 
-        new_histo_q = {}
+        new_emp_histo_q = {}
 
         for bin_index, all_index in mapping_bin_to_index.items():
             new_probability_for_bin = 0
             for j in all_index:
                 new_probability_for_bin = new_probability_for_bin + \
                     get_probability_at_element(j, q_dict)
-            new_histo_q[bin_index] = new_probability_for_bin
+            new_emp_histo_q[bin_index] = new_probability_for_bin
 
         # add the zero bin
-        new_histo_q[B-1] = 1 - np.sum(list(new_histo_q.values()))
+        new_emp_histo_q[B-1] = 1 - np.sum(list(new_emp_histo_q.values()))
         new_histo_p[B-1] = 0
-        return new_histo_p, new_histo_q
-
-
+        return new_histo_p, new_emp_histo_q
 
 
 if __name__ == '__main__':
