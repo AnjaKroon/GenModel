@@ -23,7 +23,7 @@ if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
     
-from Alaa_Metric.representations.networks import *  
+from representations.networks import *  
 
 from torch.autograd import Variable
 

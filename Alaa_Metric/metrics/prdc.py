@@ -80,7 +80,7 @@ def compute_pairwise_distance(data_x, data_y=None, distance=None):
         # dists = sklearn.metrics.pairwise.manhattan_distances(one_hot_data_x, one_hot_data_y)
         dists_based_on_category = sklearn.metrics.pairwise.manhattan_distances(X_bias.reshape(-1,1), Y_bias.reshape(-1,1))
         dists_based_on_number = sklearn.metrics.pairwise.manhattan_distances(data_x, data_y)
-        dists = dists_based_on_category + 0.001*dists_based_on_number
+        dists = dists_based_on_category + 0.01*dists_based_on_number
     return dists
 
 

@@ -99,8 +99,8 @@ if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
-    experiment = "SYNTH"  # either SYNTH or GEN
-    TYPE = "SHARP"  # TAIL
+    experiment = "GEN"  # either SYNTH or GEN
+    TYPE = "FLAT"  # TAIL
     test_epsilon = None
     delta = 0.05
     compute_random = False
@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
     print("for this round m is ", m_per_splits*splits)
     print("and U is ", U)
-
+    metrics = ['S', 'test', 'binning', 'A', 'nll', 'e', 'std_nll', 'l1']
     if experiment == "SYNTH":
         if distribution_type == 'UNIFORM':
             ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
@@ -151,7 +151,7 @@ if __name__ == '__main__':
         store_results_ranking = {}
         for algo in list_of_binning:
             store_results_ranking[algo] = []
-        metrics = ['S', 'test', 'binning', 'A', 'nll', 'e', 'std_nll', 'l1']
+
         for metric in metrics:
             store_results[metric] = {}
             for title in list_of_title_q:
@@ -165,27 +165,35 @@ if __name__ == '__main__':
         store_results_ranking = {}
         for algo in list_of_binning:
             store_results_ranking[algo] = []
-        metrics = ['S', 'test', 'binning', 'A', 'nll']
         for metric in metrics:
             store_results[metric] = {}
             for title in list_of_title_q:
                 store_results[metric][title] = {}
+        list_of_pmf_q = None
     trials = 50
     perform_our_test(list_of_samples, list_of_title_q,
                      S, trials, store_results, list_of_pmf_q)
     ground_truth_samples = list_of_samples[0]
-    compute_NLL(ground_truth_samples, list_of_pmf_q,
-                list_of_title_q, store_results)
+    if list_of_pmf_q is not None:
+        compute_NLL(ground_truth_samples, list_of_pmf_q,
+                    list_of_title_q, store_results)
 
     #coverage_baselines(ground_truth_samples, list_of_samples)
-    prefix = create_prefix_from_list(
-        {'exp': experiment+TYPE, 'U': U, 'm_per_splits': m_per_splits, 'splits': splits, 'S': S, 'ratio': ratio, 'b': init_b, 'e': init_e})
+    if experiment == "SYNTH":
+        prefix = create_prefix_from_list(
+            {'exp': experiment+TYPE, 'U': U, 'm_per_splits': m_per_splits, 'splits': splits, 'S': S, 'ratio': ratio, 'b': init_b, 'e': init_e})
+    else:
+        prefix = create_prefix_from_list(
+            {'exp': experiment+TYPE, 'U': U, 'm_per_splits': m_per_splits, 'splits': splits, 'S': S, 'ratio': ratio})
     store_for_plotting(data={'data': store_results}, title=prefix)
 
     rows = []
     for q_name in list_of_title_q:
-        values = [float_to_print(np.mean(store_results['nll'][q_name])) +
-                  '$\pm$' + float_to_print(store_results['std_nll'][q_name])]
+        values = []
+        if list_of_pmf_q is not None:
+            values = [float_to_print(np.mean(store_results['nll'][q_name])) +
+                      '$\pm$' + float_to_print(store_results['std_nll'][q_name])]
+        
         for key, val in store_results['A'][q_name].items():
             #std = np.mean((store_results['e'][q_name][key]))
             std = np.std(val)
@@ -194,7 +202,9 @@ if __name__ == '__main__':
                           '$\pm$' + float_to_print(std))
             # values.append(float_to_print(np.mean(store_results['l1'][q_name][key])))
         rows.append([q_name] + values)
-    top = [''] + ['nll']
+    top = ['']
+    if list_of_pmf_q is not None:
+        top = top + ['nll']
     for B in store_results['A'][q_name].keys():
         top = top + ['$B_'+str(B)+'$']
         #top = top + [ '$tv$']

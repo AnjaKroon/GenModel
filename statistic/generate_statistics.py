@@ -42,7 +42,7 @@ def get_pmf_val(key, pmf):
                 return interval['p']
 
 
-def generate_samples_scalable(ground_truth_p, splits, U, m, tempered, e, b, TYPE):
+def generate_samples_scalable(ground_truth_p, splits, U, m, tempered, e, b, TYPE=None):
     splits_q_emp = []
     percent_to_modify_null = 0.1
     print('PERCENT NULL', percent_to_modify_null)
