@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import math
-from sampling.discrete import find_interval
+from sampling.discrete import find_interval, get_overap
 random.seed(2)
 # return the dict of a binned pmf, with predined binning mapping_from_index_to_bin
 
@@ -35,37 +35,6 @@ def get_probability_at_element(j, histogram):
 # assign a bin at randoms to each element
 
 
-def p_to_bp_random(ground_truth_p_dict, U, B):
-
-    amount_per_bin = math.floor(U/B)  # 3
-    amount_final_bin = int(amount_per_bin + (U % B))  # 4
-
-    # shuffle the binning
-    mapping_from_index_to_bin = {}
-    mapping_bin_to_index = {}
-    shuffled_U = list(range(U))
-    random.shuffle(shuffled_U)
-    for i in range(B):
-        mapping_bin_to_index[i] = []
-        size_bin = amount_per_bin
-        if i == B-1:
-            size_bin = amount_final_bin
-        for j in range(size_bin):
-            index = i * amount_per_bin + j
-            shuffled_index = shuffled_U[index]
-            mapping_from_index_to_bin[shuffled_index] = i
-            mapping_bin_to_index[i].append(shuffled_index)
-    new_histo = {}
-
-    for bin_index, all_index in mapping_bin_to_index.items():
-        new_probability_for_bin = 0
-        for j in all_index:
-            new_probability_for_bin = new_probability_for_bin + \
-                get_probability_at_element(j, ground_truth_p_dict)
-        new_histo[bin_index] = new_probability_for_bin
-    return new_histo, mapping_from_index_to_bin
-
-
 def find_flat_regions(ground_truth_p_dict, is_optimized):
     if is_optimized:
         flat_regions = {}
@@ -96,53 +65,73 @@ def split(list_a, chunk_size):
         yield list_a[i:i + chunk_size]
 
 
-def collecting_error(regions, q_dict):
-    predefined_bins_with_error = {}
-    regions_that_should_be_cut = 0  # regions that have positive and negative p_x - q_x
-    regions_that_should_not_be_cut = 0  # regions that only have pos. or neg p_x - q_x
-    s = 0
-    for s_flat, indices in regions.items():
-        list_errors_index = []
-        for index in indices:
-            if index in q_dict:
-                q_x = q_dict[index]
-                p_x = s_flat
-                error = p_x - q_x
-                list_errors_index.append((error, index))
-            else:
-                q_x = 0
-                p_x = s_flat
-                error = p_x - q_x
-                list_errors_index.append((error, index))
+def get_overaps(sets_1, set_2):
+    reminder = sets_1
+    overlap = None
+    start_b = set_2[0]
+    end_b = set_2[1]
+    for set in sets_1:
+        if start_b >= set[0] and start_b < set[1]:  # {[ }
+            if end_b > set[1]:  # {[ }  ],  {  [ }  ]
+                overlap = [start_b, set[1]]
+                reminder.remove(set)
+                if start_b > set[0]:
+                    reminder.append([set[0], start_b])
+            else:  # {[   ]}  , {  [   ]  }  {[   ]  }  {  [   ]}
+                overlap = [start_b, end_b]
+                reminder.remove(set)
+                if end_b < set[1]:  # {[   ]  }
+                    reminder.append([end_b, set[1]])
+                if start_b > set[0]:  # {  [   ]}
+                    reminder.append([set[0], start_b])
+        elif start_b < set[0] and end_b > set[0]:  # [ { ]
+            if set[0] <= end_b:  # [ {   }]
+                overlap = [set[0], set[1]]
+                reminder.remove(set)
 
-        # we separate the positive from the negative error to find where the bin split would be
-        cumul_pos_error = 0
-        cumul_neg_error = 0
-        # these lists will form the bins.
-        indices_pos_bin = []  # this could stay empty
-        indices_neg_bin = []  # this could stay empty
-        for error, index in list_errors_index:
-            if error > 0:
-                indices_pos_bin.append(index)
-                cumul_pos_error += error
-            else:
-                indices_neg_bin.append(index)
-                cumul_neg_error += -error
-        # the error that will be lost if we dont cut this bin
-        cut_error = cumul_neg_error + cumul_pos_error - \
-            np.abs((cumul_pos_error-cumul_neg_error))
-        # now we know how much error is contained in a split
-        predefined_bins_with_error[s] = {
-            'cut_error': cut_error, 'pos_indices': indices_pos_bin, 'neg_indices': indices_neg_bin}
-        if cut_error == 0:
-            regions_that_should_not_be_cut += 1
+            else:  # [ { ] }
+                overlap = [set[0], end_b]
+                reminder.remove(set)
+                reminder.append([end_b, set[1]])
+
+    return overlap, reminder
+
+
+def get_summed_probabilities_of_interval(interval, histogram, is_exact_interval=False):
+    is_optimized = type(list(histogram.values())[0]) is dict
+    start = interval[0]
+    end = interval[1]
+    if end < start:
+        print('problem')
+    if is_exact_interval:
+        probability = get_probability_at_element(start, histogram)
+        summed_prob = probability * (end-start)
+    else:  # we have to go through all keys
+        if is_optimized:
+            summed_prob = 0
+            remaining_intervals = [interval]
+            for key, val in histogram.items():
+                overlap, remaining_intervals = get_overaps(
+                    remaining_intervals, val['interval'])
+                if overlap is not None:
+                    size_interval = overlap[1] - overlap[0]
+                    if size_interval < 0:
+                        print('problem')
+                    summed_prob += size_interval*val['p']
+                if len(remaining_intervals) == 0:
+                    return summed_prob
+
         else:
-            regions_that_should_be_cut += 1  # increment the flat region index
-        s += 1
-    return predefined_bins_with_error, regions_that_should_be_cut, regions_that_should_not_be_cut
+            summed_prob = 0
+            for key, val in histogram.items():
+                if key >= start and key < end:
+                    summed_prob += val
+
+    return summed_prob  # we always only have one prob per region
 
 
-def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
+def p_to_bp_algo(ground_truth_p_dict, q_dict, B, seed, pmf_q):
+    random.seed(seed)  # this is to keep randomnes
     is_optimized = type(list(ground_truth_p_dict.values())[0]) is dict
 
     # 1 : find the S partitioning. By default, the zero space is "assumed" but not computed here.
@@ -150,24 +139,8 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
 
     # 2 : Find each optimal split in each S regions. If the error is all pos or neg, there is no optimal split.
 
-    # find B* for k = 2s
-    # predefined_bins_with_error = {0 : {'cut_error':0.xx, 'pos_indices': [2,3,6..],'neg_indices': [1,4,7..]},
-    #                               1 : {...}}
-    predefined_bins_with_error, regions_that_could_be_cut, regions_that_should_not_be_cut = collecting_error(
-        regions, q_dict)
-
-    # force random cuts
-    
-    regions_that_could_be_cut = 0
-    
-
-    # 3 : Sort the S regions by max to min to give B* for a specific k.
-    sorted_s_by_potential_cut_error = sorted(list(predefined_bins_with_error.keys()),
-                                             key=lambda x: predefined_bins_with_error[x]['cut_error'])
-    sorted_s_by_potential_cut_error.reverse()  # highest to lowest
-
     S = len(regions) + 1
-    
+
     # 4 : Return B* : mapping_bin_to_index is {index_bin: [all x], ...}
     mapping_bin_to_index = {}
     if B < S:  # NOT EXACT SOL
@@ -182,87 +155,93 @@ def p_to_bp_algo(ground_truth_p_dict, q_dict,  U, B):
     elif B > S:
         bin_ind = 0
         num_random_cut = math.floor(B-S)
-        
+
         for bin_ind, region_indices in enumerate(regions.values()):
-                mapping_bin_to_index[bin_ind] = region_indices
-        
+            mapping_bin_to_index[bin_ind] = region_indices
+
         num_random_cute_candidate = len(mapping_bin_to_index)
         random_cuts_per_bin = [0 for _ in range(num_random_cute_candidate)]
-        
-        random.seed(1) # this is to keep randomnes
+
         for _ in range(num_random_cut):
             index = random.randint(0, num_random_cute_candidate-1)
-            random_cuts_per_bin[index]+=1
-        print(random_cuts_per_bin)
+            random_cuts_per_bin[index] += 1
+
         for bin_id_to_cut, num_random_cuts in enumerate(random_cuts_per_bin):
-            if num_random_cuts>0:
-                #if num_random_cuts>1:
-                    #print('problem')
+            if num_random_cuts > 0:
+                # if num_random_cuts>1:
+                # print('problem')
                 indices_to_split = mapping_bin_to_index[bin_id_to_cut]
                 chunk_size = int(len(indices_to_split)/(num_random_cuts+1))
                 # first, we replace the bin by a small chunk of the indices:
                 mapping_bin_to_index[bin_id_to_cut] = indices_to_split[:chunk_size]
                 # then we create news bins with all the chunks
                 chunk_id = 0
-                
+
                 bin_ind += 1
                 for chunk_id in range(1, num_random_cuts):
                     mapping_bin_to_index[bin_ind] = indices_to_split[chunk_id *
-                                                                    chunk_size: (chunk_id+1)*chunk_size]
+                                                                     chunk_size: (chunk_id+1)*chunk_size]
                     bin_ind += 1
-                
-                mapping_bin_to_index[bin_ind] = indices_to_split[(chunk_id+1)*chunk_size:]
+
+                mapping_bin_to_index[bin_ind] = indices_to_split[(
+                    chunk_id+1)*chunk_size:]
 
     new_histo_p = {}
-    for bin_index, all_index in mapping_bin_to_index.items():
-        new_probability_for_bin = 0
-        for j in all_index:
-            new_probability_for_bin = new_probability_for_bin + \
-                get_probability_at_element(j, ground_truth_p_dict)
+    if pmf_q is not None:
+        new_histo_q = {}
+    if is_optimized:
+        for bin_index, all_index in mapping_bin_to_index.items():
+            interval = (all_index[0], all_index[-1]+1)
+            new_probability_for_bin = get_summed_probabilities_of_interval(
+                interval, ground_truth_p_dict, is_exact_interval=True)
 
-        new_histo_p[bin_index] = new_probability_for_bin
+            new_histo_p[bin_index] = new_probability_for_bin
+            if pmf_q is not None:
+                new_probability_for_bin = get_summed_probabilities_of_interval(
+                    interval, pmf_q)
+                new_histo_q[bin_index] = new_probability_for_bin
 
-    new_histo_q = {}
+        new_emp_histo_q = {}
 
-    for bin_index, all_index in mapping_bin_to_index.items():
-        new_probability_for_bin = 0
-        for j in all_index:
-            new_probability_for_bin = new_probability_for_bin + \
-                get_probability_at_element(j, q_dict)
-        new_histo_q[bin_index] = new_probability_for_bin
+        for bin_index, all_index in mapping_bin_to_index.items():
+            interval = (all_index[0], all_index[-1]+1)
+            new_probability_for_bin = get_summed_probabilities_of_interval(
+                interval, q_dict)
+            new_emp_histo_q[bin_index] = new_probability_for_bin
 
-    # add the zero bin
-    new_histo_q[B-1] = 1 - np.sum(list(new_histo_q.values()))
-    new_histo_p[B-1] = 0
-    return new_histo_p, new_histo_q
+        # add the zero bin
+        new_emp_histo_q[B-1] = 1 - np.sum(list(new_emp_histo_q.values()))
+        new_histo_p[B-1] = 0
+        if pmf_q is not None:
+            new_histo_q[B-1] = 0
+            return {'new_histo_p': new_histo_p, 'new_emp_histo_q': new_emp_histo_q, 'new_histo_q': new_histo_q}
+        return {'new_histo_p': new_histo_p, 'new_emp_histo_q': new_emp_histo_q}
 
+    else:
+        print('I abandonned this')
+        exit()
 
-def transform_samples(b_p, histo_p, p_samples, U, B):
-    # define subdivisions
-    print("size of p_samples is ", len(p_samples))
-    amount_per_bin = math.floor(len(p_samples)/B)
-    amount_final_bin = amount_per_bin + (len(p_samples) % B)
-    # bins = B
-    new_samples = []
-    # for item in histo_p.items():
-    # if sample is from 0 to 33, add element [1] to new_samples
-    # if sample is from 34 to 66, add element [2] to new_samples
-    # if sample is from 67 to 100, add element [3] to new_samples
-    for i in range(1, B+1):
-        if i != B:
-            for amt in range(amount_per_bin):
-                new_samples.append(i)
-        if i == B:
-            for amt in range(amount_final_bin):
-                new_samples.append(i)
+        for bin_index, all_index in mapping_bin_to_index.items():
+            new_probability_for_bin = 0
+            for j in all_index:
+                new_probability_for_bin = new_probability_for_bin + \
+                    get_probability_at_element(j, ground_truth_p_dict)
 
-    print(new_samples)
+            new_histo_p[bin_index] = new_probability_for_bin
 
-    # for i amount of bins
-    # # i = 1 lets say
-    # if not last bin, let's add numbers, for the amount_per_bin
-    # if last bin, let's add numbers, for the amount_final_bin
-    return new_samples
+        new_emp_histo_q = {}
+
+        for bin_index, all_index in mapping_bin_to_index.items():
+            new_probability_for_bin = 0
+            for j in all_index:
+                new_probability_for_bin = new_probability_for_bin + \
+                    get_probability_at_element(j, q_dict)
+            new_emp_histo_q[bin_index] = new_probability_for_bin
+
+        # add the zero bin
+        new_emp_histo_q[B-1] = 1 - np.sum(list(new_emp_histo_q.values()))
+        new_histo_p[B-1] = 0
+        return new_histo_p, new_emp_histo_q
 
 
 if __name__ == '__main__':

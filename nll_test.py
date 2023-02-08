@@ -22,13 +22,13 @@ if __name__ == '__main__':
 
     power_base = 10
     U = power_base**power_base
-    Ms = [10000, 500]
-
+    Ms = [100000,  1000000]
+    TYPE = "TAIL" # sharp, flat, uniform, anom
     # power_base = 6
     # U = power_base**power_base
     # Ms = [10, 20,50,100]d
 
-    init_e = 0.05
+    init_e = 0.01
     init_b = 0.5
     trials = 5
     print(['{:.6f}'.format((m/U)*100 * trials) for m in Ms])
@@ -36,8 +36,8 @@ if __name__ == '__main__':
     S = 2
     ratio = 2
     distribution_type = 'STAIRS'  # STAIRS
-    list_of_espilon_q = [init_e, init_e*2]
-    list_of_title_q = ['slightly tempered', 'heavily tempered']
+    list_of_espilon_q = [0,init_e, init_e*2, init_e*4]
+    list_of_title_q = ['zero','0.05', '0.1', '0.2']
 
     if distribution_type == 'UNIFORM':
         ground_truth_p = prob_array_to_dict(makeUniProbArr(U))
@@ -54,7 +54,7 @@ if __name__ == '__main__':
         ratios.append(ratio)
         print('Ration m/Omega', m/U)
         list_of_samples, list_of_pmf_q = load_samples(
-            list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio)
+            list_of_espilon_q, init_b, ground_truth_p, trials, U, m, S, ratio, TYPE)
         print('computing exact log likelihood...')
         all_samples_list = list_of_samples[0]
         all_log_likelihoods_baselines = []
