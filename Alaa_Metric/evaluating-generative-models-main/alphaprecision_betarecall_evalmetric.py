@@ -151,43 +151,34 @@ def comparing_all_gen_models():
     small_random = make_arr_small(get_random_input())
     small_train_input = make_arr_small(get_train())
 
-    # argmaxAR_input = open('data/100sample_Data/100sample_argmaxAR.pk','rb')
-    # argmaxAR = make_arr_small(pkl.load(argmaxAR_input))
+    argmaxAR_input = open('data/100sample_Data/100sample_argmaxAR.pk','rb')
+    argmaxAR = make_arr_small(pkl.load(argmaxAR_input))
 
-    # CDM_input = open('data/100sample_Data/100sample_CDM.pk','rb')
-    # CDM = make_arr_small(pkl.load(CDM_input))
+    CDM_input = open('data/100sample_Data/100sample_CDM.pk','rb')
+    CDM = make_arr_small(pkl.load(CDM_input))
 
     CNF_input = open('data/100sample_Data/100sample_CNF.pk','rb')
     CNF = make_arr_small(pkl.load(CNF_input))
     
-    # FCDM_input = open('data/100sample_Data/100sample_FCDM.pk','rb')
-    # FCDM = make_arr_small(pkl.load(FCDM_input))
+    FCDM_input = open('data/100sample_Data/100sample_FCDM.pk','rb')
+    FCDM = make_arr_small(pkl.load(FCDM_input))
 
     print("Experiment 1: Ground Truth vs Random Output")
-    print(small_train_input.shape, small_random.shape)
     print(compare(small_train_input, small_random, distance='hamilton'))
 
-    # print("Experiment 2: Ground Truth vs argmaxAR Output")
-    # print(compare(small_train_input, argmaxAR, distance='hamilton'))
+    print("Experiment 2: Ground Truth vs argmaxAR Output")
+    print(compare(small_train_input, argmaxAR, distance='hamilton'))
 
-    # print("Experiment 3: Ground Truth vs CDM Output")
-    # print(compare(small_train_input, CDM, distance='hamilton'))
-
-    #print("Experiment 4: Random Input vs CDM Output")
-    #print(compare(small_random_input, CDM, distance='hamilton'))
+    print("Experiment 3: Ground Truth vs CDM Output")
+    print(compare(small_train_input, CDM, distance='hamilton'))
 
     print("Experiment 4: Ground Truth vs CNF Output")
     print(compare(small_train_input, CNF, distance='hamilton'))
 
-    #print("Experiment 6: Random Input vs CNF Output")
-    #print(compare(small_random_input, CNF, distance='hamilton'))
+    print("Experiment 5: Ground Truth vs FCDM Output")
+    print(compare(small_train_input, FCDM, distance='hamilton'))
 
-    # print("Experiment 5: Ground Truth vs FCDM Output")
-    # print(compare(small_train_input, FCDM, distance='hamilton'))
-
-    #print("Experiment 8: Random Input vs FCDM Output")
-    #print(compare(small_random_input, FCDM, distance='hamilton'))
-    return 
+    return
 
 def get_100_pickle():
   # pulls 100sample.pk file in and puts into np array

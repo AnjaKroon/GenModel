@@ -60,15 +60,9 @@ def compute_pairwise_distance(data_x, data_y=None, distance=None):
         return all_cats
     
     X_bias = np.array(get_category_bias(data_x))
-    print(X_bias[:10])
     Y_bias = np.array(get_category_bias(data_y))
-    print(Y_bias[:10])
-
-    #X_bias = np.reshape(X_bias, (len(X_bias), 1))
-    #Y_bias = np.reshape(Y_bias, (len(Y_bias), 1))
-    #print(X_bias.shape)
-    #print(Y_bias.shape)
-
+    X_bias = X_bias.reshape((-1, 1))
+    Y_bias = Y_bias.reshape((-1, 1))
     
     if distance is None:
         dists = sklearn.metrics.pairwise_distances(
@@ -78,9 +72,9 @@ def compute_pairwise_distance(data_x, data_y=None, distance=None):
         one_hot_data_x = to_one_hot(data_x, max_val)
         one_hot_data_y = to_one_hot(data_y,max_val)
         # dists = sklearn.metrics.pairwise.manhattan_distances(one_hot_data_x, one_hot_data_y)
-        dists = sklearn.metrics.pairwise.manhattan_distances(X_bias, Y_bias)
-        print("distances")
-        print(dists.shape)
+        dists = sklearn.metrics.pairwise.manhattan_distances(X_bias, Y_bias)        # this is correct, so why are the metrics so poor?
+        # print("distances")
+        # print(dists.shape)
         print(dists[:1])
     return dists
 
@@ -123,34 +117,45 @@ def compute_prdc(real_features, fake_features, nearest_k=5, distance=None):
     Returns:
         dict of precision, recall, density, and coverage.
     """
+    # the new calc doesn't work on calculating realNNdist, fakeNNdist, 
     
-
     real_nearest_neighbour_distances = compute_nearest_neighbour_distances(
         real_features, nearest_k, distance=distance)
     fake_nearest_neighbour_distances = compute_nearest_neighbour_distances(
         fake_features, nearest_k, distance=distance)
     distance_real_fake = compute_pairwise_distance(
         real_features, fake_features, distance=distance)
+    print("realNN", real_nearest_neighbour_distances[:10])
+    print("fakeNN", fake_nearest_neighbour_distances[:10])
+    print("distRealFake", distance_real_fake[:10])
 
     precision = (
         distance_real_fake <
         np.expand_dims(real_nearest_neighbour_distances, axis=1)
     ).any(axis=0).mean()
 
+    # print("for precision", np.expand_dims(real_nearest_neighbour_distances, axis=1)[:10])
+
     recall = (
         distance_real_fake <
         np.expand_dims(fake_nearest_neighbour_distances, axis=0)
     ).any(axis=1).mean()
+
+    # print("for recall", np.expand_dims(fake_nearest_neighbour_distances, axis=0)[:10])
 
     density = (1. / float(nearest_k)) * (
         distance_real_fake <
         np.expand_dims(real_nearest_neighbour_distances, axis=1)
     ).sum(axis=0).mean()
 
+    # print("for density",  np.expand_dims(real_nearest_neighbour_distances, axis=1)[:10])
+
     coverage = (
         distance_real_fake.min(axis=1) <
         real_nearest_neighbour_distances
     ).mean()
+
+    # print("for coverage", real_nearest_neighbour_distances[:10])
 
     return dict(precision=precision, recall=recall,
                 density=density, coverage=coverage)
