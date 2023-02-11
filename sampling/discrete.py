@@ -236,7 +236,7 @@ def errFunct(U, prob_optimized_dict, e, percent_of_space_to_modify, percent_to_m
         # for each interval, divide it in two and add to the start, remove from lasts.
         intervals_modified = intervals
         if TYPE == 'TAIL':
-            bins_added = int(bins_added/4)
+            bins_added = int(bins_added/3)
             coin = e*100 % 2
             limit_tail_index = int(len(intervals)/2)
             if coin == 1:

@@ -59,7 +59,7 @@ def perform_our_test(list_of_samples, list_of_title_q, S, trials, store_results,
     for all_samples_list in list_of_samples:
         consolidated_samples.append(consolidate(all_samples_list))
 
-    Bs = list(range(S+1, 2*(S+1)+1))
+    Bs = list(range(S+1, 9))
     for B in tqdm(Bs):  # For each bin granularity
 
         for i, consolidated_samples_baseline in enumerate(consolidated_samples):
@@ -90,19 +90,22 @@ def perform_our_test(list_of_samples, list_of_title_q, S, trials, store_results,
             store_results['binning'][q_name][B] = list_binned
 
 
-def float_to_print(number, num_d=4):
-    if num_d == 4:
-        return '{:.4f}'.format(number)
-
+def float_to_print(number, num_d=3):
+    if num_d == 3:
+        return '{:.3f}'.format(number)
+    elif num_d ==2:
+        return  '{:.2f}'.format(number)
+    elif num_d ==1:
+        return  '{:.1f}'.format(number)
 
 if __name__ == '__main__':
     # Set the random seed
     np.random.seed(3)
     random.seed(3)
     experiment = "GEN"  # either SYNTH or GEN
-    TYPE = "FLAT"  # TAIL
+    TYPE = "SHARP"  # TAIL, SHARP, FLAT
     test_epsilon = None
-    delta = 0.05
+    delta = 0.1
     compute_random = False
     list_of_binning = ['algo']
     if experiment == "SYNTH":  # if we generate q ourselves
@@ -110,7 +113,7 @@ if __name__ == '__main__':
 
         power_base = 10
         U = power_base**power_base
-        m_per_splits = 10000
+        m_per_splits = 20000
         init_e = 0.05
         init_b = 0.5
         splits = 10
@@ -128,7 +131,7 @@ if __name__ == '__main__':
         m_per_splits = 10000
         S = 2
         ratio = 3
-        splits = 50
+        splits = 10
 
     print("for this round m is ", m_per_splits*splits)
     print("and U is ", U)
@@ -191,15 +194,17 @@ if __name__ == '__main__':
     for q_name in list_of_title_q:
         values = []
         if list_of_pmf_q is not None:
-            values = [float_to_print(np.mean(store_results['nll'][q_name])) +
-                      '$\pm$' + float_to_print(store_results['std_nll'][q_name])]
+            # values = [float_to_print(np.mean(store_results['nll'][q_name])) +
+            #           '$\pm$' + float_to_print(store_results['std_nll'][q_name])]
+            values = [float_to_print(np.mean(store_results['nll'][q_name])) ]
         
         for key, val in store_results['A'][q_name].items():
-            #std = np.mean((store_results['e'][q_name][key]))
-            std = np.std(val)
+            std = np.mean((store_results['e'][q_name][key]))
+            #std = np.std(val)
 
-            values.append(float_to_print(np.mean(val)) +
-                          '$\pm$' + float_to_print(std))
+            #values.append(float_to_print(np.mean(val)) +
+            #               '$\pm$' + float_to_print(std))
+            values.append(float_to_print(np.mean(val),num_d=3) )
             # values.append(float_to_print(np.mean(store_results['l1'][q_name][key])))
         rows.append([q_name] + values)
     top = ['']
