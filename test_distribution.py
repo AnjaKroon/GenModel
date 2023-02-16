@@ -105,7 +105,7 @@ if __name__ == '__main__':
     experiment = "GEN"  # either SYNTH or GEN
     TYPE = "SHARP"  # TAIL, SHARP, FLAT
     test_epsilon = None
-    delta = 0.1
+    delta = 0.5
     compute_random = False
     list_of_binning = ['algo']
     if experiment == "SYNTH":  # if we generate q ourselves
