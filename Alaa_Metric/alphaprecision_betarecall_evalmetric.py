@@ -16,6 +16,7 @@ from metrics.evaluation import *
 from metrics.prdc import compute_prdc
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.markers as mark
 import torch
 import pickle as pkl
 import numpy as np
@@ -143,38 +144,45 @@ Take pickle data from gen model and use metrics to compare generated data to sta
 
 
 def comparing_all_gen_models():
+    all_results = []
+
     small_random = make_arr_small(get_random_input())
     small_train_input = make_arr_small(get_train())
 
-    argmaxAR_input = open('data/100sample_Data/100sample_argmaxAR.pk', 'rb')
+    argmaxAR_input = open('./evaluating-generative-models-main/data/100sample_Data/100sample_argmaxAR.pk', 'rb')
     argmaxAR = make_arr_small(pkl.load(argmaxAR_input))
 
-    CDM_input = open('data/100sample_Data/100sample_CDM.pk', 'rb')
+    CDM_input = open('./evaluating-generative-models-main/data/100sample_Data/100sample_CDM.pk', 'rb')
     CDM = make_arr_small(pkl.load(CDM_input))
 
-    CNF_input = open('data/100sample_Data/100sample_CNF.pk', 'rb')
+    CNF_input = open('./evaluating-generative-models-main/data/100sample_Data/100sample_CNF.pk', 'rb')
     CNF = make_arr_small(pkl.load(CNF_input))
 
-    FCDM_input = open('data/100sample_Data/100sample_FCDM.pk', 'rb')
+    FCDM_input = open('./evaluating-generative-models-main/data/100sample_Data/100sample_FCDM.pk', 'rb')
     FCDM = make_arr_small(pkl.load(FCDM_input))
 
     print("Experiment 1: Ground Truth vs Random Output")
-    print(small_train_input.shape, small_random.shape)
-    print(alaa_compare(small_train_input, small_random, distance='hamilton'))
+    # print(small_train_input.shape, small_random.shape)
+    all_results.append(alaa_compare(small_train_input, small_random, distance='hamilton'))
+    print(all_results[-1])
 
     print("Experiment 2: Ground Truth vs argmaxAR Output")
-    print(alaa_compare(small_train_input, argmaxAR, distance='hamilton'))
+    all_results.append(alaa_compare(small_train_input, argmaxAR, distance='hamilton'))
+    print(all_results[-1])
 
     print("Experiment 3: Ground Truth vs CDM Output")
-    print(alaa_compare(small_train_input, CDM, distance='hamilton'))
+    all_results.append(alaa_compare(small_train_input, CDM, distance='hamilton'))
+    print(all_results[-1])
 
     print("Experiment 4: Ground Truth vs CNF Output")
-    print(alaa_compare(small_train_input, CNF, distance='hamilton'))
+    all_results.append(alaa_compare(small_train_input, CNF, distance='hamilton'))
+    print(all_results[-1])
 
     print("Experiment 5: Ground Truth vs FCDM Output")
-    print(alaa_compare(small_train_input, FCDM, distance='hamilton'))
+    all_results.append(alaa_compare(small_train_input, FCDM, distance='hamilton'))
+    print(all_results[-1])
 
-    return
+    return all_results
 
 
 def get_100_pickle():
@@ -203,7 +211,7 @@ def make_arr_medium(X):
 
 
 def get_train():
-    infile = open('train.pk', 'rb')
+    infile = open('./evaluating-generative-models-main/train.pk', 'rb')
     one_pickle_sample = pkl.load(infile)
     return one_pickle_sample
 
@@ -269,6 +277,62 @@ def alaa_compare(X, Y, distance=None):
     # print(res_)
     return res_
 
+def plot_compare_all_gen_models(answer):
+    plt.rcParams["figure.figsize"] = [7.00, 3.50]
+    # plt.rcParams.update({"text.usetex": True,"font.family": "Helvetica"})
+
+    plt.xlim(0, 0.12)
+    plt.ylim(0, 0.2)
+    plt.ylabel("Precision/IP")
+    plt.xlabel("Recall/IR")
+    # plt.title("Precision, Recall, IR, and IP")
+
+    # COLOR: Green
+    P_GMCD = 0.0828                 # Precision     y   dot
+    R_GMCD = 0.0751                 # Recall        x   dot
+    plt.plot(R_GMCD, P_GMCD, marker=".", color="green", label="GMCD", markersize=20)
+    IP_GMCD = 0.0661                # IP            y   cross
+    IR_GMCD = 0.044                 # IR            x   cross
+    plt.plot(IR_GMCD, IP_GMCD, marker="^", color="green", label="GMCD", markersize=10)
+
+    # COLOR: Yellow
+    P_ArgMaxAR = 0.067              # Precision    y   dot
+    R_ArgMaxAR = 0.0928             # Recall       x   dot
+    plt.plot(R_ArgMaxAR, P_ArgMaxAR, marker=".", color="#F7BD01", label="argmaxAR", markersize=20)
+    IP_ArgMaxAR = 0.05392           # IP           y   cross
+    IR_ArgMaxAR = 0.0435            # IR           x   cross
+    plt.plot(IR_ArgMaxAR, IP_ArgMaxAR, marker="^", color="#F7BD01", label="argmaxAR", markersize=10)
+
+    # COLOR: Orange
+    P_CDM = 0.0891                  # Precision     y   dot
+    R_CDM = 0.056                   # Recall        x   dot
+    plt.plot(R_CDM, P_CDM, marker=".", color="#EE7600", label="CDM", markersize=20)
+    IP_CDM = 0.0715                 # IP            y   cross
+    IR_CDM = 0.044                  # IR            x   cross
+    plt.plot(IR_CDM, IP_CDM, marker="^", color="#EE7600", label="CDM", markersize=10)
+
+    # COLOR: Red
+    P_CNF = 0.1442                  # Precision     y   dot
+    R_CNF = 0.0066                  # Recall        x   dot
+    plt.plot(R_CNF, P_CNF, marker=".", color="red", label="CNF", markersize=20)
+    IP_CNF = 0.116                  # IP            y   cross
+    IR_CNF = 0.044                  # IR            x   cross
+    plt.plot(IR_CNF, IP_CNF, marker="^", color="red", label="CNF", markersize=10)
+    
+    first = plt.legend()
+    plt.gca().add_artist(first)
+    line1, = plt.plot([], label="P&R", marker=".", color="black")
+    line2, = plt.plot([], label="IP&IR", marker="^", color="black")
+
+    first_legend = plt.legend(handles=[line1, line2], loc='lower right')
+
+    plt.gca().add_artist(first_legend)
+
+    plt.legend(handles=[line2], loc='lower right')
+
+    plt.show()
+    return
+
 
 print("----------------------------------------------------------")
 print("Terminology Used in Results:")
@@ -278,5 +342,7 @@ print("Density - rebranded alpha precision in Alaa paper")
 print("Coverage - rebranded beta recall in Alaa paper")
 print("DPA/DCB - not used in the paper")
 print("Mean Auth - authentication score, used in Alaa paper")
+answer = []
+# answer = comparing_all_gen_models()
 
-comparing_all_gen_models()
+plot_compare_all_gen_models(answer)
