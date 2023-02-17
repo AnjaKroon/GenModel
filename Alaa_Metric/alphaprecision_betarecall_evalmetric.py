@@ -280,6 +280,7 @@ def alaa_compare(X, Y, distance=None):
 def plot_compare_all_gen_models(answer):
     plt.rcParams["figure.figsize"] = [7.00, 3.50]
     # plt.rcParams.update({"text.usetex": True,"font.family": "Helvetica"})
+    plt.rcParams.update({'font.size': 14})
 
     plt.xlim(0, 0.12)
     plt.ylim(0, 0.2)
@@ -293,7 +294,7 @@ def plot_compare_all_gen_models(answer):
     plt.plot(R_GMCD, P_GMCD, marker=".", color="green", label="GMCD", markersize=20)
     IP_GMCD = 0.0661                # IP            y   cross
     IR_GMCD = 0.044                 # IR            x   cross
-    plt.plot(IR_GMCD, IP_GMCD, marker="^", color="green", label="GMCD", markersize=10)
+    plt.plot(IR_GMCD, IP_GMCD, marker="^", color="green", markersize=10)
 
     # COLOR: Yellow
     P_ArgMaxAR = 0.067              # Precision    y   dot
@@ -301,7 +302,7 @@ def plot_compare_all_gen_models(answer):
     plt.plot(R_ArgMaxAR, P_ArgMaxAR, marker=".", color="#F7BD01", label="argmaxAR", markersize=20)
     IP_ArgMaxAR = 0.05392           # IP           y   cross
     IR_ArgMaxAR = 0.0435            # IR           x   cross
-    plt.plot(IR_ArgMaxAR, IP_ArgMaxAR, marker="^", color="#F7BD01", label="argmaxAR", markersize=10)
+    plt.plot(IR_ArgMaxAR, IP_ArgMaxAR, marker="^", color="#F7BD01", markersize=10)
 
     # COLOR: Orange
     P_CDM = 0.0891                  # Precision     y   dot
@@ -309,7 +310,7 @@ def plot_compare_all_gen_models(answer):
     plt.plot(R_CDM, P_CDM, marker=".", color="#EE7600", label="CDM", markersize=20)
     IP_CDM = 0.0715                 # IP            y   cross
     IR_CDM = 0.044                  # IR            x   cross
-    plt.plot(IR_CDM, IP_CDM, marker="^", color="#EE7600", label="CDM", markersize=10)
+    plt.plot(IR_CDM, IP_CDM, marker="^", color="#EE7600", markersize=10)
 
     # COLOR: Red
     P_CNF = 0.1442                  # Precision     y   dot
@@ -317,7 +318,7 @@ def plot_compare_all_gen_models(answer):
     plt.plot(R_CNF, P_CNF, marker=".", color="red", label="CNF", markersize=20)
     IP_CNF = 0.116                  # IP            y   cross
     IR_CNF = 0.044                  # IR            x   cross
-    plt.plot(IR_CNF, IP_CNF, marker="^", color="red", label="CNF", markersize=10)
+    plt.plot(IR_CNF, IP_CNF, marker="^", color="red", markersize=10)
     
     first = plt.legend()
     plt.gca().add_artist(first)
